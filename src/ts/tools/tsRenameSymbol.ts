@@ -4,7 +4,7 @@ import fs from "fs/promises";
 import { type Result, ok, err } from "neverthrow";
 import { renameSymbol } from "../commands/renameSymbol";
 import {
-  findProjectForFile,
+  getOrCreateProject,
   getOrCreateSourceFileWithRefresh,
 } from "../projectCache";
 import { resolveLineParameterForSourceFile as resolveLineParameter } from "../../textUtils/resolveLineParameterForSourceFile";
@@ -45,8 +45,8 @@ async function handleRenameSymbol({
   // Always treat paths as relative to root
   const absolutePath = path.join(root, filePath);
 
-  // Check if file exists
-  const project = findProjectForFile(absolutePath);
+  // Get or create project based on the file path
+  const project = await getOrCreateProject(absolutePath);
 
   // Ensure the source file is loaded in the project with fresh content
   const sourceFile = getOrCreateSourceFileWithRefresh(absolutePath);

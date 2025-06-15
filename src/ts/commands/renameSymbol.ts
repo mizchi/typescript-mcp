@@ -33,7 +33,7 @@ export interface RenameSuccess {
  */
 export function createProject(tsConfigPath?: string): Project {
   if (tsConfigPath) {
-    const { options, errors } = getCompilerOptionsFromTsConfig(tsConfigPath);
+    const { errors } = getCompilerOptionsFromTsConfig(tsConfigPath);
     if (errors.length > 0) {
       throw new Error(
         `Failed to read tsconfig: ${errors
@@ -47,7 +47,7 @@ export function createProject(tsConfigPath?: string): Project {
       );
     }
     return new Project({
-      compilerOptions: options,
+      tsConfigFilePath: tsConfigPath, // Specify `tsConfigFilePath` instead of `compilerOptions` to load files
       skipAddingFilesFromTsConfig: false,
     });
   }

@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs/promises";
 import { findReferences } from "../navigations/findReferences";
 import {
-  findProjectForFile,
+  getOrCreateProject,
   getOrCreateSourceFileWithRefresh,
 } from "../projectCache";
 import { resolveLineParameterForSourceFile as resolveLineParameter } from "../../textUtils/resolveLineParameterForSourceFile";
@@ -47,7 +47,7 @@ async function handleFindReferences({
   // Check if file exists
   await fs.access(absolutePath);
 
-  const project = findProjectForFile(absolutePath);
+  const project = await getOrCreateProject(absolutePath);
 
   // Ensure the source file is loaded in the project with fresh content
   const sourceFile = getOrCreateSourceFileWithRefresh(absolutePath);

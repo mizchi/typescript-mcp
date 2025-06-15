@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs/promises";
 import { goToDefinition } from "../navigations/goToDefinition";
 import {
-  findProjectForFile,
+  getOrCreateProject,
   getOrCreateSourceFileWithRefresh,
 } from "../projectCache";
 import { resolveLineParameterForSourceFile as resolveLineParameter } from "../../textUtils/resolveLineParameterForSourceFile";
@@ -55,7 +55,7 @@ async function handleGetDefinitions({
   // Check if file exists
   await fs.access(absolutePath);
 
-  const project = findProjectForFile(absolutePath);
+  const project = await getOrCreateProject(absolutePath);
 
   // Get the source file to find the column position with fresh content
   const sourceFile = getOrCreateSourceFileWithRefresh(absolutePath);
