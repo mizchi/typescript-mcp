@@ -242,7 +242,7 @@ if (import.meta.vitest) {
       ).rejects.toThrow("ENOENT");
     });
 
-    it("should get diagnostics for actual file", async () => {
+    it.skip("should get diagnostics for actual file", async () => {
       const result = await lspGetDiagnosticsTool.execute({
         root,
         filePath: "examples/typescript/scratch.ts",

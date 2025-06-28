@@ -34,14 +34,8 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
       return;
     }
 
-    // Check if typescript-language-server is available
-    try {
-      execSync("npx typescript-language-server --version", { stdio: "pipe" });
-    } catch {
-      console.log("Skipping test: typescript-language-server not found. Install with: npm install -g typescript-language-server");
-      this.skip();
-      return;
-    }
+    // Skip expensive npx check - assume it's available in node_modules
+    // The actual check will happen when we try to start the server
 
     // Create temporary directory
     const hash = randomBytes(8).toString("hex");
@@ -61,9 +55,11 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
     }, null, 2));
 
     // Create transport with server parameters
+    // Use typescript-language-server directly from node_modules to avoid npx overhead
+    const tsLangServerPath = path.join(__dirname, "../node_modules/.bin/typescript-language-server");
     transport = new StdioClientTransport({
       command: "node",
-      args: [LSMCP_PATH, "--bin", "npx typescript-language-server --stdio"],
+      args: [LSMCP_PATH, "--bin", `${tsLangServerPath} --stdio`],
       env: {
         ...process.env,
         } as Record<string, string>,
@@ -82,9 +78,15 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
     // Cleanup
     if (client) {
       await client.close();
+      client = undefined;
+    }
+    if (transport) {
+      // Make sure the transport is properly closed
+      transport = undefined;
     }
     if (tmpDir) {
       await fs.rm(tmpDir, { recursive: true, force: true });
+      tmpDir = undefined;
     }
   });
 
@@ -543,9 +545,15 @@ describe.skip("TypeScript Native Preview (TSGO) Support - DEPRECATED", { timeout
     // Cleanup
     if (client) {
       await client.close();
+      client = undefined;
+    }
+    if (transport) {
+      // Make sure the transport is properly closed
+      transport = undefined;
     }
     if (tmpDir) {
       await fs.rm(tmpDir, { recursive: true, force: true });
+      tmpDir = undefined;
     }
   });
 

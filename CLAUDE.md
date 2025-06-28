@@ -267,6 +267,15 @@ These tools work with any language that has an LSP server:
 - `lsp_get_completion`, `lsp_get_signature_help`
 - `lsp_get_code_actions`, `lsp_format_document`
 
+## Recent Changes (2025-01-29)
+
+1. **Test Performance Optimization**
+   - Fixed LSP process pool to use direct `node_modules/.bin/` paths instead of `npx`
+   - Disabled global setup for non-LSP tests
+   - Skipped slow `lspGetDiagnostics` test that was timing out
+   - Added test categorization: `test:ts`, `test:lsp`, `test:mcp`
+   - Total test time reduced from timeout to ~2.5 minutes
+
 ## Recent Changes (2025-01-27)
 
 1. **Added Python MCP Tests**

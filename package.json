@@ -10,14 +10,18 @@
   "scripts": {
     "prepublishOnly": "pnpm build",
     "build": "tsdown",
+    "watch": "tsdown --watch",
+    "typecheck": "tsr check --project tsconfig.json",
+    "typecheck:tsc": "tsc --noEmit -p tsconfig.json",
+    "lint": "oxlint --quiet",
+    "lint:refactor": "oxlint",
     "test": "vitest --run",
-    "typecheck": "tsgo -p . --noEmit",
-    "typecheck:tsc": "tsc -p . --noEmit",
-    "lint": "oxlint . --ignore-pattern='tests/fixtures/**' --ignore-pattern='**/*.expected.ts' --ignore-pattern='**/*.input.ts' --ignore-pattern='playground/**' --ignore-pattern='examples/**'",
-    "lint:refactor": "oxlint . --deny-warnings --ignore-pattern='tests/fixtures/**' --ignore-pattern='**/*.expected.ts' --ignore-pattern='**/*.input.ts' --ignore-pattern='playground/**' --ignore-pattern='examples/**'",
-    "deadcode": "tsr 'src/mcp/lsmcp\\.ts$' 'src/mcp/typescript-mcp\\.ts$'",
-    "deadcode:with-tests": "tsr 'src/mcp/lsmcp\\.ts$' 'src/mcp/typescript-mcp\\.ts$' 'src/.*\\.test\\.ts$' 'tests/.*\\.ts$'",
-    "run:mcp": "pnpm build && node dist/lsmcp.js"
+    "test:lsp": "vitest --run tests/lsmcp-include.test.ts",
+    "test:ts": "vitest --run src/ts",
+    "test:mcp": "vitest --run tests/mcp-*.test.ts",
+    "test:all": "pnpm test:ts && pnpm test:lsp && pnpm test:mcp",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
   },
   "bin": {
     "typescript-mcp": "./dist/typescript-mcp.js",
