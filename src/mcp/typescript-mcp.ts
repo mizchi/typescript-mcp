@@ -9,9 +9,6 @@ import {
 } from "./_mcplib.ts";
 import { moveFileTool } from "../ts/tools/tsMoveFile.ts";
 import { moveDirectoryTool } from "../ts/tools/tsMoveDirectory.ts";
-import { renameSymbolTool } from "../ts/tools/tsRenameSymbol.ts";
-import { deleteSymbolTool } from "../ts/tools/tsDeleteSymbol.ts";
-import { getDiagnosticsTool } from "../ts/tools/tsGetDiagnostics.ts";
 import { getModuleSymbolsTool } from "../ts/tools/tsGetModuleSymbols.ts";
 import { getTypeInModuleTool } from "../ts/tools/tsGetTypeInModule.ts";
 import { getTypeAtSymbolTool } from "../ts/tools/tsGetTypeAtSymbol.ts";
@@ -59,16 +56,6 @@ const tools: ToolDef<any>[] = [
         // WIP: does not work yet correctly
         // getModuleGraphTool,
         // getRelatedModulesTool,
-
-        // TypeScript Compiler API tools with ts_ prefix
-        // Only include if LSP is not being used to avoid duplication
-        ...(USE_LSP
-          ? []
-          : [
-              getDiagnosticsTool,
-              renameSymbolTool,
-              deleteSymbolTool,
-            ]),
       ]
     : []),
   
