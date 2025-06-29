@@ -222,4 +222,5 @@ export type LSPClient = {
   sendRequest: <T = unknown>(method: string, params?: unknown) => Promise<T>;
   on: (event: string, listener: (...args: unknown[]) => void) => void;
   emit: (event: string, ...args: unknown[]) => boolean;
+  waitForDiagnostics: (fileUri: string, timeout?: number) => Promise<Diagnostic[]>;
 };

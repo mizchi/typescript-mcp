@@ -185,6 +185,8 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
         // Store diagnostics for the file
         const params = message.params as PublishDiagnosticsParams;
         state.diagnostics.set(params.uri, params.diagnostics);
+        // Emit specific diagnostics event
+        state.eventEmitter.emit("diagnostics", params);
       }
       state.eventEmitter.emit("message", message);
     }
@@ -686,6 +688,33 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     }
   }
 
+  // Helper function to wait for diagnostics
+  function waitForDiagnostics(
+    fileUri: string,
+    timeout: number = 2000
+  ): Promise<Diagnostic[]> {
+    return new Promise((resolve, reject) => {
+      let timeoutId: NodeJS.Timeout | undefined;
+      
+      const diagnosticsHandler = (params: PublishDiagnosticsParams) => {
+        if (params.uri === fileUri) {
+          if (timeoutId) clearTimeout(timeoutId);
+          state.eventEmitter.off("diagnostics", diagnosticsHandler); // Remove listener
+          resolve(params.diagnostics || []);
+        }
+      };
+      
+      // Set up timeout
+      timeoutId = setTimeout(() => {
+        state.eventEmitter.off("diagnostics", diagnosticsHandler); // Remove listener
+        reject(new Error(`Timeout waiting for diagnostics for ${fileUri}`));
+      }, timeout);
+      
+      // Listen for diagnostics
+      state.eventEmitter.on("diagnostics", diagnosticsHandler);
+    });
+  }
+
   return {
     ...state,
     start,
@@ -714,5 +743,6 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       state.eventEmitter.on(event, listener),
     emit: (event: string, ...args: unknown[]) =>
       state.eventEmitter.emit(event, ...args),
+    waitForDiagnostics,
   };
 }
