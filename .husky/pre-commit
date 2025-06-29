@@ -1,5 +1,14 @@
 #!/bin/sh
 
+# Check formatting (don't modify files)
+echo "Checking code format..."
+if command -v deno >/dev/null 2>&1; then
+  if ! deno fmt --check src/ tests/ 2>/dev/null; then
+    echo "❌ Code is not formatted. Run 'deno fmt src/ tests/' to fix."
+    exit 1
+  fi
+fi
+
 # Run lint
 echo "Running lint..."
 pnpm lint

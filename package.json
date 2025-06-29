@@ -22,6 +22,8 @@
     "test:all": "pnpm test:ts && pnpm test:lsp && pnpm test:mcp",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
+    "format": "deno fmt src/ tests/",
+    "format:check": "deno fmt --check src/ tests/",
     "prepare": "husky"
   },
   "bin": {
