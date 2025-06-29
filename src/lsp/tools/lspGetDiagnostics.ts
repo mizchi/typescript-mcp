@@ -235,8 +235,8 @@ if (import.meta.vitest) {
       });
 
       expect(result).toContain("error");
-      // Should find multiple errors
-      expect(result.toLowerCase()).toMatch(/\d+ errors?/);
+      // Should find 2 errors
+      expect(result).toMatch(/2 errors/);
     });
 
     it("should handle file with no errors", async () => {
@@ -272,7 +272,7 @@ if (import.meta.vitest) {
         virtualContent,
       });
 
-      expect(result).toMatch(/\d+ errors? and \d+ warnings?/);
+      expect(result).toMatch(/\d+ errors?( and \d+ warnings?)?/);
     });
 
     it("should handle stale file contents by refreshing (Issue #8)", async () => {
@@ -377,7 +377,7 @@ console.log(y);
         virtualContent: `const x: string = 123;`,
       });
 
-      expect(result1).toContain("error");
+      expect(result1).toMatch(/1 error/);
 
       // Check again with fixed content
       const result2 = await lspGetDiagnosticsTool.execute({

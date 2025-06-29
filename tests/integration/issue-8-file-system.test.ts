@@ -34,13 +34,13 @@ describe("Issue #8 - Real File System Tests", () => {
   it("should handle file creation, modification, and deletion cycle", async () => {
     const transport = new StdioClientTransport({
       command: "node",
-      args: [path.join(__dirname, "../dist/typescript-mcp.js")],
+      args: [path.join(__dirname, "../../dist/typescript-mcp.js")],
       env: {
         ...process.env,
         LSP_COMMAND: `${
           path.join(
             __dirname,
-            "../node_modules/.bin/typescript-language-server",
+            "../../node_modules/.bin/typescript-language-server",
           )
         } --stdio`,
       },
@@ -154,13 +154,13 @@ const num: number = "not a number";
   it("should handle symlinks correctly", async () => {
     const transport = new StdioClientTransport({
       command: "node",
-      args: [path.join(__dirname, "../dist/typescript-mcp.js")],
+      args: [path.join(__dirname, "../../dist/typescript-mcp.js")],
       env: {
         ...process.env,
         LSP_COMMAND: `${
           path.join(
             __dirname,
-            "../node_modules/.bin/typescript-language-server",
+            "../../node_modules/.bin/typescript-language-server",
           )
         } --stdio`,
       },
@@ -219,13 +219,13 @@ const num: number = "not a number";
   it.skip("should handle large files with many errors", async () => {
     const transport = new StdioClientTransport({
       command: "node",
-      args: [path.join(__dirname, "../dist/typescript-mcp.js")],
+      args: [path.join(__dirname, "../../dist/typescript-mcp.js")],
       env: {
         ...process.env,
         LSP_COMMAND: `${
           path.join(
             __dirname,
-            "../node_modules/.bin/typescript-language-server",
+            "../../node_modules/.bin/typescript-language-server",
           )
         } --stdio`,
       },
@@ -294,13 +294,13 @@ const num: number = "not a number";
   it("should handle files with different encodings", async () => {
     const transport = new StdioClientTransport({
       command: "node",
-      args: [path.join(__dirname, "../dist/typescript-mcp.js")],
+      args: [path.join(__dirname, "../../dist/typescript-mcp.js")],
       env: {
         ...process.env,
         LSP_COMMAND: `${
           path.join(
             __dirname,
-            "../node_modules/.bin/typescript-language-server",
+            "../../node_modules/.bin/typescript-language-server",
           )
         } --stdio`,
       },

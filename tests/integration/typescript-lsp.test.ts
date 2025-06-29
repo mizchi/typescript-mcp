@@ -17,7 +17,7 @@ interface CallToolResult {
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const LSMCP_PATH = path.join(__dirname, "../dist/lsmcp.js");
+const LSMCP_PATH = path.join(__dirname, "../../dist/lsmcp.js");
 
 describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
   let client: Client | undefined;
@@ -67,7 +67,7 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
     // Use typescript-language-server directly from node_modules to avoid npx overhead
     const tsLangServerPath = path.join(
       __dirname,
-      "../node_modules/.bin/typescript-language-server",
+      "../../node_modules/.bin/typescript-language-server",
     );
     transport = new StdioClientTransport({
       command: "node",
@@ -525,7 +525,7 @@ describe.skip("TypeScript Native Preview (TSGO) Support - DEPRECATED", {
     // Skip test if typescript-mcp.js is not built
     const TYPESCRIPT_MCP_PATH = path.join(
       __dirname,
-      "../dist/typescript-mcp.js",
+      "../../dist/typescript-mcp.js",
     );
     try {
       await fs.access(TYPESCRIPT_MCP_PATH);
