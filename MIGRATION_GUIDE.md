@@ -8,7 +8,7 @@ We are gradually migrating TypeScript-specific tools that use the TypeScript Com
 
 ## Migration Status
 
-### ✅ Already Migrated
+### ✅ Already Removed (Use LSP alternatives)
 
 1. **`ts_rename_symbol` → `lsp_rename_symbol`**
    - Full functionality maintained
@@ -36,58 +36,18 @@ We are gradually migrating TypeScript-specific tools that use the TypeScript Com
    - Get type information and documentation
    - Parameter change: `symbolName` → `target`
 
-### 🔄 Partial Migration Available
+7. **All TypeScript-specific tools**
+   - `move_file` - No LSP equivalent
+   - `move_directory` - No LSP equivalent
+   - `get_module_symbols` - Use `lsp_get_document_symbols`
+   - `get_type_in_module` - Use `lsp_get_hover`
+   - `get_symbols_in_scope` - Use `lsp_get_completion`
+   - `search_symbols` - Use `lsp_get_workspace_symbols`
+   - `find_import_candidates` - No direct LSP equivalent
 
-These tools have LSP alternatives but with some feature differences:
+## All TypeScript-specific Tools Have Been Removed
 
-1. **`search_symbols` → `lsp_get_workspace_symbols`**
-   - TypeScript version features:
-     - Pre-built index for faster search
-     - File watching for real-time updates
-     - Prefix match, exact match, and regex filtering
-     - Distinguish between exported and non-exported symbols
-   - LSP version limitations:
-     - May be slower for large projects
-     - Limited filtering options
-     - Depends on language server implementation
-
-2. **`get_symbols_in_scope` → `lsp_get_completion`**
-   - TypeScript version features:
-     - Get all symbols visible at a specific location
-     - Detailed categorization (Value/Type/Namespace)
-     - Option to exclude built-ins
-   - LSP version limitations:
-     - Primarily designed for code completion
-     - May not return all visible symbols
-     - Less detailed categorization
-
-3. **`get_module_symbols` → `lsp_get_document_symbols`**
-   - TypeScript version features:
-     - Extract only exported symbols from a module
-     - Categorize by types/interfaces/classes/functions
-   - LSP version limitations:
-     - Returns all symbols in the document
-     - May require filtering for exports only
-
-### ❌ No Direct LSP Alternative
-
-These tools provide TypeScript-specific functionality not available in standard LSP:
-
-1. **`move_file`**
-   - Moves files and automatically updates all import statements
-   - No standard LSP equivalent
-
-2. **`move_directory`**
-   - Moves directories and updates all TypeScript imports
-   - No standard LSP equivalent
-
-3. **`find_import_candidates`**
-   - Fast search for import candidates with relative path calculation
-   - LSP code actions provide limited import suggestions
-
-4. **`get_type_in_module`**
-   - Get detailed type signatures from a specific module
-   - More detailed than what LSP hover provides
+As of the latest version, all TypeScript-specific tools that use the TypeScript Compiler API have been removed in favor of LSP-based alternatives. This provides better language independence and consistency across different language servers.
 
 ## Migration Examples
 

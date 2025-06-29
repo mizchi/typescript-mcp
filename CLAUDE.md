@@ -217,13 +217,7 @@ AI はワードカウントが苦手なので、LSP の Line Character ではな
 
 ### TypeScript-specific Tools (Compiler API)
 
-These tools use TypeScript Compiler API directly and are only available with `--language typescript`:
-
-- `lsmcp_move_file`, `lsmcp_move_directory` - Move with import updates
-- `lsmcp_rename_symbol`, `lsmcp_delete_symbol` - Semantic refactoring using TypeScript Compiler API
-- `lsmcp_get_module_symbols`, `lsmcp_get_type_in_module` - Advanced type analysis
-- `lsmcp_search_symbols`, `lsmcp_find_import_candidates` - Fast symbol indexing
-- `lsmcp_get_symbols_in_scope` - Scope-aware symbol analysis
+All TypeScript-specific tools have been removed in favor of LSP-based alternatives for better language independence. See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for details.
 
 ### LSP-based Tools (All Languages)
 

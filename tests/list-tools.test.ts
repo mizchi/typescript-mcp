@@ -48,16 +48,17 @@ describe("list_tools functionality", () => {
       await client.close();
     });
     
-    it("should list TypeScript tools", async () => {
+    it("should list TypeScript tools (empty - all removed)", async () => {
       const result = await client.callTool({
         name: "list_tools",
         arguments: { category: "typescript" }
       });
       
       expect(result.content[0].text).toContain("TypeScript Tools");
-      expect(result.content[0].text).toContain("move_file");
-      expect(result.content[0].text).toContain("get_module_symbols");
-      expect(result.content[0].text).toContain("search_symbols");
+      // TypeScript tools have been removed
+      expect(result.content[0].text).not.toContain("move_file");
+      expect(result.content[0].text).not.toContain("get_module_symbols");
+      expect(result.content[0].text).not.toContain("search_symbols");
     });
     
     it("should list all tools including LSP", async () => {
