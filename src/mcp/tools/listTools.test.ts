@@ -10,9 +10,9 @@ describe("listToolsTool", () => {
     expect(result).toContain("LSP Tools (Language Server Protocol)");
     
     // Check for some TypeScript tools
-    expect(result).toContain("find_references");
-    expect(result).toContain("rename_symbol");
     expect(result).toContain("move_file");
+    expect(result).toContain("get_module_symbols");
+    expect(result).toContain("search_symbols");
     
     // Check for some LSP tools
     expect(result).toContain("lsp_get_hover");
@@ -27,9 +27,9 @@ describe("listToolsTool", () => {
     expect(result).not.toContain("LSP Tools (Language Server Protocol)");
     
     // Should include TypeScript tools
-    expect(result).toContain("find_references");
-    expect(result).toContain("get_definitions");
-    expect(result).toContain("rename_symbol");
+    expect(result).toContain("move_file");
+    expect(result).toContain("get_module_symbols");
+    expect(result).toContain("search_symbols");
     
     // Should not include LSP tools
     expect(result).not.toContain("lsp_get_hover");
@@ -47,9 +47,9 @@ describe("listToolsTool", () => {
     expect(result).toContain("lsp_find_references");
     expect(result).toContain("lsp_get_completion");
     
-    // Should not include TypeScript tools (but lsp_find_references is LSP tool)
-    expect(result).not.toContain("### find_references");
-    expect(result).not.toContain("### get_definitions");
+    // Should not include TypeScript tools
+    expect(result).not.toContain("### move_file");
+    expect(result).not.toContain("### get_module_symbols");
   });
 
   it("should show all tools when category is 'all'", async () => {
@@ -59,7 +59,7 @@ describe("listToolsTool", () => {
     expect(result).toContain("LSP Tools (Language Server Protocol)");
     
     // Should include both categories
-    expect(result).toContain("find_references");
+    expect(result).toContain("move_file");
     expect(result).toContain("lsp_find_references");
   });
 
@@ -67,9 +67,9 @@ describe("listToolsTool", () => {
     const result = await listToolsTool.execute({ category: "all" });
     
     // Check for some descriptions
-    expect(result).toContain("Find all references to a TypeScript symbol");
+    expect(result).toContain("Move a TypeScript/JavaScript file");
     expect(result).toContain("Get hover information");
-    expect(result).toContain("Rename a symbol across the codebase");
+    expect(result).toContain("Search for symbols across the entire project");
   });
 
   it("should show LSP requirement indicator", async () => {
