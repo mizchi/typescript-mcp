@@ -7,10 +7,6 @@
     "readability": {
       "command": "npx",
       "args": ["-y", "@mizchi/readability", "--mcp"]
-    },
-    "dap": {
-      "command": "node",
-      "args": ["dist/dap-mcp.js"]
     }
   }
 }

@@ -10,7 +10,6 @@
     "*.spec.ts",
     "tests/**",
     "examples/**",
-    ".dap-debug-logs/**",
     "tmp/**"
   ],
   "format": ["typescript", "javascript"],

@@ -85,27 +85,48 @@ async function getDiagnosticsWithLSP(
       client.updateDocument(fileUri, fileContent, 2);
     }
     
-    // Initial wait for LSP to process the document (important for CI)
-    await new Promise<void>((resolve) => setTimeout(resolve, 100));
-
-    // Poll for diagnostics instead of fixed wait
+    // Try event-driven approach first
     let lspDiagnostics: LSPDiagnostic[] = [];
-    const maxPolls = 30; // Max 1.5 seconds (30 * 50ms)
-    const pollInterval = 50; // Poll every 50ms
-    const minPollsForNoError = 20; // Increased to 20 for CI reliability
+    let usePolling = false;
     
-    for (let poll = 0; poll < maxPolls; poll++) {
-      await new Promise<void>((resolve) => setTimeout(resolve, pollInterval));
-      lspDiagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
+    // Determine if this is a large file that might need more time
+    const lineCount = fileContent.split('\n').length;
+    const isLargeFile = lineCount > 100;
+    const eventTimeout = isLargeFile ? 3000 : 500; // Give large files much more time in CI
+    
+    try {
+      // Wait for diagnostics with event-driven approach (shorter timeout for faster fallback)
+      const diagnostics = await client.waitForDiagnostics(fileUri, eventTimeout);
+      lspDiagnostics = diagnostics as LSPDiagnostic[];
+    } catch (error) {
+      // Event-driven failed, fall back to polling
+      usePolling = true;
+    }
+    
+    // Fallback to polling if event-driven didn't work
+    if (usePolling || (lspDiagnostics.length === 0 && !client.waitForDiagnostics)) {
+      // Initial wait for LSP to process the document (important for CI)
+      const initialWait = isLargeFile ? 500 : 100; // Give large files much more initial processing time
+      await new Promise<void>((resolve) => setTimeout(resolve, initialWait));
       
-      // Break early if we have diagnostics or after minimum polls for no-error files
-      if (lspDiagnostics.length > 0 || poll >= minPollsForNoError) {
-        break;
-      }
+      // Poll for diagnostics
+      const maxPolls = isLargeFile ? 100 : 30; // Max 5 seconds for large files, 1.5 seconds for normal
+      const pollInterval = 50; // Poll every 50ms
+      const minPollsForNoError = isLargeFile ? 60 : 20; // More polls for large files
       
-      // Try updating document again after a few polls
-      if ((poll === 5 || poll === 10) && !request.virtualContent) {
-        client.updateDocument(fileUri, fileContent, poll + 1);
+      for (let poll = 0; poll < maxPolls; poll++) {
+        await new Promise<void>((resolve) => setTimeout(resolve, pollInterval));
+        lspDiagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
+        
+        // Break early if we have diagnostics or after minimum polls for no-error files
+        if (lspDiagnostics.length > 0 || poll >= minPollsForNoError) {
+          break;
+        }
+        
+        // Try updating document again after a few polls
+        if ((poll === 5 || poll === 10) && !request.virtualContent) {
+          client.updateDocument(fileUri, fileContent, poll + 1);
+        }
       }
     }
 
