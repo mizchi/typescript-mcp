@@ -1,9 +1,7 @@
 #!/bin/sh
 
-# Skip tests temporarily
-echo "Tests are temporarily disabled in pre-push hook"
-exit 0
+# Run unit tests only in pre-push (fast tests)
+echo "Running unit tests..."
+pnpm test:unit
 
-# Run tests
-# echo "Running tests..."
-# pnpm test
+# Integration tests run in CI only

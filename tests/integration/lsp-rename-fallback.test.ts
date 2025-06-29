@@ -5,8 +5,8 @@ import fs from "fs/promises";
 import {
   initialize as initializeLSPClient,
   shutdown as shutdownLSPClient,
-} from "../src/lsp/lspClient.ts";
-import { lspRenameSymbolTool } from "../src/lsp/tools/lspRenameSymbol.ts";
+} from "../../src/lsp/lspClient.ts";
+import { lspRenameSymbolTool } from "../../src/lsp/tools/lspRenameSymbol.ts";
 
 describe.skip("LSP Rename with TypeScript fallback", () => {
   let lspProcess: ChildProcess;

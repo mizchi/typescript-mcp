@@ -4,13 +4,13 @@ import {
   getLSPClient,
   initialize as initializeLSPClient,
   shutdown as shutdownLSPClient,
-} from "../src/lsp/lspClient.ts";
-import { lspGetHoverTool } from "../src/lsp/tools/lspGetHover.ts";
-import { lspFindReferencesTool } from "../src/lsp/tools/lspFindReferences.ts";
-import { lspGetDefinitionsTool } from "../src/lsp/tools/lspGetDefinitions.ts";
-import { lspGetDiagnosticsTool } from "../src/lsp/tools/lspGetDiagnostics.ts";
-import { lspRenameSymbolTool } from "../src/lsp/tools/lspRenameSymbol.ts";
-import { lspGetDocumentSymbolsTool } from "../src/lsp/tools/lspGetDocumentSymbols.ts";
+} from "../../src/lsp/lspClient.ts";
+import { lspGetHoverTool } from "../../src/lsp/tools/lspGetHover.ts";
+import { lspFindReferencesTool } from "../../src/lsp/tools/lspFindReferences.ts";
+import { lspGetDefinitionsTool } from "../../src/lsp/tools/lspGetDefinitions.ts";
+import { lspGetDiagnosticsTool } from "../../src/lsp/tools/lspGetDiagnostics.ts";
+import { lspRenameSymbolTool } from "../../src/lsp/tools/lspRenameSymbol.ts";
+import { lspGetDocumentSymbolsTool } from "../../src/lsp/tools/lspGetDocumentSymbols.ts";
 import fs from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";

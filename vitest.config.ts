@@ -1,6 +1,7 @@
 import { defineConfig } from "vitest/config";
 
 const isCI = process.env.CI === "true";
+const isIntegration = process.env.TEST_TYPE === "integration";
 
 export default defineConfig({
   test: {
@@ -10,23 +11,24 @@ export default defineConfig({
     silent: true,
     poolOptions: {
       threads: {
-        // Use single thread in local to avoid Claude Code interference
-        singleThread: !isCI,
-        // Allow more threads in CI
-        minThreads: isCI ? 2 : 1,
-        maxThreads: isCI ? 4 : 1,
+        // Use more threads for better parallelization
+        singleThread: false,
+        minThreads: 2,
+        maxThreads: 4,
       },
       forks: {
-        singleFork: true, // Run all tests in a single process in CI
+        singleFork: false, // Allow multiple processes for better parallelization
+        minThreads: 1,
+        maxThreads: isCI ? 4 : 2,
       },
     },
-    // Limit concurrent test execution for LSP tests
-    maxConcurrency: isCI ? 5 : 1,
-    // Disable global setup for TypeScript tests
-    // globalSetup: "./tests/globalSetup.ts",
-    // Increase timeout for LSP-heavy tests
-    testTimeout: isCI ? 60000 : 30000, // 60 seconds in CI, 30 seconds locally
-    hookTimeout: isCI ? 60000 : 30000, // 60 seconds in CI, 30 seconds locally
+    // Increase concurrent test execution
+    maxConcurrency: isCI ? 10 : 5,
+    // Only use global setup for integration tests
+    globalSetup: isIntegration ? "./tests/globalSetup.ts" : undefined,
+    // Different timeouts for unit vs integration tests
+    testTimeout: isIntegration ? 30000 : 5000, // 30s for integration, 5s for unit
+    hookTimeout: isIntegration ? 30000 : 5000,
     // Add hanging process reporter in CI to debug test hanging
     reporters: isCI ? ["default", "hanging-process"] : ["default"],
     // Force exit after tests complete in CI
