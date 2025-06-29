@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Format code before push
+echo "Formatting code..."
+
+# Check if there are any TypeScript files
+if [ -n "$(find src tests -name '*.ts' -o -name '*.tsx' 2>/dev/null)" ]; then
+  # Run prettier or deno fmt if available
+  if command -v deno >/dev/null 2>&1; then
+    echo "Using deno fmt..."
+    deno fmt src/ tests/
+  elif command -v prettier >/dev/null 2>&1; then
+    echo "Using prettier..."
+    prettier --write "src/**/*.ts" "tests/**/*.ts"
+  else
+    echo "No formatter found. Skipping format check."
+  fi
+  
+  # Check if any files were modified
+  if [ -n "$(git status --porcelain)" ]; then
+    echo "Files were formatted. Please commit the changes."
+    git status --short
+    exit 1
+  fi
+fi
+
+echo "Format check passed!"

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Run lint-staged for formatting and linting
+echo "Running lint-staged..."
+pnpm exec lint-staged
+
+# Run tests before commit
+echo "Running tests..."
+pnpm test
+
+# Run type check
+echo "Running type check..."
+pnpm typecheck
