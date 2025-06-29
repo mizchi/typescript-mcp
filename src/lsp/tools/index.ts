@@ -3,6 +3,7 @@ export * from "./lspGetDefinitions.ts";
 export * from "./lspGetDiagnostics.ts";
 export * from "./lspGetHover.ts";
 export * from "./lspRenameSymbol.ts";
+export * from "./lspDeleteSymbol.ts";
 export * from "./lspGetDocumentSymbols.ts";
 export * from "./lspGetWorkspaceSymbols.ts";
 export * from "./lspGetCompletion.ts";

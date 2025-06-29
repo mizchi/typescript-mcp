@@ -12,7 +12,6 @@ These tools use the TypeScript Compiler API and are **only** available for TypeS
 |------|-------------|---------------|
 | `lsmcp_move_file` | Move files and update all imports | TS/JS only |
 | `lsmcp_move_directory` | Move directories and update all imports | TS/JS only |
-| `lsmcp_delete_symbol` | Delete symbols and all references | TS/JS only |
 | `lsmcp_get_module_symbols` | Get exported symbols from modules | TS/JS only |
 | `lsmcp_get_type_in_module` | Get detailed type signatures from modules | TS/JS only |
 | `lsmcp_get_symbols_in_scope` | Get all visible symbols at a location | TS/JS only |
@@ -31,6 +30,7 @@ These tools use the Language Server Protocol and are available for **any languag
 | `lsmcp_get_diagnostics` | Get errors and warnings | `textDocument/publishDiagnostics` | All LSP servers |
 | `lsmcp_get_hover` | Get hover information | `textDocument/hover` | All LSP servers |
 | `lsmcp_rename_symbol` | Rename symbols across files | `textDocument/rename` | Most LSP servers |
+| `lsmcp_delete_symbol` | Delete symbols and all references | `textDocument/rename` + refs | Most LSP servers |
 | `lsmcp_get_document_symbols` | Get symbols in a document | `textDocument/documentSymbol` | Most LSP servers |
 | `lsmcp_get_workspace_symbols` | Search symbols in workspace | `workspace/symbol` | Most LSP servers |
 | `lsmcp_get_completion` | Get code completions | `textDocument/completion` | Most LSP servers |

@@ -44,10 +44,6 @@ These tools leverage TypeScript's powerful compiler API to provide features that
    - Updates all import/export statements across the project
    - Handles complex re-exports and barrel files
 
-8. **delete_symbol** - Delete a symbol and all references
-   - Removes imports automatically
-   - Cleans up unused code
-
 ## LSP-Based Tools
 
 These tools work with any language that has an LSP server. They provide standard IDE features across all supported languages.
@@ -59,12 +55,13 @@ These tools work with any language that has an LSP server. They provide standard
 3. **lsp_get_definitions** - Go to definition
 4. **lsp_get_diagnostics** - Get errors and warnings
 5. **lsp_rename_symbol** - Rename across the codebase
-6. **lsp_get_document_symbols** - List all symbols in a file
-7. **lsp_get_workspace_symbols** - Search symbols project-wide
-8. **lsp_get_completion** - Get code completion suggestions
-9. **lsp_get_signature_help** - Get parameter hints
-10. **lsp_get_code_actions** - Get available quick fixes
-11. **lsp_format_document** - Format code
+6. **lsp_delete_symbol** - Delete a symbol and all references
+7. **lsp_get_document_symbols** - List all symbols in a file
+8. **lsp_get_workspace_symbols** - Search symbols project-wide
+9. **lsp_get_completion** - Get code completion suggestions
+10. **lsp_get_signature_help** - Get parameter hints
+11. **lsp_get_code_actions** - Get available quick fixes
+12. **lsp_format_document** - Format code
 
 ### Language Support Requirements
 
