@@ -19,5 +19,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
+  "include": ["src/**/*", "tests/**/*"],
   "exclude": ["tests/fixtures/**/*", "playground/**/*"]
 }
