@@ -297,18 +297,73 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
           },
         },
       },
-      // Add Deno-specific initialization options
+      // Add language-specific initialization options
       initializationOptions: state.languageId === "deno" ? {
         enable: true,
         lint: true,
         unstable: true,
+      } : state.languageId === "fsharp" ? {
+        AutomaticWorkspaceInit: true,
+        WorkspaceModePeekDeepLevel: 4,
+        ExcludeProjectDirectories: [".git", "node_modules", "bin", "obj"],
+        KeywordsAutocomplete: true,
+        ExternalAutocomplete: true,
+        Linter: true,
+        UnionCaseStubGeneration: true,
+        UnionCaseStubGenerationBody: "failwith \"Not Implemented\"",
+        RecordStubGeneration: true,
+        RecordStubGenerationBody: "failwith \"Not Implemented\"",
+        InterfaceStubGeneration: true,
+        InterfaceStubGenerationObjectIdentifier: "this",
+        InterfaceStubGenerationMethodBody: "failwith \"Not Implemented\"",
+        UnusedOpensAnalyzer: true,
+        UnusedDeclarationsAnalyzer: true,
+        SimplifyNameAnalyzer: true,
+        ResolveNamespaces: true,
+        EnableAdaptiveLspServer: true,
+        EnableProjectGraphCaching: true,
+        UseTransparentCompiler: true,
       } : undefined,
     };
 
-    await sendRequest<InitializeResult>("initialize", initParams);
+    debugLog(`Initializing LSP for ${state.languageId} with params:`, JSON.stringify(initParams, null, 2));
+    const initResult = await sendRequest<InitializeResult>("initialize", initParams);
+    debugLog(`LSP initialized for ${state.languageId}:`, JSON.stringify(initResult, null, 2));
 
     // Send initialized notification
     sendNotification("initialized", {});
+    
+    // For F#, send additional configuration and load the project
+    if (state.languageId === "fsharp") {
+      // Send workspace/didChangeConfiguration to ensure settings are applied
+      debugLog(`Sending F# configuration...`);
+      sendNotification("workspace/didChangeConfiguration", {
+        settings: {
+          FSharp: {
+            AutomaticWorkspaceInit: true,
+            workspacePath: state.rootPath,
+            enableAdaptiveLspServer: true,
+          }
+        }
+      });
+      // Look for .fsproj files in the root directory
+      const fs = await import("fs/promises");
+      const path = await import("path");
+      try {
+        const files = await fs.readdir(state.rootPath);
+        const fsprojFile = files.find(f => f.endsWith(".fsproj"));
+        if (fsprojFile) {
+          const projectUri = `file://${path.join(state.rootPath, fsprojFile)}`;
+          debugLog(`Loading F# project: ${projectUri}`);
+          sendNotification("fsharp/loadProject", { projectUri });
+          // Give the F# server more time to load the project
+          debugLog(`Waiting for F# project to load...`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+      } catch (err) {
+        debugLog(`Failed to auto-load F# project: ${err}`);
+      }
+    }
   }
 
   async function start(): Promise<void> {
