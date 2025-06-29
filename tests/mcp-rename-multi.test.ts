@@ -93,7 +93,7 @@ describe("MCP rename multi-file", () => {
 
       // Perform rename via MCP
       const result = await client.callTool({
-        name: "lsmcp_rename_symbol",
+        name: "ts_rename_symbol",
         arguments: {
           root: tmpDir,
           filePath: renameFilePath!,

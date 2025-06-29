@@ -1,2 +1,0 @@
-{"timestamp":"2025-06-28T08:47:03.690Z","sessionId":"perf-tracking-test","type":"connected","data":{"adapter":"node"}}
-{"timestamp":"2025-06-28T08:47:03.694Z","sessionId":"perf-tracking-test","type":"launched","data":{"program":"/home/mizchi/mizchi/typescript-mcp/examples/dap-debugging/performance-debugging.js","args":["-e","console.log('test')"],"cwd":"/home/mizchi/mizchi/typescript-mcp/examples/dap-debugging"}}

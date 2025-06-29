@@ -163,7 +163,7 @@ async function formatRenameSymbolResult(
 }
 
 export const renameSymbolTool: ToolDef<typeof schema> = {
-  name: "lsmcp_rename_symbol",
+  name: "ts_rename_symbol",
   description:
     "Rename a TypeScript symbol (variable, function, class, etc.) across the codebase",
   schema,

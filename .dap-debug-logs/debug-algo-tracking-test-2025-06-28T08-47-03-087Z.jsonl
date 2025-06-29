@@ -1,6 +1,0 @@
-{"timestamp":"2025-06-28T08:47:03.204Z","sessionId":"algo-tracking-test","type":"connected","data":{"adapter":"node"}}
-{"timestamp":"2025-06-28T08:47:03.209Z","sessionId":"algo-tracking-test","type":"stopped","data":{"reason":"entry","threadId":1}}
-{"timestamp":"2025-06-28T08:47:03.209Z","sessionId":"algo-tracking-test","type":"launched","data":{"program":"/home/mizchi/mizchi/typescript-mcp/examples/dap-debugging/lcs-algorithm.js","args":["-e","console.log('test')"],"cwd":"/home/mizchi/mizchi/typescript-mcp/examples/dap-debugging"}}
-{"timestamp":"2025-06-28T08:47:03.212Z","sessionId":"algo-tracking-test","type":"breakpoints_set","data":{"source":"/home/mizchi/mizchi/typescript-mcp/examples/dap-debugging/lcs-algorithm.js","breakpoints":[{"id":1,"line":24},{"id":2,"line":35}]}}
-{"timestamp":"2025-06-28T08:47:03.214Z","sessionId":"algo-tracking-test","type":"continue","data":{}}
-{"timestamp":"2025-06-28T08:47:03.217Z","sessionId":"algo-tracking-test","type":"disconnected","data":{"terminateDebuggee":true}}

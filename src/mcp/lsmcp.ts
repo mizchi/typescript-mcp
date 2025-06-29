@@ -147,14 +147,48 @@ async function main() {
   // Check if custom LSP command is provided
   if (values.bin) {
     debug(`Using custom LSP command: ${values.bin}`);
-    // Use TypeScript MCP with custom LSP command
+    // Use generic LSP MCP server for non-TypeScript languages
     const env: Record<string, string | undefined> = { 
       ...process.env, 
-      LSP_COMMAND: values.bin,
-      FORCE_LSP: "true"  // Force LSP mode in typescript-mcp
+      LSP_COMMAND: values.bin
     };
     
-    await runLanguageServer("typescript", positionals, env);
+    // Get the path to the generic LSP server
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const genericServerPath = join(__dirname, "generic-lsp-mcp.js");
+    
+    if (!existsSync(genericServerPath)) {
+      const context: ErrorContext = {
+        operation: "Generic LSP MCP server startup",
+        details: { path: genericServerPath }
+      };
+      const error = new Error(`Generic LSP MCP server not found at ${genericServerPath}`);
+      console.error(formatError(error, context));
+      process.exit(1);
+    }
+    
+    debug(`Starting generic LSP MCP server: ${genericServerPath}`);
+    
+    // Forward to generic LSP server
+    const serverProcess = spawn("node", [genericServerPath, `--lsp-command=${values.bin}`, ...positionals], {
+      stdio: "inherit",
+      env,
+    });
+    
+    serverProcess.on("error", (error) => {
+      const context: ErrorContext = {
+        operation: "Generic LSP MCP server process",
+        details: { command: values.bin }
+      };
+      console.error(formatError(error, context));
+      process.exit(1);
+    });
+    
+    serverProcess.on("exit", (code) => {
+      process.exit(code || 0);
+    });
+    
     return;
   }
 

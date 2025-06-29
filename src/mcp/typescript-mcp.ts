@@ -25,6 +25,7 @@ import { lspFindReferencesTool } from "../lsp/tools/lspFindReferences.ts";
 import { lspGetDefinitionsTool } from "../lsp/tools/lspGetDefinitions.ts";
 import { lspGetDiagnosticsTool } from "../lsp/tools/lspGetDiagnostics.ts";
 import { lspRenameSymbolTool } from "../lsp/tools/lspRenameSymbol.ts";
+import { lspDeleteSymbolTool } from "../lsp/tools/lspDeleteSymbol.ts";
 import { lspGetDocumentSymbolsTool } from "../lsp/tools/lspGetDocumentSymbols.ts";
 import { lspGetCompletionTool } from "../lsp/tools/lspGetCompletion.ts";
 import { lspGetSignatureHelpTool } from "../lsp/tools/lspGetSignatureHelp.ts";
@@ -49,8 +50,6 @@ const tools: ToolDef<any>[] = [
     ? [
         moveFileTool,
         moveDirectoryTool,
-        renameSymbolTool,
-        deleteSymbolTool,
         getModuleSymbolsTool,
         getTypeInModuleTool,
         getTypeAtSymbolTool,
@@ -61,10 +60,17 @@ const tools: ToolDef<any>[] = [
         // getModuleGraphTool,
         // getRelatedModulesTool,
 
-        // TypeScript Compiler API tools (always available for TypeScript)
-        findReferencesTool,
-        getDefinitionsTool,
-        getDiagnosticsTool,
+        // TypeScript Compiler API tools with ts_ prefix
+        // Only include if LSP is not being used to avoid duplication
+        ...(USE_LSP
+          ? []
+          : [
+              findReferencesTool,
+              getDefinitionsTool,
+              getDiagnosticsTool,
+              renameSymbolTool,
+              deleteSymbolTool,
+            ]),
       ]
     : []),
   
@@ -76,6 +82,7 @@ const tools: ToolDef<any>[] = [
         lspGetDefinitionsTool,
         lspGetDiagnosticsTool,
         lspRenameSymbolTool,
+        lspDeleteSymbolTool,
         lspGetDocumentSymbolsTool,
         lspGetCompletionTool,
         lspGetSignatureHelpTool,

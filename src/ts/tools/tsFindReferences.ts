@@ -110,7 +110,7 @@ function formatFindReferencesResult(
 }
 
 export const findReferencesTool: ToolDef<typeof schema> = {
-  name: "lsmcp_find_references",
+  name: "ts_find_references",
   description:
     "Find all references to a TypeScript/JavaScript symbol across the codebase",
   schema,
