@@ -74,7 +74,7 @@ function formatGetDiagnosticsResult(
 }
 
 export const getDiagnosticsTool: ToolDef<typeof schema> = {
-  name: "lsmcp_get_diagnostics",
+  name: "ts_get_diagnostics",
   description:
     "Get TypeScript diagnostics (errors, warnings) for a single file",
   schema,

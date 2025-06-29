@@ -122,7 +122,7 @@ function formatGetDefinitionsResult(
 }
 
 export const getDefinitionsTool: ToolDef<typeof schema> = {
-  name: "lsmcp_get_definitions",
+  name: "ts_get_definitions",
   description: "Get the definition(s) of a TypeScript symbol",
   schema,
   execute: async ({ root, filePath, line, symbolName, before, after }) => {

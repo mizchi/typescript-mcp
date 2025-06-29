@@ -10,12 +10,19 @@ These tools use the TypeScript Compiler API and are **only** available for TypeS
 
 | Tool | Description | Available for |
 |------|-------------|---------------|
+| `ts_find_references` | Find references with type information | TS/JS only |
+| `ts_get_definitions` | Go to definition with TypeScript accuracy | TS/JS only |
+| `ts_get_diagnostics` | Get TypeScript diagnostics directly | TS/JS only |
+| `ts_rename_symbol` | Rename with import updates | TS/JS only |
+| `ts_delete_symbol` | Delete with automatic cleanup | TS/JS only |
 | `lsmcp_move_file` | Move files and update all imports | TS/JS only |
 | `lsmcp_move_directory` | Move directories and update all imports | TS/JS only |
 | `lsmcp_get_module_symbols` | Get exported symbols from modules | TS/JS only |
 | `lsmcp_get_type_in_module` | Get detailed type signatures from modules | TS/JS only |
 | `lsmcp_get_symbols_in_scope` | Get all visible symbols at a location | TS/JS only |
 | `lsmcp_get_type_at_symbol` | Get type information for symbols | TS/JS only |
+| `lsmcp_search_symbols` | Fast symbol search with index | TS/JS only |
+| `lsmcp_find_import_candidates` | Find import suggestions | TS/JS only |
 | `lsmcp_get_module_graph` | Get module dependency graph | TS/JS only |
 | `lsmcp_get_related_modules` | Get related modules for a file | TS/JS only |
 
