@@ -223,6 +223,9 @@ const num: number = "not a number";
       }
 
       await fs.writeFile(filePath, lines.join('\n'));
+      
+      // Wait for file write to complete and be picked up by the file watcher
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const result = await client.callTool({
         name: "lsmcp_get_diagnostics",
