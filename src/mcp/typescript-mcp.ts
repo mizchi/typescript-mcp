@@ -37,6 +37,7 @@ import * as path from "node:path";
 import { spawn } from "child_process";
 import { initialize as initializeLSPClient } from "../lsp/lspClient.ts";
 import { formatError, ErrorContext } from "./utils/errorHandler.ts";
+import { LanguageMappingConfig, setGlobalLanguageMapping } from "../lsp/languageMapping.ts";
 
 // Use LSP mode when LSP_COMMAND is provided or FORCE_LSP is set
 const USE_LSP: boolean = process.env.LSP_COMMAND != null || process.env.FORCE_LSP === "true";
@@ -141,6 +142,16 @@ async function main() {
       ? "Language Server Protocol tools for MCP" 
       : "TypeScript refactoring and analysis tools for MCP";
       
+    // Configure language mappings if provided
+    const languageMappingStr = process.env.LANGUAGE_MAPPING;
+    if (languageMappingStr) {
+      const mappings = LanguageMappingConfig.parseFromString(languageMappingStr);
+      const config = LanguageMappingConfig.createWithDefaults(); // Start with TypeScript defaults
+      config.addMappings(mappings); // Add custom mappings
+      setGlobalLanguageMapping(config);
+      debug(`Configured ${mappings.length} custom language mappings`);
+    }
+
     const server = new BaseMcpServer({
       name: serverName,
       version: "1.0.0",

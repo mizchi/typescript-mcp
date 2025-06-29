@@ -31,6 +31,7 @@ import { spawn } from "child_process";
 import { initialize as initializeLSPClient } from "../lsp/lspClient.ts";
 import { getLanguageFromLSPCommand } from "./utils/languageSupport.ts";
 import { formatError, ErrorContext } from "./utils/errorHandler.ts";
+import { LanguageMappingConfig, setGlobalLanguageMapping } from "../lsp/languageMapping.ts";
 
 // Define LSP-only tools
 const tools: ToolDef<any>[] = [
@@ -80,6 +81,15 @@ async function main() {
     }
 
     const detectedLanguage = getLanguageFromLSPCommand(lspCommand);
+    
+    // Configure language mappings if provided
+    const languageMappingStr = process.env.LANGUAGE_MAPPING;
+    if (languageMappingStr) {
+      const mappings = LanguageMappingConfig.parseFromString(languageMappingStr);
+      const config = new LanguageMappingConfig(mappings);
+      setGlobalLanguageMapping(config);
+      debug(`Configured ${mappings.length} language mappings`);
+    }
 
     // Start MCP server
     const server = new BaseMcpServer({

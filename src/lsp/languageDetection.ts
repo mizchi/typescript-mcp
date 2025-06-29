@@ -1,10 +1,19 @@
 import path from "path";
+import { getGlobalLanguageMapping } from "./languageMapping.ts";
 
 /**
  * Get the LSP language identifier from a file path
- * Based on common VSCode language identifiers
+ * First checks configured mappings, then falls back to built-in detection
  */
 export function getLanguageIdFromPath(filePath: string): string {
+  // First, check configured mappings
+  const mapping = getGlobalLanguageMapping();
+  const mappedId = mapping.getLanguageId(filePath);
+  if (mappedId) {
+    return mappedId;
+  }
+  
+  // Fall back to built-in detection for common cases
   const ext = path.extname(filePath).toLowerCase();
   
   const extensionMap: Record<string, string> = {

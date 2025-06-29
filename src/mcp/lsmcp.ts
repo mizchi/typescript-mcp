@@ -31,6 +31,10 @@ const { values, positionals } = parseArgs({
       type: 'string',
       description: 'Glob pattern for files to get diagnostics (e.g., "src/**/*.ts")'
     },
+    'language-mapping': {
+      type: 'string',
+      description: 'Language mappings as pattern:languageId pairs (e.g., "*.rs:rust,**/*.py:python")'
+    },
     help: {
       type: 'boolean',
       short: 'h',
@@ -53,11 +57,13 @@ Usage:
   lsmcp --bin <command> [options]
 
 Options:
-  -l, --language <lang>  Language to use (required unless --bin is provided)
-  --bin <command>        Custom LSP server command (e.g., "deno lsp", "rust-analyzer")
-  --include <pattern>    Glob pattern for files to get diagnostics (TypeScript/JS only)
-  --list                 List all supported languages
-  -h, --help            Show this help message
+  -l, --language <lang>     Language to use (required unless --bin is provided)
+  --bin <command>           Custom LSP server command (e.g., "deno lsp", "rust-analyzer")
+  --include <pattern>       Glob pattern for files to get diagnostics (TypeScript/JS only)
+  --language-mapping <map>  Language mappings as pattern:languageId pairs
+                           (e.g., "*.rs:rust,**/*.py:python,src/**/*.go:go")
+  --list                    List all supported languages
+  -h, --help               Show this help message
 
 Examples:
   lsmcp -l typescript          Use TypeScript MCP server
@@ -154,7 +160,8 @@ async function main() {
     // Use generic LSP MCP server for non-TypeScript languages
     const env: Record<string, string | undefined> = { 
       ...process.env, 
-      LSP_COMMAND: values.bin
+      LSP_COMMAND: values.bin,
+      ...(values['language-mapping'] && { LANGUAGE_MAPPING: values['language-mapping'] })
     };
     
     // Get the path to the generic LSP server
@@ -332,8 +339,11 @@ async function main() {
       process.exit(1);
     }
 
-    // Run the appropriate language server
-    await runLanguageServer(language, positionals);
+    // Run the appropriate language server with language mapping if provided
+    const env = values['language-mapping'] 
+      ? { LANGUAGE_MAPPING: values['language-mapping'] }
+      : undefined;
+    await runLanguageServer(language, positionals, env);
   }
 }
 
