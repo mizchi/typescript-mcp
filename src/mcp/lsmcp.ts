@@ -75,6 +75,8 @@ Environment Variables:
 }
 
 async function runLanguageServer(language: string, args: string[] = [], customEnv?: Record<string, string | undefined>) {
+  debug(`[lsmcp] runLanguageServer called with language: ${language}, args: ${JSON.stringify(args)}`);
+  
   // Only TypeScript MCP server is available now
   if (language !== "typescript" && language !== "javascript") {
     console.error(`Error: Language '${language}' is not supported in this build.`);
@@ -102,7 +104,7 @@ async function runLanguageServer(language: string, args: string[] = [], customEn
     process.exit(1);
   }
 
-  debug(`Starting ${language} MCP server: ${serverPath}`);
+  debug(`[lsmcp] Starting ${language} MCP server: ${serverPath}`);
 
   // Forward all arguments to the specific server
   const serverProcess = spawn("node", [serverPath, ...args], {
@@ -125,6 +127,8 @@ async function runLanguageServer(language: string, args: string[] = [], customEn
 }
 
 async function main() {
+  debug(`[lsmcp] main() called with values: ${JSON.stringify(values)}, positionals: ${JSON.stringify(positionals)}`);
+  
   // Show help if requested
   if (values.help) {
     showHelp();
@@ -146,7 +150,7 @@ async function main() {
 
   // Check if custom LSP command is provided
   if (values.bin) {
-    debug(`Using custom LSP command: ${values.bin}`);
+    debug(`[lsmcp] Using custom LSP command: ${values.bin}`);
     // Use generic LSP MCP server for non-TypeScript languages
     const env: Record<string, string | undefined> = { 
       ...process.env, 
@@ -308,6 +312,7 @@ async function main() {
 
   // Require either --language or --bin option
   const language = values.language || process.env.FORCE_LANGUAGE;
+  debug(`[lsmcp] Resolved language: ${language}, env.FORCE_LANGUAGE: ${process.env.FORCE_LANGUAGE}`);
 
   if (!language && !values.bin) {
     console.error("Error: Either --language or --bin option is required");
@@ -319,6 +324,7 @@ async function main() {
   }
 
   if (language) {
+    debug(`[lsmcp] Running with language: ${language}`);
     // Validate language
     if (language !== "typescript" && language !== "javascript") {
       console.error(`Error: Only TypeScript/JavaScript are supported with --language`);

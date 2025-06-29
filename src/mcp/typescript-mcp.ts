@@ -40,6 +40,7 @@ import { formatError, ErrorContext } from "./utils/errorHandler.ts";
 
 // Use LSP mode when LSP_COMMAND is provided or FORCE_LSP is set
 const USE_LSP: boolean = process.env.LSP_COMMAND != null || process.env.FORCE_LSP === "true";
+debug(`[typescript-mcp] Starting TypeScript MCP server, USE_LSP: ${USE_LSP}, LSP_COMMAND: ${process.env.LSP_COMMAND}`);
 
 // Define tools based on configuration
 const tools: ToolDef<any>[] = [

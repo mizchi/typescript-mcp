@@ -174,13 +174,24 @@ export function toMcpToolHandler<T>(
         ],
       };
     } catch (error) {
+      debug(`[MCP] Tool execution error in ${handler.name || 'unknown'}:`, error);
+      
+      // Create detailed error message
+      let errorMessage = "Error: ";
+      if (error instanceof Error) {
+        errorMessage += error.message;
+        if (process.env.DEBUG && error.stack) {
+          errorMessage += `\n\nStack trace:\n${error.stack}`;
+        }
+      } else {
+        errorMessage += String(error);
+      }
+      
       return {
         content: [
           {
             type: "text",
-            text: `Error: ${
-              error instanceof Error ? error.message : String(error)
-            }`,
+            text: errorMessage,
           },
         ],
         isError: true,
