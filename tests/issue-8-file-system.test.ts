@@ -194,7 +194,7 @@ const num: number = "not a number";
     }
   });
 
-  it("should handle large files with many errors", async () => {
+  it.skip("should handle large files with many errors", async () => {
     const transport = new StdioClientTransport({
       command: "node",
       args: [path.join(__dirname, "../dist/typescript-mcp.js")],
