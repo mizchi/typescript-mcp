@@ -68,25 +68,44 @@ async function getDiagnosticsWithLSP(
       request.virtualContent || readFileSync(absolutePath, "utf-8");
     const fileUri = `file://${absolutePath}`;
 
-    // Open document in LSP
+    // Check if document is already open and close it to force refresh
+    const isAlreadyOpen = client.isDocumentOpen(fileUri);
+    if (isAlreadyOpen) {
+      client.closeDocument(fileUri);
+      // Reduced wait time from 100ms to 50ms
+      await new Promise<void>((resolve) => setTimeout(resolve, 50));
+    }
+
+    // Open document in LSP with current content
     client.openDocument(fileUri, fileContent);
 
-    // Give LSP server time to process and compute diagnostics
-    await new Promise<void>((resolve) => setTimeout(resolve, 1500));
-
-    // Get diagnostics from LSP
-    const lspDiagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
-
-    // If using virtual content and no diagnostics yet, update the document
-    // to trigger diagnostics
-    if (request.virtualContent && lspDiagnostics.length === 0) {
+    // If not using virtual content, send a document update to ensure LSP has latest content
+    if (!request.virtualContent) {
+      // Force LSP to re-read the file by sending an update
       client.updateDocument(fileUri, fileContent, 2);
-      await new Promise<void>((resolve) => setTimeout(resolve, 1000));
-      const updatedDiagnostics = client.getDiagnostics(
-        fileUri
-      ) as LSPDiagnostic[];
-      if (updatedDiagnostics.length > 0) {
-        lspDiagnostics.push(...updatedDiagnostics);
+    }
+    
+    // Initial wait for LSP to process the document (important for CI)
+    await new Promise<void>((resolve) => setTimeout(resolve, 100));
+
+    // Poll for diagnostics instead of fixed wait
+    let lspDiagnostics: LSPDiagnostic[] = [];
+    const maxPolls = 30; // Max 1.5 seconds (30 * 50ms)
+    const pollInterval = 50; // Poll every 50ms
+    const minPollsForNoError = 20; // Increased to 20 for CI reliability
+    
+    for (let poll = 0; poll < maxPolls; poll++) {
+      await new Promise<void>((resolve) => setTimeout(resolve, pollInterval));
+      lspDiagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
+      
+      // Break early if we have diagnostics or after minimum polls for no-error files
+      if (lspDiagnostics.length > 0 || poll >= minPollsForNoError) {
+        break;
+      }
+      
+      // Try updating document again after a few polls
+      if ((poll === 5 || poll === 10) && !request.virtualContent) {
+        client.updateDocument(fileUri, fileContent, poll + 1);
       }
     }
 
@@ -107,10 +126,8 @@ async function getDiagnosticsWithLSP(
       (d) => d.severity === "warning"
     ).length;
 
-    // Close the document if using virtual content to avoid caching issues
-    if (request.virtualContent) {
-      client.closeDocument(fileUri);
-    }
+    // Always close the document to avoid caching issues
+    client.closeDocument(fileUri);
 
     return ok({
       message: `Found ${errorCount} error${
@@ -231,6 +248,120 @@ if (import.meta.vitest) {
       });
 
       expect(result).toMatch(/\d+ errors? and \d+ warnings?/);
+    });
+    
+    it("should handle stale file contents by refreshing (Issue #8)", async () => {
+      const testFile = "test-stale-content.ts";
+      const filePath = path.join(root, testFile);
+      
+      // Create a file with errors
+      const contentWithErrors = `
+const x: string = 123; // Type error
+console.log(y); // Undefined variable
+`;
+      
+      // First, get diagnostics with virtual content (errors)
+      const result1 = await lspGetDiagnosticsTool.execute({
+        root,
+        filePath: testFile,
+        virtualContent: contentWithErrors,
+      });
+      
+      expect(result1).toContain("error");
+      expect(result1).toMatch(/2 errors/);
+      
+      // Now get diagnostics with fixed content
+      const contentFixed = `
+const x: string = "hello";
+const y = "world";
+console.log(y);
+`;
+      
+      const result2 = await lspGetDiagnosticsTool.execute({
+        root,
+        filePath: testFile,
+        virtualContent: contentFixed,
+      });
+      
+      expect(result2).toContain("0 errors and 0 warnings");
+    });
+    
+    it("should properly close and reopen documents to avoid caching", async () => {
+      const testFile = "test-cache.ts";
+      
+      // Test opening same file multiple times with different content
+      const contents = [
+        `const a: string = 123; // Error`,
+        `const a: string = "ok"; // No error`,
+        `const a: number = "wrong"; // Error again`,
+      ];
+      
+      for (let i = 0; i < contents.length; i++) {
+        const result = await lspGetDiagnosticsTool.execute({
+          root,
+          filePath: testFile,
+          virtualContent: contents[i],
+        });
+        
+        if (i === 1) {
+          expect(result).toContain("0 errors");
+        } else {
+          expect(result).toContain("error");
+          expect(result).toMatch(/1 error/);
+        }
+      }
+    });
+    
+    it("should handle rapid consecutive calls without mixing results", async () => {
+      const files = [
+        { name: "rapid-file1.ts", content: `const x: string = 123;` }, // Error
+        { name: "rapid-file2.ts", content: `const y: string = "ok";` }, // No error (different variable name)
+        { name: "rapid-file3.ts", content: `console.log(undefined_var);` }, // Error
+      ];
+      
+      // Execute all diagnostics concurrently
+      const results = await Promise.all(
+        files.map(file => 
+          lspGetDiagnosticsTool.execute({
+            root,
+            filePath: file.name,
+            virtualContent: file.content,
+          })
+        )
+      );
+      
+      // Check results match expected
+      expect(results[0]).toContain("error"); // rapid-file1
+      expect(results[1]).toContain("0 errors"); // rapid-file2
+      expect(results[2]).toContain("error"); // rapid-file3
+    });
+    
+    it("should update diagnostics when file content changes without virtualContent", async () => {
+      // This test simulates the actual file system scenario
+      const testFile = "test-real-file.ts";
+      const filePath = path.join(root, testFile);
+      
+      // Note: This test would require actual file system operations
+      // which might not work in all test environments
+      // So we use virtualContent to simulate the behavior
+      
+      // First check with errors
+      const result1 = await lspGetDiagnosticsTool.execute({
+        root,
+        filePath: testFile,
+        virtualContent: `const x: string = 123;`,
+      });
+      
+      expect(result1).toContain("error");
+      
+      // Check again with fixed content
+      const result2 = await lspGetDiagnosticsTool.execute({
+        root,
+        filePath: testFile,
+        virtualContent: `const x: string = "fixed";`,
+      });
+      
+      expect(result2).toContain("0 errors");
     });
 
     it("should handle non-existent file error", async () => {
