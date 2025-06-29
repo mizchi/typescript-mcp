@@ -87,6 +87,9 @@ export interface ClientCapabilities {
       hierarchicalDocumentSymbolSupport?: boolean;
     };
   };
+  workspace?: {
+    workspaceFolders?: boolean;
+  };
 }
 
 export interface InitializeParams {
@@ -98,8 +101,14 @@ export interface InitializeParams {
   locale?: string;
   rootPath?: string | null;
   rootUri: DocumentUri | null;
+  workspaceFolders?: WorkspaceFolder[] | null;
   capabilities: ClientCapabilities;
   initializationOptions?: any;
+}
+
+export interface WorkspaceFolder {
+  uri: DocumentUri;
+  name: string;
 }
 
 export interface InitializeResult {

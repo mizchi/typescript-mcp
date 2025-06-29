@@ -1,10 +1,21 @@
-# Fsharp playground
+# Fsharp Example
 
-Does not works yet.
+Install `fsautocomplete`
 
-## How to Debug
+https://github.com/ionide/FsAutoComplete
 
-Test `.mcp.json`
+## How to use
+
+```bash
+claude mcp add fsharp npx -- -y @mizchi/lsmcp -l fsharp --bin "fsautocomplete --adaptive-lsp-server-enabled"
+```
+
+## Develop
+
+```bash
+pnpm build # build dist/lsmcp.js
+claude --mcp-config=.mcp.json
+```
 
 ```json
 {
@@ -14,68 +25,9 @@ Test `.mcp.json`
       "args": [
         "../../dist/lsmcp.js",
         "--bin",
-        "fsautocomplete --adaptive-lsp-server-enabled --verbose --log-file ./fsac.log",
-        "--language-mapping",
-        "*.fs:fsharp,*.fsx:fsharp,*.fsi:fsharp"
+        "fsautocomplete --adaptive-lsp-server-enabled"
       ]
     }
   }
 }
-```
-
-```bash
-pnpm build # build dist/lsmcp.js
-claude --mcp-config=.mcp.json
-```
-
-```
-  ⎿ Error: Error: Couldn't find /home/
-    mizchi/mizchi/typescript-mcp/examp
-    les/fsharp-project/Program.fs in
-    LoadedProjects. Have the projects
-    loaded yet or have you tried
-    restoring your project/solution?
-    Reason: An unexpected error
-    occurred
-    Solution: Check the error message
-    for details
-```
-
-fsac.log
-
-```
-2025-06-29 19:44:05.641 +09:00 [INF] Analyzers disabled
-2025-06-29 19:44:05.857 +09:00 [INF] Initialize Request {"WorkDoneToken":null,"ProcessId":{"Value":293887,"$type":"Some"},"ClientInfo":{"Value":{"Name":"lsp-client","Version":{"Value":"0.1.0","$type":"Some"},"$type":"_InitializeParamsClientInfo"},"$type":"Some"},"Locale":{"Value":"en","$type":"Some"},"RootPath":{"Value":"/home/mizchi/mizchi/typescript-mcp/examples/fsharp-project","$type":"Some"},"RootUri":{"Value":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project","$type":"Some"},"Capabilities":{"Workspace":null,"TextDocument":{"Value":{"Synchronization":{"Value":{"DynamicRegistration":{"Value":false,"$type":"Some"},"WillSave":{"Value":false,"$type":"Some"},"WillSaveWaitUntil":{"Value":false,"$type":"Some"},"DidSave":{"Value":true,"$type":"Some"},"$type":"TextDocumentSyncClientCapabilities"},"$type":"Some"},"Completion":{"Value":{"DynamicRegistration":null,"CompletionItem":{"Value":{"SnippetSupport":{"Value":true,"$type":"Some"},"CommitCharactersSupport":null,"DocumentationFormat":null,"DeprecatedSupport":null,"PreselectSupport":null,"TagSupport":null,"InsertReplaceSupport":null,"ResolveSupport":null,"InsertTextModeSupport":null,"LabelDetailsSupport":null,"$type":"CompletionClientCapabilitiesCompletionItem"},"$type":"Some"},"CompletionItemKind":null,"InsertTextMode":null,"ContextSupport":null,"CompletionList":null,"$type":"CompletionClientCapabilities"},"$type":"Some"},"Hover":{"Value":{"DynamicRegistration":null,"ContentFormat":{"Value":["Markdown","PlainText"],"$type":"Some"},"$type":"HoverClientCapabilities"},"$type":"Some"},"SignatureHelp":null,"Declaration":null,"Definition":{"Value":{"DynamicRegistration":null,"LinkSupport":{"Value":true,"$type":"Some"},"$type":"DefinitionClientCapabilities"},"$type":"Some"},"TypeDefinition":null,"Implementation":null,"References":{"Value":{"DynamicRegistration":null,"$type":"ReferenceClientCapabilities"},"$type":"Some"},"DocumentHighlight":null,"DocumentSymbol":{"Value":{"DynamicRegistration":null,"SymbolKind":null,"HierarchicalDocumentSymbolSupport":{"Value":true,"$type":"Some"},"TagSupport":null,"LabelSupport":null,"$type":"DocumentSymbolClientCapabilities"},"$type":"Some"},"CodeAction":null,"CodeLens":null,"DocumentLink":null,"ColorProvider":null,"Formatting":null,"RangeFormatting":null,"OnTypeFormatting":null,"Rename":null,"FoldingRange":null,"SelectionRange":null,"PublishDiagnostics":{"Value":{"RelatedInformation":{"Value":true,"$type":"Some"},"TagSupport":null,"VersionSupport":null,"CodeDescriptionSupport":null,"DataSupport":null,"$type":"PublishDiagnosticsClientCapabilities"},"$type":"Some"},"CallHierarchy":null,"SemanticTokens":null,"LinkedEditingRange":null,"Moniker":null,"TypeHierarchy":null,"InlineValue":null,"InlayHint":null,"Diagnostic":null,"$type":"TextDocumentClientCapabilities"},"$type":"Some"},"NotebookDocument":null,"Window":null,"General":null,"Experimental":null,"$type":"ClientCapabilities"},"InitializationOptions":null,"Trace":null,"WorkspaceFolders":null,"$type":"InitializeParams"}
-2025-06-29 19:44:05.872 +09:00 [INF] Initialization options {"AutomaticWorkspaceInit":false,"WorkspaceModePeekDeepLevel":2,"ExcludeProjectDirectories":[],"KeywordsAutocomplete":false,"ExternalAutocomplete":false,"FullNameExternalAutocomplete":false,"Linter":false,"LinterConfig":null,"IndentationSize":4,"UnionCaseStubGeneration":false,"UnionCaseStubGenerationBody":"failwith \"Not Implemented\"","RecordStubGeneration":false,"RecordStubGenerationBody":"failwith \"Not Implemented\"","AbstractClassStubGeneration":true,"AbstractClassStubGenerationObjectIdentifier":"this","AbstractClassStubGenerationMethodBody":"failwith \"Not Implemented\"","InterfaceStubGeneration":false,"InterfaceStubGenerationObjectIdentifier":"this","InterfaceStubGenerationMethodBody":"failwith \"Not Implemented\"","AddPrivateAccessModifier":false,"UnusedOpensAnalyzer":false,"UnusedOpensAnalyzerExclusions":[],"UnusedDeclarationsAnalyzer":false,"UnusedDeclarationsAnalyzerExclusions":[],"SimplifyNameAnalyzer":false,"SimplifyNameAnalyzerExclusions":[],"UnnecessaryParenthesesAnalyzer":true,"UnnecessaryParenthesesAnalyzerExclusions":[],"ResolveNamespaces":false,"EnableReferenceCodeLens":false,"EnableAnalyzers":false,"AnalyzersPath":[],"ExcludeAnalyzers":[],"IncludeAnalyzers":[],"DisableInMemoryProjectReferences":false,"LineLens":{"Enabled":"never","Prefix":"","$type":"LineLensConfig"},"UseSdkScripts":true,"DotNetRoot":"/usr/share/dotnet","FSIExtraParameters":[],"FSIExtraInteractiveParameters":[],"FSIExtraSharedParameters":[],"FSICompilerToolLocations":[],"TooltipMode":"full","GenerateBinlog":false,"CodeLenses":{"Signature":{"Enabled":true,"$type":"<>f__AnonymousType2662862109`1"},"References":{"Enabled":true,"$type":"<>f__AnonymousType2662862109`1"},"$type":"CodeLensConfig"},"InlayHints":{"typeAnnotations":true,"parameterNames":true,"disableLongTooltip":true,"$type":"InlayHintsConfig"},"InlineValues":{"Enabled":{"Value":true,"$type":"Some"},"Prefix":{"Value":"//","$type":"Some"},"$type":"InlineValuesConfig"},"Notifications":{"Trace":false,"TraceNamespaces":[],"$type":"NotificationsConfig"},"Fsac":{"CachedTypeCheckCount":200,"ParallelReferenceResolution":true,"$type":"FSACConfig"},"$type":"FSharpConfig"}
-2025-06-29 19:44:05.895 +09:00 [INF] Analyzers disabled
-2025-06-29 19:44:06.044 +09:00 [INF] Initialized request
-2025-06-29 19:44:27.564 +09:00 [INF] TextDocumentDidOpen Request: {"TextDocument":{"Uri":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs","LanguageId":"fsharp","Version":1,"Text":"﻿// For more information see https://aka.ms/fsharp-console-apps\nprintfn \"Hello from F#\"\n","$type":"TextDocumentItem"},"$type":"DidOpenTextDocumentParams"}
-2025-06-29 19:44:27.576 +09:00 [INF] TextDocumentDidChange Request: {"TextDocument":{"Uri":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs","Version":2,"$type":"VersionedTextDocumentIdentifier"},"ContentChanges":[{"Item":{"Text":"﻿// For more information see https://aka.ms/fsharp-console-apps\nprintfn \"Hello from F#\"\n","$type":"TextDocumentContentChangeEventC2"},"$type":"C2"}],"$type":"DidChangeTextDocumentParams"}
-2025-06-29 19:44:27.579 +09:00 [INF] Cancelling /home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs - 2
-2025-06-29 19:44:27.607 +09:00 [DBG] TextChanged for file : /home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs "2025-06-29T10:44:27.5782364Z" 2
-2025-06-29 19:44:28.462 +09:00 [INF] TextDocumentDidChange Request: {"TextDocument":{"Uri":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs","Version":6,"$type":"VersionedTextDocumentIdentifier"},"ContentChanges":[{"Item":{"Text":"﻿// For more information see https://aka.ms/fsharp-console-apps\nprintfn \"Hello from F#\"\n","$type":"TextDocumentContentChangeEventC2"},"$type":"C2"}],"$type":"DidChangeTextDocumentParams"}
-2025-06-29 19:44:28.463 +09:00 [INF] Cancelling /home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs - 6
-2025-06-29 19:44:28.470 +09:00 [DBG] TextChanged for file : /home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs "2025-06-29T10:44:28.4638359Z" 6
-2025-06-29 19:44:28.714 +09:00 [INF] TextDocumentDidChange Request: {"TextDocument":{"Uri":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs","Version":11,"$type":"VersionedTextDocumentIdentifier"},"ContentChanges":[{"Item":{"Text":"﻿// For more information see https://aka.ms/fsharp-console-apps\nprintfn \"Hello from F#\"\n","$type":"TextDocumentContentChangeEventC2"},"$type":"C2"}],"$type":"DidChangeTextDocumentParams"}
-2025-06-29 19:44:28.715 +09:00 [INF] Cancelling /home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs - 11
-2025-06-29 19:44:28.715 +09:00 [DBG] TextChanged for file : /home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs "2025-06-29T10:44:28.7150479Z" 11
-2025-06-29 19:44:29.223 +09:00 [INF] TextDocumentDidClose Request: {"TextDocument":{"Uri":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs","$type":"TextDocumentIdentifier"},"$type":"DidCloseTextDocumentParams"}
-2025-06-29 19:44:29.227 +09:00 [INF] Cancelling /home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs - null
-2025-06-29 19:44:29.240 +09:00 [INF] TryGetLastCheckResultForFile - "/home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs"
-2025-06-29 19:44:29.275 +09:00 [INF] File /home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs exists inside workspace so diagnostics will not be cleared
-2025-06-29 19:44:33.381 +09:00 [INF] TextDocumentDidOpen Request: {"TextDocument":{"Uri":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs","LanguageId":"fsharp","Version":1,"Text":"﻿// For more information see https://aka.ms/fsharp-console-apps\nprintfn \"Hello from F#\"\n","$type":"TextDocumentItem"},"$type":"DidOpenTextDocumentParams"}
-2025-06-29 19:44:33.889 +09:00 [INF] TextDocumentDocumentSymbol Request: {"WorkDoneToken":null,"PartialResultToken":null,"TextDocument":{"Uri":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs","$type":"TextDocumentIdentifier"},"$type":"DocumentSymbolParams"}
-2025-06-29 19:44:33.932 +09:00 [INF] TextDocumentDidClose Request: {"TextDocument":{"Uri":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs","$type":"TextDocumentIdentifier"},"$type":"DidCloseTextDocumentParams"}
-2025-06-29 19:44:33.932 +09:00 [INF] Cancelling /home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs - null
-2025-06-29 19:44:33.933 +09:00 [INF] TryGetLastCheckResultForFile - "/home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs"
-2025-06-29 19:44:33.934 +09:00 [INF] File /home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs exists inside workspace so diagnostics will not be cleared
-2025-06-29 19:44:51.715 +09:00 [INF] TextDocumentDidOpen Request: {"TextDocument":{"Uri":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs","LanguageId":"fsharp","Version":1,"Text":"﻿// For more information see https://aka.ms/fsharp-console-apps\nprintfn \"Hello from F#\"\n","$type":"TextDocumentItem"},"$type":"DidOpenTextDocumentParams"}
-2025-06-29 19:44:52.723 +09:00 [INF] TextDocumentHover Request: {"TextDocument":{"Uri":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs","$type":"TextDocumentIdentifier"},"Position":{"Line":1,"Character":0,"$type":"Position"},"WorkDoneToken":null,"$type":"HoverParams"}
-2025-06-29 19:46:12.902 +09:00 [INF] Analyzers disabled
-2025-06-29 19:46:13.089 +09:00 [INF] Initialize Request {"WorkDoneToken":null,"ProcessId":{"Value":296208,"$type":"Some"},"ClientInfo":{"Value":{"Name":"lsp-client","Version":{"Value":"0.1.0","$type":"Some"},"$type":"_InitializeParamsClientInfo"},"$type":"Some"},"Locale":{"Value":"en","$type":"Some"},"RootPath":{"Value":"/home/mizchi/mizchi/typescript-mcp/examples/fsharp-project","$type":"Some"},"RootUri":{"Value":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project","$type":"Some"},"Capabilities":{"Workspace":null,"TextDocument":{"Value":{"Synchronization":{"Value":{"DynamicRegistration":{"Value":false,"$type":"Some"},"WillSave":{"Value":false,"$type":"Some"},"WillSaveWaitUntil":{"Value":false,"$type":"Some"},"DidSave":{"Value":true,"$type":"Some"},"$type":"TextDocumentSyncClientCapabilities"},"$type":"Some"},"Completion":{"Value":{"DynamicRegistration":null,"CompletionItem":{"Value":{"SnippetSupport":{"Value":true,"$type":"Some"},"CommitCharactersSupport":null,"DocumentationFormat":null,"DeprecatedSupport":null,"PreselectSupport":null,"TagSupport":null,"InsertReplaceSupport":null,"ResolveSupport":null,"InsertTextModeSupport":null,"LabelDetailsSupport":null,"$type":"CompletionClientCapabilitiesCompletionItem"},"$type":"Some"},"CompletionItemKind":null,"InsertTextMode":null,"ContextSupport":null,"CompletionList":null,"$type":"CompletionClientCapabilities"},"$type":"Some"},"Hover":{"Value":{"DynamicRegistration":null,"ContentFormat":{"Value":["Markdown","PlainText"],"$type":"Some"},"$type":"HoverClientCapabilities"},"$type":"Some"},"SignatureHelp":null,"Declaration":null,"Definition":{"Value":{"DynamicRegistration":null,"LinkSupport":{"Value":true,"$type":"Some"},"$type":"DefinitionClientCapabilities"},"$type":"Some"},"TypeDefinition":null,"Implementation":null,"References":{"Value":{"DynamicRegistration":null,"$type":"ReferenceClientCapabilities"},"$type":"Some"},"DocumentHighlight":null,"DocumentSymbol":{"Value":{"DynamicRegistration":null,"SymbolKind":null,"HierarchicalDocumentSymbolSupport":{"Value":true,"$type":"Some"},"TagSupport":null,"LabelSupport":null,"$type":"DocumentSymbolClientCapabilities"},"$type":"Some"},"CodeAction":null,"CodeLens":null,"DocumentLink":null,"ColorProvider":null,"Formatting":null,"RangeFormatting":null,"OnTypeFormatting":null,"Rename":null,"FoldingRange":null,"SelectionRange":null,"PublishDiagnostics":{"Value":{"RelatedInformation":{"Value":true,"$type":"Some"},"TagSupport":null,"VersionSupport":null,"CodeDescriptionSupport":null,"DataSupport":null,"$type":"PublishDiagnosticsClientCapabilities"},"$type":"Some"},"CallHierarchy":null,"SemanticTokens":null,"LinkedEditingRange":null,"Moniker":null,"TypeHierarchy":null,"InlineValue":null,"InlayHint":null,"Diagnostic":null,"$type":"TextDocumentClientCapabilities"},"$type":"Some"},"NotebookDocument":null,"Window":null,"General":null,"Experimental":null,"$type":"ClientCapabilities"},"InitializationOptions":null,"Trace":null,"WorkspaceFolders":null,"$type":"InitializeParams"}
-2025-06-29 19:46:13.106 +09:00 [INF] Initialization options {"AutomaticWorkspaceInit":false,"WorkspaceModePeekDeepLevel":2,"ExcludeProjectDirectories":[],"KeywordsAutocomplete":false,"ExternalAutocomplete":false,"FullNameExternalAutocomplete":false,"Linter":false,"LinterConfig":null,"IndentationSize":4,"UnionCaseStubGeneration":false,"UnionCaseStubGenerationBody":"failwith \"Not Implemented\"","RecordStubGeneration":false,"RecordStubGenerationBody":"failwith \"Not Implemented\"","AbstractClassStubGeneration":true,"AbstractClassStubGenerationObjectIdentifier":"this","AbstractClassStubGenerationMethodBody":"failwith \"Not Implemented\"","InterfaceStubGeneration":false,"InterfaceStubGenerationObjectIdentifier":"this","InterfaceStubGenerationMethodBody":"failwith \"Not Implemented\"","AddPrivateAccessModifier":false,"UnusedOpensAnalyzer":false,"UnusedOpensAnalyzerExclusions":[],"UnusedDeclarationsAnalyzer":false,"UnusedDeclarationsAnalyzerExclusions":[],"SimplifyNameAnalyzer":false,"SimplifyNameAnalyzerExclusions":[],"UnnecessaryParenthesesAnalyzer":true,"UnnecessaryParenthesesAnalyzerExclusions":[],"ResolveNamespaces":false,"EnableReferenceCodeLens":false,"EnableAnalyzers":false,"AnalyzersPath":[],"ExcludeAnalyzers":[],"IncludeAnalyzers":[],"DisableInMemoryProjectReferences":false,"LineLens":{"Enabled":"never","Prefix":"","$type":"LineLensConfig"},"UseSdkScripts":true,"DotNetRoot":"/usr/share/dotnet","FSIExtraParameters":[],"FSIExtraInteractiveParameters":[],"FSIExtraSharedParameters":[],"FSICompilerToolLocations":[],"TooltipMode":"full","GenerateBinlog":false,"CodeLenses":{"Signature":{"Enabled":true,"$type":"<>f__AnonymousType2662862109`1"},"References":{"Enabled":true,"$type":"<>f__AnonymousType2662862109`1"},"$type":"CodeLensConfig"},"InlayHints":{"typeAnnotations":true,"parameterNames":true,"disableLongTooltip":true,"$type":"InlayHintsConfig"},"InlineValues":{"Enabled":{"Value":true,"$type":"Some"},"Prefix":{"Value":"//","$type":"Some"},"$type":"InlineValuesConfig"},"Notifications":{"Trace":false,"TraceNamespaces":[],"$type":"NotificationsConfig"},"Fsac":{"CachedTypeCheckCount":200,"ParallelReferenceResolution":true,"$type":"FSACConfig"},"$type":"FSharpConfig"}
-2025-06-29 19:46:13.137 +09:00 [INF] Analyzers disabled
-2025-06-29 19:46:13.269 +09:00 [INF] Initialized request
-2025-06-29 19:46:33.451 +09:00 [INF] TextDocumentDidOpen Request: {"TextDocument":{"Uri":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs","LanguageId":"fsharp","Version":1,"Text":"﻿// For more information see https://aka.ms/fsharp-console-apps\n\nlet add x y = x + y\n\nlet main() =\n    let result = add 5 3\n    printfn \"Hello from F#\"\n    printfn \"5 + 3 = %d\" result\n    0\n\nmain()\n","$type":"TextDocumentItem"},"$type":"DidOpenTextDocumentParams"}
-2025-06-29 19:46:34.451 +09:00 [INF] TextDocumentHover Request: {"TextDocument":{"Uri":"file:///home/mizchi/mizchi/typescript-mcp/examples/fsharp-project/Program.fs","$type":"TextDocumentIdentifier"},"Position":{"Line":2,"Character":4,"$type":"Position"},"WorkDoneToken":null,"$type":"HoverParams"}
 ```

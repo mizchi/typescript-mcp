@@ -31,7 +31,7 @@ import { spawn } from "child_process";
 import { initialize as initializeLSPClient } from "../lsp/lspClient.ts";
 import { getLanguageFromLSPCommand } from "./utils/languageSupport.ts";
 import { formatError, ErrorContext } from "./utils/errorHandler.ts";
-import { LanguageMappingConfig, setGlobalLanguageMapping } from "../lsp/languageMapping.ts";
+import { initializeLanguage } from "./utils/languageInit.ts";
 
 // Define LSP-only tools
 const tools: ToolDef<any>[] = [
@@ -82,14 +82,8 @@ async function main() {
 
     const detectedLanguage = getLanguageFromLSPCommand(lspCommand);
     
-    // Configure language mappings if provided
-    const languageMappingStr = process.env.LANGUAGE_MAPPING;
-    if (languageMappingStr) {
-      const mappings = LanguageMappingConfig.parseFromString(languageMappingStr);
-      const config = new LanguageMappingConfig(mappings);
-      setGlobalLanguageMapping(config);
-      debug(`Configured ${mappings.length} language mappings`);
-    }
+    // Language-specific initialization
+    await initializeLanguage(detectedLanguage.toLowerCase(), projectRoot);
 
     // Start MCP server
     const server = new BaseMcpServer({
@@ -125,8 +119,10 @@ async function main() {
     }
     
     try {
-      await initializeLSPClient(projectRoot, lspProcess, detectedLanguage.toLowerCase());
-      debug(`[lsp] Initialized LSP client: ${lspCommand}`);
+      // Use the detected language, but normalize it for LSP
+      const normalizedLanguage = detectedLanguage.toLowerCase().replace(/#/g, "sharp");
+      await initializeLSPClient(projectRoot, lspProcess, normalizedLanguage);
+      debug(`[lsp] Initialized LSP client: ${lspCommand} with language: ${normalizedLanguage}`);
     } catch (error) {
       const context: ErrorContext = {
         operation: "LSP client initialization",

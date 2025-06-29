@@ -11,8 +11,6 @@ import { moveFileTool } from "../ts/tools/tsMoveFile.ts";
 import { moveDirectoryTool } from "../ts/tools/tsMoveDirectory.ts";
 import { renameSymbolTool } from "../ts/tools/tsRenameSymbol.ts";
 import { deleteSymbolTool } from "../ts/tools/tsDeleteSymbol.ts";
-import { findReferencesTool } from "../ts/tools/tsFindReferences.ts";
-import { getDefinitionsTool } from "../ts/tools/tsGetDefinitions.ts";
 import { getDiagnosticsTool } from "../ts/tools/tsGetDiagnostics.ts";
 import { getModuleSymbolsTool } from "../ts/tools/tsGetModuleSymbols.ts";
 import { getTypeInModuleTool } from "../ts/tools/tsGetTypeInModule.ts";
@@ -67,8 +65,6 @@ const tools: ToolDef<any>[] = [
         ...(USE_LSP
           ? []
           : [
-              findReferencesTool,
-              getDefinitionsTool,
               getDiagnosticsTool,
               renameSymbolTool,
               deleteSymbolTool,

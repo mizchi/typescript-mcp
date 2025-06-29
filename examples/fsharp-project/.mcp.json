@@ -4,10 +4,8 @@
       "command": "node",
       "args": [
         "../../dist/lsmcp.js",
-        "--bin",
-        "fsautocomplete --adaptive-lsp-server-enabled --verbose --log-file ./fsac.log",
-        "--language-mapping",
-        "*.fs:fsharp,*.fsx:fsharp,*.fsi:fsharp"
+        "--language",
+        "fsharp"
       ]
     }
   }

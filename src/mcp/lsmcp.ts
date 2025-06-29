@@ -14,6 +14,7 @@ import { fileURLToPath } from "url";
 import { spawn } from "child_process";
 import { debug } from "./_mcplib.ts";
 import { formatError, ErrorContext } from "./utils/errorHandler.ts";
+import { getLSPCommandForLanguage, getSupportedLanguages } from "./utils/languageInit.ts";
 
 // Parse command line arguments
 const { values, positionals } = parseArgs({
@@ -30,10 +31,6 @@ const { values, positionals } = parseArgs({
     include: {
       type: 'string',
       description: 'Glob pattern for files to get diagnostics (e.g., "src/**/*.ts")'
-    },
-    'language-mapping': {
-      type: 'string',
-      description: 'Language mappings as pattern:languageId pairs (e.g., "*.rs:rust,**/*.py:python")'
     },
     help: {
       type: 'boolean',
@@ -60,8 +57,6 @@ Options:
   -l, --language <lang>     Language to use (required unless --bin is provided)
   --bin <command>           Custom LSP server command (e.g., "deno lsp", "rust-analyzer")
   --include <pattern>       Glob pattern for files to get diagnostics (TypeScript/JS only)
-  --language-mapping <map>  Language mappings as pattern:languageId pairs
-                           (e.g., "*.rs:rust,**/*.py:python,src/**/*.go:go")
   --list                    List all supported languages
   -h, --help               Show this help message
 
@@ -83,12 +78,64 @@ Environment Variables:
 async function runLanguageServer(language: string, args: string[] = [], customEnv?: Record<string, string | undefined>) {
   debug(`[lsmcp] runLanguageServer called with language: ${language}, args: ${JSON.stringify(args)}`);
   
-  // Only TypeScript MCP server is available now
+  // Handle language-specific LSP servers
   if (language !== "typescript" && language !== "javascript") {
-    console.error(`Error: Language '${language}' is not supported in this build.`);
-    console.error("Only TypeScript/JavaScript is currently supported.");
-    console.error("Use --bin option to use custom LSP servers for other languages.");
-    process.exit(1);
+    const lspCommand = getLSPCommandForLanguage(language);
+    if (!lspCommand) {
+      const supported = getSupportedLanguages();
+      console.error(`Error: Language '${language}' is not supported.`);
+      console.error(`Supported languages: typescript, javascript, ${supported.join(", ")}`);
+      console.error("Or use --bin option to specify a custom LSP server.");
+      process.exit(1);
+    }
+    
+    // Use generic LSP server with the detected command
+    debug(`[lsmcp] Using LSP command '${lspCommand}' for language '${language}'`);
+    const env: Record<string, string | undefined> = { 
+      ...process.env,
+      ...customEnv,
+      LSP_COMMAND: lspCommand,
+    };
+    
+    // Get the path to the generic LSP server
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const genericServerPath = join(__dirname, "generic-lsp-mcp.js");
+    
+    if (!existsSync(genericServerPath)) {
+      const context: ErrorContext = {
+        operation: "Generic LSP MCP server startup",
+        language,
+        details: { path: genericServerPath }
+      };
+      const error = new Error(`Generic LSP MCP server not found at ${genericServerPath}`);
+      console.error(formatError(error, context));
+      process.exit(1);
+    }
+    
+    debug(`Starting generic LSP MCP server: ${genericServerPath}`);
+    
+    // Forward to generic LSP server
+    const serverProcess = spawn("node", [genericServerPath, `--lsp-command=${lspCommand}`, ...args], {
+      stdio: "inherit",
+      env,
+    });
+    
+    serverProcess.on("error", (error) => {
+      const context: ErrorContext = {
+        operation: "Generic LSP MCP server process",
+        language,
+        details: { command: lspCommand }
+      };
+      console.error(formatError(error, context));
+      process.exit(1);
+    });
+    
+    serverProcess.on("exit", (code) => {
+      process.exit(code || 0);
+    });
+    
+    return;
   }
 
   // Get the path to the TypeScript server
@@ -143,13 +190,22 @@ async function main() {
 
   // List languages if requested
   if (values.list) {
-    console.log("Supported languages:");
+    console.log("Supported languages with --language:");
     console.log("  typescript - TypeScript files (.ts, .tsx)");
     console.log("  javascript - JavaScript files (.js, .jsx)");
-    console.log("\nFor other languages, use --bin with an LSP server:");
-    console.log("  --bin \"rust-analyzer\" for Rust");
-    console.log("  --bin \"pylsp\" for Python");
-    console.log("  --bin \"gopls\" for Go");
+    
+    const otherLanguages = getSupportedLanguages();
+    for (const lang of otherLanguages) {
+      const lspCommand = getLSPCommandForLanguage(lang);
+      if (lspCommand) {
+        console.log(`  ${lang.padEnd(10)} - ${lang.charAt(0).toUpperCase() + lang.slice(1)} [requires ${lspCommand}]`);
+      }
+    }
+    
+    console.log("\nFor other languages or custom LSP servers, use --bin:");
+    console.log("  --bin \"deno lsp\" for Deno");
+    console.log("  --bin \"clangd\" for C/C++");
+    console.log("  --bin \"jdtls\" for Java");
     process.exit(0);
   }
 
@@ -161,7 +217,6 @@ async function main() {
     const env: Record<string, string | undefined> = { 
       ...process.env, 
       LSP_COMMAND: values.bin,
-      ...(values['language-mapping'] && { LANGUAGE_MAPPING: values['language-mapping'] })
     };
     
     // Get the path to the generic LSP server
@@ -332,18 +387,8 @@ async function main() {
 
   if (language) {
     debug(`[lsmcp] Running with language: ${language}`);
-    // Validate language
-    if (language !== "typescript" && language !== "javascript") {
-      console.error(`Error: Only TypeScript/JavaScript are supported with --language`);
-      console.error("For other languages, use --bin option with an LSP server");
-      process.exit(1);
-    }
-
-    // Run the appropriate language server with language mapping if provided
-    const env = values['language-mapping'] 
-      ? { LANGUAGE_MAPPING: values['language-mapping'] }
-      : undefined;
-    await runLanguageServer(language, positionals, env);
+    // Run the appropriate language server
+    await runLanguageServer(language, positionals);
   }
 }
 

@@ -1,5 +1,19 @@
 import { EventEmitter } from "events";
-import { Position, Location, Diagnostic, WorkspaceEdit, DocumentSymbol, SymbolInformation, CompletionItem, SignatureHelp, CodeAction, Command, Range, TextEdit, FormattingOptions } from "vscode-languageserver-types";
+import {
+  Position,
+  Location,
+  Diagnostic,
+  WorkspaceEdit,
+  DocumentSymbol,
+  SymbolInformation,
+  CompletionItem,
+  SignatureHelp,
+  CodeAction,
+  Command,
+  Range,
+  TextEdit,
+  FormattingOptions,
+} from "vscode-languageserver-types";
 import { ChildProcess } from "child_process";
 import {
   LSPMessage,
@@ -28,8 +42,13 @@ import {
   FormattingResult,
 } from "./lspTypes.ts";
 import { debug } from "../mcp/_mcplib.ts";
-import { formatError, debugLog, ErrorContext } from "../mcp/utils/errorHandler.ts";
+import {
+  formatError,
+  debugLog,
+  ErrorContext,
+} from "../mcp/utils/errorHandler.ts";
 import { getLanguageIdFromPath } from "./languageDetection.ts";
+import { getLanguageInitialization } from "./languageInitialization.ts";
 
 // Re-export types for backward compatibility
 export type {
@@ -123,7 +142,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     rootPath: config.rootPath,
     languageId: config.languageId || "plaintext", // Use plaintext as fallback, actual language will be detected per file
   };
-  
+
   // Track open documents
   const openDocuments = new Set<string>();
 
@@ -185,9 +204,14 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       ) {
         // Store diagnostics for the file
         const params = message.params as PublishDiagnosticsParams;
-        state.diagnostics.set(params.uri, params.diagnostics);
+        // Filter out diagnostics with invalid ranges
+        const validDiagnostics = params.diagnostics.filter((d) => d && d.range);
+        state.diagnostics.set(params.uri, validDiagnostics);
         // Emit specific diagnostics event
-        state.eventEmitter.emit("diagnostics", params);
+        state.eventEmitter.emit("diagnostics", {
+          ...params,
+          diagnostics: validDiagnostics,
+        });
       }
       state.eventEmitter.emit("message", message);
     }
@@ -199,6 +223,15 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     }
 
     const content = JSON.stringify(message);
+
+    // Debug log for F# initialization
+    if (
+      (state.languageId === "fsharp" || state.languageId === "f#") &&
+      message.method === "initialize"
+    ) {
+      debugLog("F# Initialize message being sent:", content);
+    }
+
     const header = `Content-Length: ${Buffer.byteLength(content)}\r\n\r\n`;
     state.process.stdin?.write(header + content);
   }
@@ -222,25 +255,34 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
         const context: ErrorContext = {
           operation: method,
           language: state.languageId,
-          details: { method, params }
+          details: { method, params },
         };
-        reject(new Error(formatError(new Error(`Request '${method}' timed out after 30 seconds`), context)));
+        reject(
+          new Error(
+            formatError(
+              new Error(`Request '${method}' timed out after 30 seconds`),
+              context
+            )
+          )
+        );
       }, 30000);
-      
+
       state.responseHandlers.set(id, (response) => {
         clearTimeout(timeout);
         state.responseHandlers.delete(id);
-        
+
         if (response.error) {
           const context: ErrorContext = {
             operation: method,
             language: state.languageId,
-            details: { 
+            details: {
               errorCode: response.error.code,
-              errorData: response.error.data
-            }
+              errorData: response.error.data,
+            },
           };
-          reject(new Error(formatError(new Error(response.error.message), context)));
+          reject(
+            new Error(formatError(new Error(response.error.message), context))
+          );
         } else {
           resolve(response.result as T);
         }
@@ -269,6 +311,12 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       locale: "en",
       rootPath: state.rootPath,
       rootUri: `file://${state.rootPath}`,
+      workspaceFolders: [
+        {
+          uri: `file://${state.rootPath}`,
+          name: state.rootPath.split("/").pop() || "workspace",
+        },
+      ],
       capabilities: {
         textDocument: {
           synchronization: {
@@ -296,73 +344,38 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
             hierarchicalDocumentSymbolSupport: true,
           },
         },
+        workspace: {
+          workspaceFolders: true,
+        },
       },
       // Add language-specific initialization options
-      initializationOptions: state.languageId === "deno" ? {
-        enable: true,
-        lint: true,
-        unstable: true,
-      } : state.languageId === "fsharp" ? {
-        AutomaticWorkspaceInit: true,
-        WorkspaceModePeekDeepLevel: 4,
-        ExcludeProjectDirectories: [".git", "node_modules", "bin", "obj"],
-        KeywordsAutocomplete: true,
-        ExternalAutocomplete: true,
-        Linter: true,
-        UnionCaseStubGeneration: true,
-        UnionCaseStubGenerationBody: "failwith \"Not Implemented\"",
-        RecordStubGeneration: true,
-        RecordStubGenerationBody: "failwith \"Not Implemented\"",
-        InterfaceStubGeneration: true,
-        InterfaceStubGenerationObjectIdentifier: "this",
-        InterfaceStubGenerationMethodBody: "failwith \"Not Implemented\"",
-        UnusedOpensAnalyzer: true,
-        UnusedDeclarationsAnalyzer: true,
-        SimplifyNameAnalyzer: true,
-        ResolveNamespaces: true,
-        EnableAdaptiveLspServer: true,
-        EnableProjectGraphCaching: true,
-        UseTransparentCompiler: true,
-      } : undefined,
+      initializationOptions: getLanguageInitialization(state.languageId).initializationOptions,
     };
 
-    debugLog(`Initializing LSP for ${state.languageId} with params:`, JSON.stringify(initParams, null, 2));
-    const initResult = await sendRequest<InitializeResult>("initialize", initParams);
-    debugLog(`LSP initialized for ${state.languageId}:`, JSON.stringify(initResult, null, 2));
+    debugLog(`Language ID: ${state.languageId}`);
+    debugLog(`InitializationOptions set:`, initParams.initializationOptions);
+    debugLog(
+      `Initializing LSP for ${state.languageId} with params:`,
+      JSON.stringify(initParams, null, 2)
+    );
+    const initResult = await sendRequest<InitializeResult>(
+      "initialize",
+      initParams
+    );
+    debugLog(
+      `LSP initialized for ${state.languageId}:`,
+      JSON.stringify(initResult, null, 2)
+    );
 
     // Send initialized notification
     sendNotification("initialized", {});
-    
-    // For F#, send additional configuration and load the project
-    if (state.languageId === "fsharp") {
-      // Send workspace/didChangeConfiguration to ensure settings are applied
-      debugLog(`Sending F# configuration...`);
-      sendNotification("workspace/didChangeConfiguration", {
-        settings: {
-          FSharp: {
-            AutomaticWorkspaceInit: true,
-            workspacePath: state.rootPath,
-            enableAdaptiveLspServer: true,
-          }
-        }
-      });
-      // Look for .fsproj files in the root directory
-      const fs = await import("fs/promises");
-      const path = await import("path");
-      try {
-        const files = await fs.readdir(state.rootPath);
-        const fsprojFile = files.find(f => f.endsWith(".fsproj"));
-        if (fsprojFile) {
-          const projectUri = `file://${path.join(state.rootPath, fsprojFile)}`;
-          debugLog(`Loading F# project: ${projectUri}`);
-          sendNotification("fsharp/loadProject", { projectUri });
-          // Give the F# server more time to load the project
-          debugLog(`Waiting for F# project to load...`);
-          await new Promise(resolve => setTimeout(resolve, 5000));
-        }
-      } catch (err) {
-        debugLog(`Failed to auto-load F# project: ${err}`);
-      }
+
+    debugLog(`After initialization - Language ID: "${state.languageId}"`);
+
+    // Execute language-specific post-initialization
+    const langInit = getLanguageInitialization(state.languageId);
+    if (langInit.postInitialize) {
+      await langInit.postInitialize(sendRequest, sendNotification, state.rootPath);
     }
   }
 
@@ -372,7 +385,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     }
 
     let stderrBuffer = "";
-    
+
     state.process.stdout?.on("data", (data: Buffer) => {
       state.buffer += data.toString();
       processBuffer();
@@ -386,14 +399,16 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     state.process.on("exit", (code) => {
       debugLog(`LSP server exited with code ${code}`);
       state.process = null;
-      
+
       if (code !== 0 && code !== null) {
         const context: ErrorContext = {
           operation: "LSP server process",
           language: state.languageId,
-          details: { exitCode: code, stderr: stderrBuffer }
+          details: { exitCode: code, stderr: stderrBuffer },
         };
-        const error = new Error(`LSP server exited unexpectedly with code ${code}`);
+        const error = new Error(
+          `LSP server exited unexpectedly with code ${code}`
+        );
         debug(formatError(error, context));
       }
     });
@@ -402,7 +417,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       debugLog("LSP server error:", error);
       const context: ErrorContext = {
         operation: "LSP server startup",
-        language: state.languageId
+        language: state.languageId,
       };
       debug(formatError(error, context));
     });
@@ -413,7 +428,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     } catch (error) {
       const context: ErrorContext = {
         operation: "LSP initialization",
-        language: state.languageId
+        language: state.languageId,
       };
       throw new Error(formatError(error, context));
     }
@@ -421,8 +436,9 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
   function openDocument(uri: string, text: string, languageId?: string): void {
     // Use provided languageId, or detect from file path, or fall back to client's default
-    const actualLanguageId = languageId || getLanguageIdFromPath(uri) || state.languageId;
-    
+    const actualLanguageId =
+      languageId || getLanguageIdFromPath(uri) || state.languageId;
+
     const params: DidOpenTextDocumentParams = {
       textDocument: {
         uri,
@@ -446,7 +462,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     state.diagnostics.delete(uri);
     openDocuments.delete(uri);
   }
-  
+
   function isDocumentOpen(uri: string): boolean {
     return openDocuments.has(uri);
   }
@@ -536,7 +552,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     uri: string
   ): Promise<DocumentSymbol[] | SymbolInformation[]> {
     const params = {
-      textDocument: { uri }
+      textDocument: { uri },
     };
     const result = await sendRequest<DocumentSymbolResult>(
       "textDocument/documentSymbol",
@@ -568,18 +584,18 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       "textDocument/completion",
       params
     );
-    
+
     if (!result) {
       return [];
     }
-    
+
     // Handle both CompletionItem[] and CompletionList
     if (Array.isArray(result)) {
       return result;
     } else if ("items" in result) {
       return result.items;
     }
-    
+
     return [];
   }
 
@@ -698,9 +714,11 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       return result ?? null;
     } catch (error: any) {
       // Check if this is a TypeScript Native Preview LSP that doesn't support rename
-      if (error.message?.includes("Unhandled method") || 
-          error.message?.includes("Method not found") ||
-          error.code === -32601) {
+      if (
+        error.message?.includes("Unhandled method") ||
+        error.message?.includes("Method not found") ||
+        error.code === -32601
+      ) {
         debug("LSP server doesn't support rename, will use fallback");
         return null;
       }
@@ -720,7 +738,9 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       "workspace/applyEdit",
       params
     );
-    return result ?? { applied: false, failureReason: "No response from server" };
+    return (
+      result ?? { applied: false, failureReason: "No response from server" }
+    );
   }
 
   async function stop(): Promise<void> {
@@ -754,7 +774,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   ): Promise<Diagnostic[]> {
     return new Promise((resolve, reject) => {
       let timeoutId: NodeJS.Timeout | undefined;
-      
+
       const diagnosticsHandler = (params: PublishDiagnosticsParams) => {
         if (params.uri === fileUri) {
           if (timeoutId) clearTimeout(timeoutId);
@@ -762,13 +782,13 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
           resolve(params.diagnostics || []);
         }
       };
-      
+
       // Set up timeout
       timeoutId = setTimeout(() => {
         state.eventEmitter.off("diagnostics", diagnosticsHandler); // Remove listener
         reject(new Error(`Timeout waiting for diagnostics for ${fileUri}`));
       }, timeout);
-      
+
       // Listen for diagnostics
       state.eventEmitter.on("diagnostics", diagnosticsHandler);
     });

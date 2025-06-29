@@ -50,12 +50,12 @@ This project provides AI with functionality equivalent to Language Server Protoc
 
 ```bash
 # TypeScript/JavaScript
-claude mcp add typescript npx --scope local -- -y @mizchi/lsmcp --language=typescript
+claude mcp add typescript npx -- -y @mizchi/lsmcp --language=typescript
 
 # Other languages (use --bin with LSP command)
-claude mcp add rust npx --scope local -- -y @mizchi/lsmcp --bin="rust-analyzer" # Rust
-claude mcp add python npx --scope local -- -y @mizchi/lsmcp --bin="pylsp"       # Python
-claude mcp add go npx --scope local -- -y @mizchi/lsmcp --bin="gopls"           # Go
+claude mcp add rust npx -- -y @mizchi/lsmcp --bin="rust-analyzer" # Rust
+claude mcp add python npx -- -y @mizchi/lsmcp --bin="pylsp"       # Python
+claude mcp add go npx -- -y @mizchi/lsmcp --bin="gopls"           # Go
 ```
 
 ### 3. Start Claude
