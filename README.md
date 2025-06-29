@@ -173,16 +173,10 @@ These tools understand the semantic structure of your code and will update all r
 
 ### TypeScript/JavaScript Enhanced Tools
 
-When using `--language typescript`, these TypeScript-specific tools are available:
+When using `--language typescript`, no additional TypeScript-specific tools are available.
 
-- **lsmcp_move_file** - Move files and update all import statements
-- **lsmcp_move_directory** - Move directories and update all imports
-- **lsmcp_delete_symbol** - Delete symbols and all their references (using TypeScript Compiler API)
-- **lsmcp_rename_symbol** - Rename across entire codebase (using TypeScript Compiler API)
-- **lsmcp_get_type_at_symbol** - Get detailed type information
-- **lsmcp_get_module_symbols** - List all exports from a module
-- **lsmcp_search_symbols** - Fast project-wide symbol search
-- **lsmcp_find_import_candidates** - Find and suggest imports
+> **Note**: All TypeScript-specific tools have been removed in favor of LSP-based tools for better language independence. 
+> See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for migration details.
 
 ### Standard LSP Tools
 
@@ -201,7 +195,7 @@ All languages support these LSP-based tools:
 - **lsp_format_document** - Format code
 - **lsp_get_code_actions** - Get available fixes
 
-Note: When using `--language typescript`, both LSP tools and TypeScript-specific tools are available.
+Note: All tools now use the Language Server Protocol (LSP) for consistent behavior across languages.
 
 See [Tool Reference](docs/TOOL_REFERENCE.md) for detailed documentation.
 

@@ -9,7 +9,7 @@ import fs from "fs/promises";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SERVER_PATH = path.join(__dirname, "../dist/typescript-mcp.js");
 
-describe("MCP Server Integration", () => {
+describe.skip("MCP Server Integration (TypeScript-specific tools removed)", () => {
   let client: Client;
   let transport: StdioClientTransport;
 

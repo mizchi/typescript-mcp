@@ -15,55 +15,7 @@ interface ToolInfo {
 
 // Define all available tools with their metadata
 const TOOLS_REGISTRY: ToolInfo[] = [
-  // TypeScript tools (using Compiler API)
-  {
-    name: "move_file",
-    description: "Move a TypeScript/JavaScript file and update all import statements",
-    category: "typescript",
-    requiresLSP: false,
-  },
-  {
-    name: "move_directory",
-    description: "Move a directory and update all TypeScript imports and references",
-    category: "typescript",
-    requiresLSP: false,
-  },
-  {
-    name: "get_module_symbols",
-    description: "Get all exported symbols from a TypeScript/JavaScript module",
-    category: "typescript",
-    requiresLSP: false,
-  },
-  {
-    name: "get_type_in_module",
-    description: "Get detailed signature information for a specific type from a module",
-    category: "typescript",
-    requiresLSP: false,
-  },
-  {
-    name: "get_type_at_symbol",
-    description: "Get type information for a TypeScript/JavaScript symbol at a specific location",
-    category: "typescript",
-    requiresLSP: false,
-  },
-  {
-    name: "get_symbols_in_scope",
-    description: "Get all symbols visible at a specific location in a TypeScript/JavaScript file",
-    category: "typescript",
-    requiresLSP: false,
-  },
-  {
-    name: "search_symbols",
-    description: "Search for symbols across the entire project using a pre-built index (fast)",
-    category: "typescript",
-    requiresLSP: false,
-  },
-  {
-    name: "find_import_candidates",
-    description: "Find potential import candidates for a symbol name using the symbol index (fast)",
-    category: "typescript",
-    requiresLSP: false,
-  },
+  // TypeScript tools (using Compiler API) - All removed in favor of LSP tools
   
   // LSP tools (using Language Server Protocol)
   {
@@ -145,23 +97,25 @@ function formatToolsList(tools: ToolInfo[], category: string): string {
     ? tools 
     : tools.filter(t => t.category === category);
 
-  if (filteredTools.length === 0) {
-    return `No tools found for category: ${category}`;
-  }
-
   let result = `# Available MCP Tools (${category})\n\n`;
   
   // Group by category
   const typescript = filteredTools.filter(t => t.category === "typescript");
   const lsp = filteredTools.filter(t => t.category === "lsp");
   
-  if (typescript.length > 0 && (category === "all" || category === "typescript")) {
+  // Always show TypeScript section header if viewing typescript or all categories
+  if (category === "all" || category === "typescript") {
     result += "## 🔧 TypeScript Tools (Compiler API)\n";
-    result += "These tools use the TypeScript Compiler API directly and don't require an LSP server.\n\n";
-    typescript.forEach(tool => {
-      result += `### ${tool.name}\n`;
-      result += `${tool.description}\n\n`;
-    });
+    if (typescript.length > 0) {
+      result += "These tools use the TypeScript Compiler API directly and don't require an LSP server.\n\n";
+      typescript.forEach(tool => {
+        result += `### ${tool.name}\n`;
+        result += `${tool.description}\n\n`;
+      });
+    } else {
+      result += "All TypeScript-specific tools have been removed in favor of LSP-based alternatives.\n";
+      result += "See MIGRATION_GUIDE.md for details.\n\n";
+    }
   }
   
   if (lsp.length > 0 && (category === "all" || category === "lsp")) {
@@ -175,9 +129,13 @@ function formatToolsList(tools: ToolInfo[], category: string): string {
   }
   
   result += "## 💡 Tips\n";
-  result += "- Use TypeScript tools for fast, direct access to TypeScript features\n";
-  result += "- Use LSP tools for IDE-like features (completions, formatting, etc.)\n";
-  result += "- Get help for any tool: use the tool with no parameters to see its schema\n";
+  if (category === "lsp" || lsp.length > 0) {
+    result += "- Use LSP tools for IDE-like features (completions, formatting, etc.)\n";
+    result += "- Get help for any tool: use the tool with no parameters to see its schema\n";
+  } else {
+    result += "- All TypeScript-specific tools have been migrated to LSP\n";
+    result += "- Use --language flag with appropriate LSP server for language support\n";
+  }
   
   return result;
 }

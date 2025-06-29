@@ -105,51 +105,17 @@ export function useOldName() {
     });
   });
 
-  describe("move_file", () => {
-    it("should move a file and update imports", async () => {
-      // Create test files
-      const srcFile = path.join(tmpDir, "src.ts");
-      const importerFile = path.join(tmpDir, "importer.ts");
-      
-      await fs.writeFile(srcFile, `export const value = 42;`);
-      await fs.writeFile(importerFile, `import { value } from "./src";\nconsole.log(value);`);
-      
-      // Verify files exist before calling tool
-      await expect(fs.access(srcFile)).resolves.toBeUndefined();
-      await expect(fs.access(importerFile)).resolves.toBeUndefined();
-
-      const result = await client.callTool({
-        name: "lsmcp_move_file",
-        arguments: {
-          root: tmpDir,
-          oldPath: "src.ts",
-          newPath: "moved/src.ts",
-        }
-      });
-
-      expect(result).toBeDefined();
-      expect(result.content).toBeDefined();
-      
-      // Check for errors in the result
-      if (result.content && Array.isArray(result.content)) {
-        const content = result.content[0];
-        if (content && 'text' in content && content.text.startsWith("Error:")) {
-          throw new Error(`Tool error: ${content.text}`);
-        }
-      }
-      
-      // Verify file was moved
-      await expect(fs.access(srcFile)).rejects.toThrow();
-      await expect(fs.access(path.join(tmpDir, "moved/src.ts"))).resolves.toBeUndefined();
-      
-      // Verify import was updated
-      const importerContent = await fs.readFile(importerFile, "utf-8");
-      expect(importerContent).toContain(`import { value } from "./moved/src"`);
+  describe("move_file (removed - TypeScript-specific tool)", () => {
+    it.skip("should move a file and update imports", async () => {
+      // This test has been skipped as TypeScript-specific tools have been removed.
+      // File moving with import updates is not available in standard LSP.
     });
   });
 
-  describe("get_type_at_symbol", () => {
-    it("should get type information for a symbol", async () => {
+  describe("get_type_at_symbol (removed - use LSP hover instead)", () => {
+    it.skip("should get type information for a symbol", async () => {
+      // This test has been skipped as tsGetTypeAtSymbol has been removed.
+      // Use lsp_get_hover instead for type information.
       const testFile = path.join(tmpDir, "test.ts");
       await fs.writeFile(testFile, `
 const num = 42;
@@ -157,63 +123,25 @@ const str = "hello";
 const arr = [1, 2, 3];
 `);
 
-      const result = await client.callTool({
-        name: "lsmcp_get_type_at_symbol",
-        arguments: {
-          root: tmpDir,
-          filePath: "test.ts",
-          line: 2,
-          symbolName: "num",
-        }
-      });
+      // Example of using LSP hover instead:
+      // const result = await client.callTool({
+      //   name: "lsp_get_hover",
+      //   arguments: {
+      //     root: tmpDir,
+      //     filePath: "test.ts",
+      //     line: 2,
+      //     target: "num",
+      //   }
+      // });
 
-      expect(result).toBeDefined();
-      expect(result.content).toBeDefined();
-      const contents = result.content as Array<{ type: string; text?: string }>;
-      if (contents.length > 0) {
-        const content = contents[0];
-        if (content.type === "text" && content.text) {
-          expect(content.text).toContain("42");
-        }
-      }
+      expect(true).toBe(true); // Placeholder
     });
   });
 
-  describe("get_symbols_in_scope", () => {
-    it("should list all symbols in scope", async () => {
-      const testFile = path.join(tmpDir, "test.ts");
-      await fs.writeFile(testFile, `
-import { Result } from "neverthrow";
-
-const localVar = 10;
-type LocalType = string;
-
-function testFunction() {
-  const innerVar = 20;
-  // Get symbols here
-}
-`);
-
-      const result = await client.callTool({
-        name: "lsmcp_get_symbols_in_scope",
-        arguments: {
-          root: tmpDir,
-          filePath: "test.ts",
-          line: 8,
-        }
-      });
-
-      expect(result).toBeDefined();
-      expect(result.content).toBeDefined();
-      const contents = result.content as Array<{ type: string; text?: string }>;
-      if (contents.length > 0) {
-        const content = contents[0];
-        if (content.type === "text" && content.text) {
-          expect(content.text).toContain("innerVar");
-          expect(content.text).toContain("testFunction");
-          expect(content.text).toContain("localVar");
-        }
-      }
+  describe("get_symbols_in_scope (removed - TypeScript-specific tool)", () => {
+    it.skip("should list all symbols in scope", async () => {
+      // This test has been skipped as TypeScript-specific tools have been removed.
+      // Use lsp_get_completion for similar functionality.
     });
   });
 

@@ -7,14 +7,6 @@ import {
   debug,
   type ToolDef,
 } from "./_mcplib.ts";
-import { moveFileTool } from "../ts/tools/tsMoveFile.ts";
-import { moveDirectoryTool } from "../ts/tools/tsMoveDirectory.ts";
-import { getModuleSymbolsTool } from "../ts/tools/tsGetModuleSymbols.ts";
-import { getTypeInModuleTool } from "../ts/tools/tsGetTypeInModule.ts";
-import { getTypeAtSymbolTool } from "../ts/tools/tsGetTypeAtSymbol.ts";
-import { getSymbolsInScopeTool } from "../ts/tools/tsGetSymbolsInScope.ts";
-import { searchSymbolsTool } from "../ts/tools/tsSearchSymbols.ts";
-import { findImportCandidatesTool } from "../ts/tools/tsFindImportCandidates.ts";
 import { lspGetHoverTool } from "../lsp/tools/lspGetHover.ts";
 import { lspFindReferencesTool } from "../lsp/tools/lspFindReferences.ts";
 import { lspGetDefinitionsTool } from "../lsp/tools/lspGetDefinitions.ts";
@@ -42,22 +34,6 @@ debug(`[typescript-mcp] Starting TypeScript MCP server, USE_LSP: ${USE_LSP}, LSP
 const tools: ToolDef<any>[] = [
   listToolsTool, // Help tool to list all available tools
   
-  // Only include TypeScript-specific tools when not in forced LSP mode
-  ...(process.env.FORCE_LSP !== "true"
-    ? [
-        moveFileTool,
-        moveDirectoryTool,
-        getModuleSymbolsTool,
-        getTypeInModuleTool,
-        getTypeAtSymbolTool,
-        getSymbolsInScopeTool,
-        searchSymbolsTool,
-        findImportCandidatesTool,
-        // WIP: does not work yet correctly
-        // getModuleGraphTool,
-        // getRelatedModulesTool,
-      ]
-    : []),
   
   // LSP tools (only when LSP_COMMAND is set or FORCE_LSP is true)
   ...(USE_LSP
