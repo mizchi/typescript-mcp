@@ -65,9 +65,11 @@ describe("MCP Server Integration", () => {
 
     // Check for some expected tools
     const toolNames = tools.map(tool => tool.name);
-    expect(toolNames).toContain("ts_rename_symbol");
+    // TypeScript-specific tools (not LSP tools since we disabled LSP mode)
     expect(toolNames).toContain("lsmcp_move_file");
     expect(toolNames).toContain("lsmcp_get_type_in_module");
+    expect(toolNames).toContain("lsmcp_get_module_symbols");
+    expect(toolNames).toContain("lsmcp_search_symbols");
   });
 
   it("should call get_module_symbols tool", async () => {

@@ -17,36 +17,6 @@ interface ToolInfo {
 const TOOLS_REGISTRY: ToolInfo[] = [
   // TypeScript tools (using Compiler API)
   {
-    name: "find_references",
-    description: "Find all references to a TypeScript symbol",
-    category: "typescript",
-    requiresLSP: false,
-  },
-  {
-    name: "get_definitions", 
-    description: "Get definition(s) of a TypeScript symbol",
-    category: "typescript",
-    requiresLSP: false,
-  },
-  {
-    name: "get_diagnostics",
-    description: "Get TypeScript diagnostics (errors, warnings) for a file",
-    category: "typescript", 
-    requiresLSP: false,
-  },
-  {
-    name: "rename_symbol",
-    description: "Rename a TypeScript symbol across the codebase",
-    category: "typescript",
-    requiresLSP: false,
-  },
-  {
-    name: "delete_symbol",
-    description: "Delete a TypeScript/JavaScript symbol and all its references",
-    category: "typescript",
-    requiresLSP: false,
-  },
-  {
     name: "move_file",
     description: "Move a TypeScript/JavaScript file and update all import statements",
     category: "typescript",

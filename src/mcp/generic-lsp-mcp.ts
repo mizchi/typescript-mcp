@@ -26,7 +26,7 @@ import { lspGetCompletionTool } from "../lsp/tools/lspGetCompletion.ts";
 import { lspGetSignatureHelpTool } from "../lsp/tools/lspGetSignatureHelp.ts";
 import { lspFormatDocumentTool } from "../lsp/tools/lspFormatDocument.ts";
 import { lspGetCodeActionsTool } from "../lsp/tools/lspGetCodeActions.ts";
-import { listToolsTool } from "./tools/listTools.ts";
+import { listToolsLSPTool } from "./tools/listToolsLSP.ts";
 import { spawn } from "child_process";
 import { initialize as initializeLSPClient } from "../lsp/lspClient.ts";
 import { getLanguageFromLSPCommand } from "./utils/languageSupport.ts";
@@ -35,7 +35,7 @@ import { initializeLanguage } from "./utils/languageInit.ts";
 
 // Define LSP-only tools
 const tools: ToolDef<any>[] = [
-  listToolsTool,
+  listToolsLSPTool,
   lspGetHoverTool,
   lspFindReferencesTool,
   lspGetDefinitionsTool,

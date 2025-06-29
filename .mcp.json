@@ -1,8 +1,14 @@
 {
   "mcpServers": {
-    "lsmcp": {
+    "lsmcp-dev": {
       "command": "node",
-      "args": ["dist/lsmcp.js", "-l", "typescript"]
+      "args": [
+        "dist/lsmcp.js",
+        "-l",
+        "typescript",
+        "--bin",
+        "npx tsgo --lsp --stdio"
+      ]
     },
     "readability": {
       "command": "npx",

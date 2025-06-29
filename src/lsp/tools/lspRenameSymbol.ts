@@ -13,7 +13,6 @@ import {
   TextEdit,
   Position,
 } from "vscode-languageserver-types";
-import { renameSymbolTool as tsRenameSymbolTool } from "../../ts/tools/tsRenameSymbol.ts";
 import { debug } from "../../mcp/_mcplib.ts";
 
 
@@ -179,35 +178,7 @@ async function performRenameAtPosition(
       if (error.code === -32601 || 
           error.message?.includes("Unhandled method") ||
           error.message?.includes("Method not found")) {
-        debug("LSP server doesn't support rename, falling back to TypeScript rename tool");
-        
-        // Fall back to TypeScript rename tool
-        try {
-          await tsRenameSymbolTool.execute({
-            root: request.root,
-            filePath: request.filePath,
-            line: request.line || (targetLine + 1),
-            oldName: request.target,
-            newName: request.newName,
-          });
-          
-          // Return success with a note about the fallback
-          const absolutePath = path.resolve(request.root, request.filePath);
-          return ok({
-            message: `Renamed "${request.target}" to "${request.newName}" using TypeScript fallback`,
-            changedFiles: [{
-              filePath: absolutePath,
-              changes: [{
-                line: targetLine + 1,
-                column: symbolPosition + 1,
-                oldText: request.target,
-                newText: request.newName,
-              }],
-            }],
-          });
-        } catch (tsError: any) {
-          return err(`LSP rename not supported and TypeScript fallback failed: ${tsError.message}`);
-        }
+        return err("LSP server doesn't support rename operation");
       }
       // Re-throw other errors
       throw error;
@@ -215,34 +186,7 @@ async function performRenameAtPosition(
 
     if (!workspaceEdit) {
       // LSP returned null, try TypeScript tool as fallback
-      debug("LSP rename returned null, falling back to TypeScript rename tool");
-      
-      try {
-        await tsRenameSymbolTool.execute({
-          root: request.root,
-          filePath: request.filePath,
-          line: request.line || (targetLine + 1),
-          oldName: request.target,
-          newName: request.newName,
-        });
-        
-        // Return success with a note about the fallback
-        const absolutePath = path.resolve(request.root, request.filePath);
-        return ok({
-          message: `Renamed "${request.target}" to "${request.newName}" using TypeScript fallback`,
-          changedFiles: [{
-            filePath: absolutePath,
-            changes: [{
-              line: targetLine + 1,
-              column: symbolPosition + 1,
-              oldText: request.target,
-              newText: request.newName,
-            }],
-          }],
-        });
-      } catch (tsError: any) {
-        return err(`No changes from LSP and TypeScript fallback failed: ${tsError.message}`);
-      }
+      return err("No changes from LSP rename operation");
     }
 
     // Apply changes and format result

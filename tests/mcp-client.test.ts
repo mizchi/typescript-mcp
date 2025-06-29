@@ -73,7 +73,7 @@ describe("MCP TypeScript Tools", () => {
   }, 10000); // 10 second timeout for cleanup
 
   describe("rename_symbol", () => {
-    it("should rename a symbol in a file", async () => {
+    it.skip("should rename a symbol in a file (TypeScript-specific tool removed)", async () => {
       // Create test file
       const testFile = path.join(tmpDir, "test.ts");
       await fs.writeFile(testFile, `
@@ -84,7 +84,7 @@ export function useOldName() {
 `);
 
       const result = await client.callTool({
-        name: "ts_rename_symbol",
+        name: "lsmcp_rename_symbol",
         arguments: {
           root: tmpDir,
           filePath: "test.ts",
@@ -218,7 +218,7 @@ function testFunction() {
   });
 
   describe("delete_symbol", () => {
-    it("should delete a symbol and its references", async () => {
+    it.skip("should delete a symbol and its references (TypeScript-specific tool removed)", async () => {
       const testFile = path.join(tmpDir, "test.ts");
       await fs.writeFile(testFile, `
 export const toDelete = "value";
@@ -229,7 +229,7 @@ export const keepThis = "keep";
 `);
 
       const result = await client.callTool({
-        name: "ts_delete_symbol",
+        name: "lsmcp_delete_symbol",
         arguments: {
           root: tmpDir,
           filePath: "test.ts",

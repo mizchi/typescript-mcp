@@ -20,15 +20,14 @@ type CalculationResult = {
 }
 
 // 計算を実行して結果を返す
-let calculate op x y =
-    let result = applyOperation op x y
-    let opName = 
-        match op with
-        | _ when op = add -> "Addition"
-        | _ when op = subtract -> "Subtraction"
-        | _ when op = multiply -> "Multiplication"
-        | _ when op = divide -> "Division"
-        | _ -> "Unknown"
+let calculate opName x y =
+    let result = 
+        match opName with
+        | "add" -> add x y
+        | "subtract" -> subtract x y
+        | "multiply" -> multiply x y
+        | "divide" -> divide x y
+        | _ -> failwith "Unknown operation"
     { Operation = opName; Result = result }
 
 // パターンマッチングの例
