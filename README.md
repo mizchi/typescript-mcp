@@ -173,12 +173,12 @@ These tools understand the semantic structure of your code and will update all r
 
 ### TypeScript/JavaScript Enhanced Tools
 
-In addition to standard LSP tools, TypeScript/JavaScript projects have access to:
+When using `--language typescript`, these TypeScript-specific tools are available:
 
 - **lsmcp_move_file** - Move files and update all import statements
 - **lsmcp_move_directory** - Move directories and update all imports
-- **lsmcp_delete_symbol** - Delete symbols and all their references
-- **lsmcp_rename_symbol** - Rename across entire codebase
+- **lsmcp_delete_symbol** - Delete symbols and all their references (using TypeScript Compiler API)
+- **lsmcp_rename_symbol** - Rename across entire codebase (using TypeScript Compiler API)
 - **lsmcp_get_type_at_symbol** - Get detailed type information
 - **lsmcp_get_module_symbols** - List all exports from a module
 - **lsmcp_search_symbols** - Fast project-wide symbol search
@@ -188,17 +188,20 @@ In addition to standard LSP tools, TypeScript/JavaScript projects have access to
 
 All languages support these LSP-based tools:
 
-- **lsmcp_get_hover** - Get documentation and type info
-- **lsmcp_get_definitions** - Go to definition
-- **lsmcp_find_references** - Find all references
-- **lsmcp_get_diagnostics** - Get errors and warnings
-- **lsmcp_get_document_symbols** - List symbols in file
-- **lsmcp_get_workspace_symbols** - Search project symbols
-- **lsmcp_rename_symbol** - Rename (LSP-based)
-- **lsmcp_get_completion** - Get code completions
-- **lsmcp_get_signature_help** - Get function signatures
-- **lsmcp_format_document** - Format code
-- **lsmcp_get_code_actions** - Get available fixes
+- **lsp_get_hover** - Get documentation and type info
+- **lsp_get_definitions** - Go to definition
+- **lsp_find_references** - Find all references
+- **lsp_get_diagnostics** - Get errors and warnings
+- **lsp_get_document_symbols** - List symbols in file
+- **lsp_get_workspace_symbols** - Search project symbols
+- **lsp_rename_symbol** - Rename (LSP-based)
+- **lsp_delete_symbol** - Delete symbols (LSP-based)
+- **lsp_get_completion** - Get code completions
+- **lsp_get_signature_help** - Get function signatures
+- **lsp_format_document** - Format code
+- **lsp_get_code_actions** - Get available fixes
+
+Note: When using `--language typescript`, both LSP tools and TypeScript-specific tools are available.
 
 See [Tool Reference](docs/TOOL_REFERENCE.md) for detailed documentation.
 
@@ -211,11 +214,17 @@ I have lsmcp MCP server connected, which provides LSP-based code intelligence to
 
 Available tools:
 
-- lsmcp_find_references - Find all usages of a symbol
-- lsmcp_get_definitions - Jump to definition
-- lsmcp_rename_symbol - Rename across project
-- lsmcp_get_diagnostics - Get errors/warnings
+- lsp_find_references - Find all usages of a symbol
+- lsp_get_definitions - Jump to definition
+- lsp_rename_symbol - Rename across project
+- lsp_get_diagnostics - Get errors/warnings
   [... other tools based on your language ...]
+
+For TypeScript projects with --language typescript:
+- lsmcp_rename_symbol - TypeScript-aware rename
+- lsmcp_move_file - Move files with import updates
+- lsmcp_search_symbols - Fast symbol search
+  [... and other TypeScript-specific tools ...]
 
 Please use these tools to explore the codebase and perform refactoring operations.
 ```
@@ -294,6 +303,12 @@ typescript-language-server --stdio
 ## License
 
 MIT - See [LICENSE](LICENSE) file for details.
+
+## Recent Updates
+
+- **v0.5.2** (2025-01-29) - Consolidated TypeScript tools, removed duplicates in favor of LSP implementations
+- **v0.5.1** - Added F# language support with dedicated initialization
+- **v0.5.0** - Unified lsmcp CLI for all languages
 
 ## Changelog
 

@@ -13,8 +13,8 @@ Given a URL, use read_url_content_as_markdown and summary contents.
 1. **Symbol Analysis** (ALWAYS use these before Read/Grep):
    - `mcp__typescript__lsmcp_search_symbols` - Search for any symbol across the project
    - `mcp__typescript__lsmcp_get_symbols_in_scope` - Understand available symbols at a location
-   - `mcp__typescript__lsmcp_find_references` - Find all usages of a symbol
-   - `mcp__typescript__lsmcp_get_definitions` - Jump to symbol definitions
+   - `mcp__lsmcp__lsp_find_references` - Find all usages of a symbol (via LSP)
+   - `mcp__lsmcp__lsp_get_definitions` - Jump to symbol definitions (via LSP)
 
 2. **Type Information** (NEVER use Read for understanding types):
    - `mcp__typescript__lsmcp_get_type_at_symbol` - Get complete type information
@@ -25,7 +25,7 @@ Given a URL, use read_url_content_as_markdown and summary contents.
    - `mcp__typescript__lsmcp_find_import_candidates` - Find where to import from
 
 4. **Diagnostics** (ALWAYS for error checking):
-   - `mcp__typescript__lsmcp_get_diagnostics` - Get TypeScript errors/warnings
+   - `mcp__lsmcp__lsp_get_diagnostics` - Get errors/warnings (via LSP)
 
 #### Example Scenarios:
 
@@ -37,8 +37,8 @@ Read file.ts → Grep for "functionName"
 **✅ CORRECT**: Using lsmcp tools
 ```
 mcp__typescript__lsmcp_search_symbols with query="functionName"
-→ mcp__typescript__lsmcp_get_definitions to see implementation
-→ mcp__typescript__lsmcp_find_references to see usage
+→ mcp__lsmcp__lsp_get_definitions to see implementation
+→ mcp__lsmcp__lsp_find_references to see usage
 ```
 
 **❌ WRONG**: Reading files to understand code structure
@@ -59,10 +59,10 @@ mcp__typescript__lsmcp_get_module_symbols for exports
 
 Specifically for refactoring:
 
-- For renaming symbols: ALWAYS use `mcp__lsmcp__lsmcp_rename_symbol` or `mcp__typescript__lsmcp_rename_symbol`
+- For renaming symbols: ALWAYS use `mcp__typescript__lsmcp_rename_symbol` for TypeScript or `mcp__lsmcp__lsp_rename_symbol` for LSP
 - For moving files: ALWAYS use `mcp__typescript__lsmcp_move_file` instead of Bash(mv) or Write
 - For moving directories: ALWAYS use `mcp__typescript__lsmcp_move_directory` instead of Bash(mv)
-- For finding references: ALWAYS use `mcp__lsmcp__lsmcp_find_references` instead of Grep/Bash(grep)
+- For finding references: ALWAYS use `mcp__lsmcp__lsp_find_references` instead of Grep/Bash(grep)
 - For type analysis: ALWAYS use `mcp__typescript__lsmcp_get_type_*` tools
 
 **NEVER use Edit, MultiEdit, or Write tools for TypeScript refactoring operations that have a corresponding lsmcp_* tool.**
@@ -73,9 +73,9 @@ Specifically for refactoring:
 |------|--------------|----------------|
 | Find a function/class/variable | Read + Grep | `lsmcp_search_symbols` |
 | Understand what a symbol is | Read file | `lsmcp_get_type_at_symbol` |
-| Find where symbol is used | Grep | `lsmcp_find_references` |
+| Find where symbol is used | Grep | `lsp_find_references` |
 | See module exports | Read file | `lsmcp_get_module_symbols` |
-| Check for errors | Read output | `lsmcp_get_diagnostics` |
+| Check for errors | Read output | `lsp_get_diagnostics` |
 | Rename variable/function | Edit/MultiEdit | `lsmcp_rename_symbol` |
 | Move file | Bash mv | `lsmcp_move_file` |
 | Find import location | Grep/Read | `lsmcp_find_import_candidates` |
@@ -252,9 +252,9 @@ AI はワードカウントが苦手なので、LSPのLine Character ではな�
 ## Tool Categories
 
 ### TypeScript-specific Tools (Compiler API)
-These tools use TypeScript Compiler API directly and provide advanced features:
+These tools use TypeScript Compiler API directly and provide advanced features (only available with `--language typescript`):
 - `lsmcp_move_file`, `lsmcp_move_directory` - Move with import updates
-- `lsmcp_rename_symbol`, `lsmcp_delete_symbol` - Semantic refactoring
+- `lsmcp_rename_symbol`, `lsmcp_delete_symbol` - Semantic refactoring with TypeScript Compiler API
 - `lsmcp_get_type_at_symbol`, `lsmcp_get_module_symbols` - Type analysis
 - `lsmcp_search_symbols`, `lsmcp_find_import_candidates` - Fast indexing
 - `lsmcp_get_symbols_in_scope` - Scope analysis
@@ -267,9 +267,22 @@ These tools work with any language that has an LSP server:
 - `lsp_get_completion`, `lsp_get_signature_help`
 - `lsp_get_code_actions`, `lsp_format_document`
 
+Note: When using `--language typescript`, LSP tools are also available alongside TypeScript-specific tools.
+
 ## Recent Changes (2025-01-29)
 
-1. **Test Performance Optimization**
+1. **TypeScript Tool Consolidation**
+   - Removed duplicate TypeScript tools in favor of LSP implementations:
+     - Removed `ts_find_references`, `ts_get_definitions`, `ts_get_diagnostics`
+     - Removed `ts_rename_symbol`, `ts_delete_symbol`
+   - LSP tools now handle all reference/definition/diagnostic operations
+   - TypeScript-specific tools only appear with `--language typescript`
+
+2. **F# Language Support Separation**
+   - Moved F#-specific initialization to `src/fsharp/` directory
+   - Created modular language initialization system
+
+3. **Test Performance Optimization**
    - Fixed LSP process pool to use direct `node_modules/.bin/` paths instead of `npx`
    - Disabled global setup for non-LSP tests
    - Skipped slow `lspGetDiagnostics` test that was timing out
