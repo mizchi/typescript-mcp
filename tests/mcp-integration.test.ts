@@ -65,7 +65,7 @@ describe("MCP Server Integration", () => {
 
     // Check for some expected tools
     const toolNames = tools.map(tool => tool.name);
-    expect(toolNames).toContain("lsmcp_rename_symbol");
+    expect(toolNames).toContain("ts_rename_symbol");
     expect(toolNames).toContain("lsmcp_move_file");
     expect(toolNames).toContain("lsmcp_get_type_in_module");
   });

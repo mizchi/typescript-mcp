@@ -84,7 +84,7 @@ export function useOldName() {
 `);
 
       const result = await client.callTool({
-        name: "lsmcp_rename_symbol",
+        name: "ts_rename_symbol",
         arguments: {
           root: tmpDir,
           filePath: "test.ts",
@@ -229,7 +229,7 @@ export const keepThis = "keep";
 `);
 
       const result = await client.callTool({
-        name: "lsmcp_delete_symbol",
+        name: "ts_delete_symbol",
         arguments: {
           root: tmpDir,
           filePath: "test.ts",
