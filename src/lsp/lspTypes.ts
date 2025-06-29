@@ -200,6 +200,7 @@ export type LSPClient = {
   openDocument: (uri: string, text: string) => void;
   closeDocument: (uri: string) => void;
   updateDocument: (uri: string, text: string, version: number) => void;
+  isDocumentOpen: (uri: string) => boolean;
   findReferences: (uri: string, position: Position) => Promise<Location[]>;
   getDefinition: (
     uri: string,

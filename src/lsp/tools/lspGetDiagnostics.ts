@@ -68,26 +68,34 @@ async function getDiagnosticsWithLSP(
       request.virtualContent || readFileSync(absolutePath, "utf-8");
     const fileUri = `file://${absolutePath}`;
 
-    // Open document in LSP
+    // Check if document is already open and close it to force refresh
+    const isAlreadyOpen = client.isDocumentOpen(fileUri);
+    if (isAlreadyOpen) {
+      client.closeDocument(fileUri);
+      // Give LSP server time to process the close
+      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+    }
+
+    // Open document in LSP with current content
     client.openDocument(fileUri, fileContent);
+
+    // If not using virtual content, send a document update to ensure LSP has latest content
+    if (!request.virtualContent) {
+      // Force LSP to re-read the file by sending an update
+      client.updateDocument(fileUri, fileContent, 2);
+    }
 
     // Give LSP server time to process and compute diagnostics
     await new Promise<void>((resolve) => setTimeout(resolve, 1500));
 
     // Get diagnostics from LSP
-    const lspDiagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
+    let lspDiagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
 
-    // If using virtual content and no diagnostics yet, update the document
-    // to trigger diagnostics
-    if (request.virtualContent && lspDiagnostics.length === 0) {
-      client.updateDocument(fileUri, fileContent, 2);
+    // If no diagnostics yet, try updating the document again to trigger diagnostics
+    if (lspDiagnostics.length === 0) {
+      client.updateDocument(fileUri, fileContent, 3);
       await new Promise<void>((resolve) => setTimeout(resolve, 1000));
-      const updatedDiagnostics = client.getDiagnostics(
-        fileUri
-      ) as LSPDiagnostic[];
-      if (updatedDiagnostics.length > 0) {
-        lspDiagnostics.push(...updatedDiagnostics);
-      }
+      lspDiagnostics = client.getDiagnostics(fileUri) as LSPDiagnostic[];
     }
 
     // Convert LSP diagnostics to our format
@@ -107,10 +115,8 @@ async function getDiagnosticsWithLSP(
       (d) => d.severity === "warning"
     ).length;
 
-    // Close the document if using virtual content to avoid caching issues
-    if (request.virtualContent) {
-      client.closeDocument(fileUri);
-    }
+    // Always close the document to avoid caching issues
+    client.closeDocument(fileUri);
 
     return ok({
       message: `Found ${errorCount} error${

@@ -122,6 +122,9 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     rootPath: config.rootPath,
     languageId: config.languageId || "typescript",
   };
+  
+  // Track open documents
+  const openDocuments = new Set<string>();
 
   function processBuffer(): void {
     while (state.buffer.length > 0) {
@@ -368,6 +371,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
       },
     };
     sendNotification("textDocument/didOpen", params);
+    openDocuments.add(uri);
   }
 
   function closeDocument(uri: string): void {
@@ -379,6 +383,11 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     sendNotification("textDocument/didClose", params);
     // Also clear diagnostics for this document
     state.diagnostics.delete(uri);
+    openDocuments.delete(uri);
+  }
+  
+  function isDocumentOpen(uri: string): boolean {
+    return openDocuments.has(uri);
   }
 
   function updateDocument(uri: string, text: string, version: number): void {
@@ -684,6 +693,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     openDocument,
     closeDocument,
     updateDocument,
+    isDocumentOpen,
     findReferences,
     getDefinition,
     getHover,
