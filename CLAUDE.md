@@ -2,83 +2,31 @@ You are a TypeScript/MCP expert developing the lsmcp tool - a unified Language S
 
 Given a URL, use read_url_content_as_markdown and summary contents.
 
-## CRITICAL: Tool Usage Priority for Code Analysis and Refactoring
+## Tool Usage Guidelines
 
-### 🔍 Code Analysis - ALWAYS Use lsmcp Tools First
+### TypeScript/JavaScript Projects
 
-**When analyzing TypeScript/JavaScript code, you MUST prioritize lsmcp MCP tools over basic file reading tools.**
+When using `--language typescript`, prefer TypeScript-specific tools for better semantic understanding:
 
-#### Mandatory Analysis Workflow:
+- **lsmcp_search_symbols** - Fast symbol search across the project
+- **lsmcp_rename_symbol** - Semantic rename with TypeScript Compiler API
+- **lsmcp_move_file** - Move files with automatic import updates
+- **lsmcp_get_type_at_symbol** - Get detailed type information
 
-1. **Symbol Analysis** (ALWAYS use these before Read/Grep):
-   - `mcp__typescript__lsmcp_search_symbols` - Search for any symbol across the project
-   - `mcp__typescript__lsmcp_get_symbols_in_scope` - Understand available symbols at a location
-   - `mcp__lsmcp__lsp_find_references` - Find all usages of a symbol (via LSP)
-   - `mcp__lsmcp__lsp_get_definitions` - Jump to symbol definitions (via LSP)
+### All Languages (via LSP)
 
-2. **Type Information** (NEVER use Read for understanding types):
-   - `mcp__typescript__lsmcp_get_type_at_symbol` - Get complete type information
-   - `mcp__typescript__lsmcp_get_type_in_module` - Analyze module exports
-   - `mcp__typescript__lsmcp_get_module_symbols` - List all exports from a module
+For all languages, use LSP tools for standard operations:
 
-3. **Import Analysis** (ALWAYS for import-related questions):
-   - `mcp__typescript__lsmcp_find_import_candidates` - Find where to import from
+- **lsp_find_references** - Find all usages of a symbol
+- **lsp_get_definitions** - Jump to definition
+- **lsp_get_diagnostics** - Get errors and warnings
+- **lsp_rename_symbol** - Rename symbols
 
-4. **Diagnostics** (ALWAYS for error checking):
-   - `mcp__lsmcp__lsp_get_diagnostics` - Get errors/warnings (via LSP)
+### Refactoring Best Practices
 
-#### Example Scenarios:
-
-**❌ WRONG**: Using Read/Grep to find a function
-```
-Read file.ts → Grep for "functionName"
-```
-
-**✅ CORRECT**: Using lsmcp tools
-```
-mcp__typescript__lsmcp_search_symbols with query="functionName"
-→ mcp__lsmcp__lsp_get_definitions to see implementation
-→ mcp__lsmcp__lsp_find_references to see usage
-```
-
-**❌ WRONG**: Reading files to understand code structure
-```
-Read src/index.ts → Read src/utils.ts → ...
-```
-
-**✅ CORRECT**: Using semantic analysis
-```
-mcp__typescript__lsmcp_get_module_symbols for exports
-→ mcp__typescript__lsmcp_get_type_in_module for details
-→ mcp__typescript__lsmcp_get_symbols_in_scope for context
-```
-
-### 🔧 Refactoring - MANDATORY lsmcp Usage
-
-**When performing refactoring operations on TypeScript/JavaScript code, ALWAYS use lsmcp MCP tools instead of the default Edit/Write tools.**
-
-Specifically for refactoring:
-
-- For renaming symbols: ALWAYS use `mcp__typescript__lsmcp_rename_symbol` for TypeScript or `mcp__lsmcp__lsp_rename_symbol` for LSP
-- For moving files: ALWAYS use `mcp__typescript__lsmcp_move_file` instead of Bash(mv) or Write
-- For moving directories: ALWAYS use `mcp__typescript__lsmcp_move_directory` instead of Bash(mv)
-- For finding references: ALWAYS use `mcp__lsmcp__lsp_find_references` instead of Grep/Bash(grep)
-- For type analysis: ALWAYS use `mcp__typescript__lsmcp_get_type_*` tools
-
-**NEVER use Edit, MultiEdit, or Write tools for TypeScript refactoring operations that have a corresponding lsmcp_* tool.**
-
-### 📋 Quick Reference - Tool Selection Guide
-
-| Task | ❌ Don't Use | ✅ Use Instead |
-|------|--------------|----------------|
-| Find a function/class/variable | Read + Grep | `lsmcp_search_symbols` |
-| Understand what a symbol is | Read file | `lsmcp_get_type_at_symbol` |
-| Find where symbol is used | Grep | `lsp_find_references` |
-| See module exports | Read file | `lsmcp_get_module_symbols` |
-| Check for errors | Read output | `lsp_get_diagnostics` |
-| Rename variable/function | Edit/MultiEdit | `lsmcp_rename_symbol` |
-| Move file | Bash mv | `lsmcp_move_file` |
-| Find import location | Grep/Read | `lsmcp_find_import_candidates` |
+- For moving files in TypeScript: Use `lsmcp_move_file` (not `mv` or manual edits)
+- For renaming in TypeScript: Use `lsmcp_rename_symbol` for better accuracy
+- For other languages: Use `lsp_rename_symbol`
 
 ## Project Goal
 
