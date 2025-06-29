@@ -34,7 +34,9 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
+    "@types/micromatch": "^4.0.9",
     "glob": "^11.0.3",
+    "micromatch": "^4.0.8",
     "neverthrow": "^8.2.0",
     "ts-blank-space": "^0.6.1",
     "ts-morph": "^26.0.0",

@@ -87,6 +87,9 @@ export interface ClientCapabilities {
       hierarchicalDocumentSymbolSupport?: boolean;
     };
   };
+  workspace?: {
+    workspaceFolders?: boolean;
+  };
 }
 
 export interface InitializeParams {
@@ -98,8 +101,14 @@ export interface InitializeParams {
   locale?: string;
   rootPath?: string | null;
   rootUri: DocumentUri | null;
+  workspaceFolders?: WorkspaceFolder[] | null;
   capabilities: ClientCapabilities;
   initializationOptions?: any;
+}
+
+export interface WorkspaceFolder {
+  uri: DocumentUri;
+  name: string;
 }
 
 export interface InitializeResult {
@@ -197,7 +206,7 @@ export interface LSPClientConfig {
 export type LSPClient = {
   start: () => Promise<void>;
   stop: () => Promise<void>;
-  openDocument: (uri: string, text: string) => void;
+  openDocument: (uri: string, text: string, languageId?: string) => void;
   closeDocument: (uri: string) => void;
   updateDocument: (uri: string, text: string, version: number) => void;
   isDocumentOpen: (uri: string) => boolean;

@@ -44,33 +44,48 @@ function formatDocumentSymbol(
   symbol: DocumentSymbol,
   indent: string = ""
 ): string {
-  const kind = getSymbolKindName(symbol.kind);
-  const deprecated = symbol.deprecated ? " (deprecated)" : "";
-  let result = `${indent}${symbol.name} [${kind}]${deprecated}`;
-  
-  if (symbol.detail) {
-    result += ` - ${symbol.detail}`;
-  }
-  
-  result += `\n${indent}  Range: ${formatRange(symbol.range)}`;
-  
-  if (symbol.children && symbol.children.length > 0) {
-    result += "\n";
-    for (const child of symbol.children) {
-      result += "\n" + formatDocumentSymbol(child, indent + "  ");
+  try {
+    const kind = symbol.kind !== undefined ? getSymbolKindName(symbol.kind) : "Unknown";
+    const deprecated = symbol.deprecated ? " (deprecated)" : "";
+    const name = symbol.name || "Unnamed";
+    let result = `${indent}${name} [${kind}]${deprecated}`;
+    
+    if (symbol.detail) {
+      result += ` - ${symbol.detail}`;
     }
+    
+    if (symbol.range) {
+      result += `\n${indent}  Range: ${formatRange(symbol.range)}`;
+    }
+    
+    if (symbol.children && symbol.children.length > 0) {
+      result += "\n";
+      for (const child of symbol.children) {
+        result += "\n" + formatDocumentSymbol(child, indent + "  ");
+      }
+    }
+    
+    return result;
+  } catch (err) {
+    return `${indent}Error formatting symbol: ${err}`;
   }
-  
-  return result;
 }
 
 function formatSymbolInformation(symbol: SymbolInformation): string {
-  const kind = getSymbolKindName(symbol.kind);
-  const deprecated = symbol.deprecated ? " (deprecated)" : "";
-  const container = symbol.containerName ? ` in ${symbol.containerName}` : "";
-  
-  return `${symbol.name} [${kind}]${deprecated}${container}
-  ${formatLocation(symbol.location)}`;
+  try {
+    const kind = symbol.kind !== undefined ? getSymbolKindName(symbol.kind) : "Unknown";
+    const deprecated = symbol.deprecated ? " (deprecated)" : "";
+    const container = symbol.containerName ? ` in ${symbol.containerName}` : "";
+    const name = symbol.name || "Unnamed";
+    
+    let result = `${name} [${kind}]${deprecated}${container}`;
+    if (symbol.location && symbol.location.range) {
+      result += `\n  ${formatLocation(symbol.location)}`;
+    }
+    return result;
+  } catch (err) {
+    return `Error formatting symbol: ${err}`;
+  }
 }
 
 async function handleGetDocumentSymbols({
@@ -96,15 +111,30 @@ async function handleGetDocumentSymbols({
     let result = `Document symbols in ${filePath}:\n\n`;
     
     // Check if we have DocumentSymbol[] or SymbolInformation[]
-    if ("children" in symbols[0]) {
-      // DocumentSymbol[] - hierarchical format
-      for (const symbol of symbols as DocumentSymbol[]) {
-        result += formatDocumentSymbol(symbol) + "\n\n";
+    // FSAutoComplete may return DocumentSymbol without some optional properties
+    try {
+      for (const symbol of symbols) {
+        // Check each symbol individually to determine its type
+        if ("location" in symbol && symbol.location) {
+          // This is a SymbolInformation
+          result += formatSymbolInformation(symbol as SymbolInformation) + "\n\n";
+        } else if ("range" in symbol || "children" in symbol || "selectionRange" in symbol) {
+          // This is a DocumentSymbol
+          result += formatDocumentSymbol(symbol as DocumentSymbol) + "\n\n";
+        } else {
+          // Unknown format, try to format what we can
+          const kind = symbol.kind ? getSymbolKindName(symbol.kind) : "Unknown";
+          const name = symbol.name || "Unnamed";
+          result += `${name} [${kind}]\n\n`;
+        }
       }
-    } else {
-      // SymbolInformation[] - flat format
-      for (const symbol of symbols as SymbolInformation[]) {
-        result += formatSymbolInformation(symbol) + "\n\n";
+    } catch (err) {
+      // Fallback: just list symbol names
+      result += "Error formatting symbols. Raw symbol names:\n";
+      for (const symbol of symbols) {
+        if (symbol && typeof symbol === 'object' && 'name' in symbol) {
+          result += `- ${symbol.name}\n`;
+        }
       }
     }
 

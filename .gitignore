@@ -148,3 +148,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 tmp/
+.fake
+
+# .NET / F#
+bin/
+obj/

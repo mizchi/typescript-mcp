@@ -81,6 +81,8 @@ export function getLanguageFromLSPCommand(lspCommand: string): string {
     "rls": "Rust",
     "hls": "Haskell",
     "omnisharp": "C#",
+    "fsautocomplete": "F#",
+    "fsharp-language-server": "F#",
   };
   
   const command = lspCommand.split(" ")[0];

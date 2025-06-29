@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "fsharp": {
+      "command": "node",
+      "args": [
+        "../../dist/lsmcp.js",
+        "--language",
+        "fsharp"
+      ]
+    }
+  }
+}

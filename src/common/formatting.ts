@@ -4,6 +4,9 @@ import { Location, Range } from "vscode-languageserver-types";
  * Format a location for display
  */
 export function formatLocation(location: Location): string {
+  if (!location.range) {
+    return location.uri;
+  }
   const line = location.range.start.line + 1;
   const char = location.range.start.character + 1;
   return `${location.uri}:${line}:${char}`;
@@ -12,7 +15,10 @@ export function formatLocation(location: Location): string {
 /**
  * Format a range for display
  */
-export function formatRange(range: Range): string {
+export function formatRange(range: Range | undefined | null): string {
+  if (!range) {
+    return "unknown range";
+  }
   const startLine = range.start.line + 1;
   const startChar = range.start.character + 1;
   const endLine = range.end.line + 1;
