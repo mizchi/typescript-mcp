@@ -58,6 +58,9 @@ const str: string = 123;
 console.log(undefinedVariable);
 `);
 
+      // Wait for file to be written and MCP server to be ready
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       let result = await client.callTool({
         name: "lsmcp_get_diagnostics",
         arguments: {

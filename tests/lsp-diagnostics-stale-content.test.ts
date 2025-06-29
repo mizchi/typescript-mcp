@@ -52,6 +52,9 @@ function foo(): string {
 }
 `);
 
+    // Wait for file to be written
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     const result = await client.callTool({
       name: "lsmcp_get_diagnostics",
       arguments: {
@@ -72,6 +75,9 @@ function foo(): string {
     
     // Create file with errors
     await fs.writeFile(filePath, `const x: string = 123;`);
+    
+    // Wait for file to be written
+    await new Promise(resolve => setTimeout(resolve, 300));
     
     // First check - should have error
     let result = await client.callTool({
