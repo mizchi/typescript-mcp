@@ -148,8 +148,10 @@ export function useOldName() {
     });
   });
 
-  describe("get_type_at_symbol", () => {
-    it("should get type information for a symbol", async () => {
+  describe("get_type_at_symbol (removed - use LSP hover instead)", () => {
+    it.skip("should get type information for a symbol", async () => {
+      // This test has been skipped as tsGetTypeAtSymbol has been removed.
+      // Use lsp_get_hover instead for type information.
       const testFile = path.join(tmpDir, "test.ts");
       await fs.writeFile(testFile, `
 const num = 42;
@@ -157,25 +159,18 @@ const str = "hello";
 const arr = [1, 2, 3];
 `);
 
-      const result = await client.callTool({
-        name: "lsmcp_get_type_at_symbol",
-        arguments: {
-          root: tmpDir,
-          filePath: "test.ts",
-          line: 2,
-          symbolName: "num",
-        }
-      });
+      // Example of using LSP hover instead:
+      // const result = await client.callTool({
+      //   name: "lsp_get_hover",
+      //   arguments: {
+      //     root: tmpDir,
+      //     filePath: "test.ts",
+      //     line: 2,
+      //     target: "num",
+      //   }
+      // });
 
-      expect(result).toBeDefined();
-      expect(result.content).toBeDefined();
-      const contents = result.content as Array<{ type: string; text?: string }>;
-      if (contents.length > 0) {
-        const content = contents[0];
-        if (content.type === "text" && content.text) {
-          expect(content.text).toContain("42");
-        }
-      }
+      expect(true).toBe(true); // Placeholder
     });
   });
 

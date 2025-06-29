@@ -11,7 +11,6 @@ import { moveFileTool } from "../ts/tools/tsMoveFile.ts";
 import { moveDirectoryTool } from "../ts/tools/tsMoveDirectory.ts";
 import { getModuleSymbolsTool } from "../ts/tools/tsGetModuleSymbols.ts";
 import { getTypeInModuleTool } from "../ts/tools/tsGetTypeInModule.ts";
-import { getTypeAtSymbolTool } from "../ts/tools/tsGetTypeAtSymbol.ts";
 import { getSymbolsInScopeTool } from "../ts/tools/tsGetSymbolsInScope.ts";
 import { searchSymbolsTool } from "../ts/tools/tsSearchSymbols.ts";
 import { findImportCandidatesTool } from "../ts/tools/tsFindImportCandidates.ts";
@@ -49,7 +48,6 @@ const tools: ToolDef<any>[] = [
         moveDirectoryTool,
         getModuleSymbolsTool,
         getTypeInModuleTool,
-        getTypeAtSymbolTool,
         getSymbolsInScopeTool,
         searchSymbolsTool,
         findImportCandidatesTool,

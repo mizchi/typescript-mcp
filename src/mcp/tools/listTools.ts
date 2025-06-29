@@ -41,12 +41,6 @@ const TOOLS_REGISTRY: ToolInfo[] = [
     requiresLSP: false,
   },
   {
-    name: "get_type_at_symbol",
-    description: "Get type information for a TypeScript/JavaScript symbol at a specific location",
-    category: "typescript",
-    requiresLSP: false,
-  },
-  {
     name: "get_symbols_in_scope",
     description: "Get all symbols visible at a specific location in a TypeScript/JavaScript file",
     category: "typescript",

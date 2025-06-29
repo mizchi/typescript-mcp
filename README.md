@@ -175,11 +175,13 @@ These tools understand the semantic structure of your code and will update all r
 
 When using `--language typescript`, these TypeScript-specific tools are available:
 
+> **Note**: We are gradually migrating to LSP-based tools for better language independence. 
+> See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for details.
+
 - **lsmcp_move_file** - Move files and update all import statements
 - **lsmcp_move_directory** - Move directories and update all imports
 - **lsmcp_delete_symbol** - Delete symbols and all their references (using TypeScript Compiler API)
 - **lsmcp_rename_symbol** - Rename across entire codebase (using TypeScript Compiler API)
-- **lsmcp_get_type_at_symbol** - Get detailed type information
 - **lsmcp_get_module_symbols** - List all exports from a module
 - **lsmcp_search_symbols** - Fast project-wide symbol search
 - **lsmcp_find_import_candidates** - Find and suggest imports
@@ -201,7 +203,7 @@ All languages support these LSP-based tools:
 - **lsp_format_document** - Format code
 - **lsp_get_code_actions** - Get available fixes
 
-Note: When using `--language typescript`, both LSP tools and TypeScript-specific tools are available.
+Note: When using `--language typescript`, both LSP tools and TypeScript-specific tools are available. Some TypeScript-specific tools are being migrated to LSP equivalents. See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for migration details.
 
 See [Tool Reference](docs/TOOL_REFERENCE.md) for detailed documentation.
 

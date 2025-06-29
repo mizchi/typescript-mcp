@@ -11,7 +11,7 @@ When working with TypeScript projects, use these specialized tools:
 | Task                           | Tool                           | Description                                    |
 | ------------------------------ | ------------------------------ | ---------------------------------------------- |
 | Find symbols                   | `lsmcp_search_symbols`         | Fast project-wide symbol search                |
-| Get type info                  | `lsmcp_get_type_at_symbol`     | Detailed type information using Compiler API   |
+| Get type info                  | `lsp_get_hover`                 | Type information and documentation via LSP     |
 | See module exports             | `lsmcp_get_module_symbols`     | List all exports from a module                 |
 | Rename symbols                 | `lsmcp_rename_symbol`          | Semantic rename with import updates            |
 | Move files                     | `lsmcp_move_file`              | Move with automatic import updates             |
@@ -221,7 +221,7 @@ These tools use TypeScript Compiler API directly and are only available with `--
 
 - `lsmcp_move_file`, `lsmcp_move_directory` - Move with import updates
 - `lsmcp_rename_symbol`, `lsmcp_delete_symbol` - Semantic refactoring using TypeScript Compiler API
-- `lsmcp_get_type_at_symbol`, `lsmcp_get_module_symbols` - Advanced type analysis
+- `lsmcp_get_module_symbols`, `lsmcp_get_type_in_module` - Advanced type analysis
 - `lsmcp_search_symbols`, `lsmcp_find_import_candidates` - Fast symbol indexing
 - `lsmcp_get_symbols_in_scope` - Scope-aware symbol analysis
 
