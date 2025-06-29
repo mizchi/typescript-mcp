@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Format code before push
+# Format code
 echo "Formatting code..."
 
 # Check if there are any TypeScript files
@@ -24,4 +24,6 @@ if [ -n "$(find src tests -name '*.ts' -o -name '*.tsx' 2>/dev/null)" ]; then
   fi
 fi
 
-echo "Format check passed!"
+# Run tests
+echo "Running tests..."
+pnpm test

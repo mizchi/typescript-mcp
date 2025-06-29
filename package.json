@@ -65,11 +65,5 @@
   "peerDependencies": {
     "typescript": "*"
   },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "oxlint --quiet",
-      "deno fmt --check"
-    ]
-  },
   "packageManager": "pnpm@9.15.0"
 }
