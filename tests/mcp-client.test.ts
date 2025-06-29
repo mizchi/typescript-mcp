@@ -36,7 +36,7 @@ describe("MCP TypeScript Tools", () => {
     const cleanEnv = { ...process.env } as Record<string, string>;
     // Enable LSP mode to use lsp_rename_symbol and lsp_delete_symbol
     cleanEnv.USE_LSP = "true";
-    cleanEnv.LSP_COMMAND = "node_modules/.bin/typescript-language-server --stdio";
+    cleanEnv.LSP_COMMAND = path.join(__dirname, "../node_modules/.bin/typescript-language-server") + " --stdio";
     
     transport = new StdioClientTransport({
       command: "node",
@@ -84,7 +84,7 @@ export function useOldName() {
 `);
 
       const result = await client.callTool({
-        name: "lsmcp_rename_symbol",
+        name: "lsp_rename_symbol",
         arguments: {
           root: tmpDir,
           filePath: "test.ts",
@@ -229,7 +229,7 @@ export const keepThis = "keep";
 `);
 
       const result = await client.callTool({
-        name: "lsmcp_delete_symbol",
+        name: "lsp_delete_symbol",
         arguments: {
           root: tmpDir,
           filePath: "test.ts",
