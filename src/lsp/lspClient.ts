@@ -29,6 +29,7 @@ import {
 } from "./lspTypes.ts";
 import { debug } from "../mcp/_mcplib.ts";
 import { formatError, debugLog, ErrorContext } from "../mcp/utils/errorHandler.ts";
+import { getLanguageIdFromPath } from "./languageDetection.ts";
 
 // Re-export types for backward compatibility
 export type {
@@ -69,7 +70,7 @@ export function getLSPClient(): LSPClient | undefined {
 export async function initialize(
   rootPath: string,
   process: ChildProcess,
-  languageId: string = "typescript"
+  languageId?: string
 ): Promise<LSPClient> {
   // Stop existing client if any
   if (activeClient) {
@@ -120,7 +121,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     diagnostics: new Map(),
     eventEmitter: new EventEmitter(),
     rootPath: config.rootPath,
-    languageId: config.languageId || "typescript",
+    languageId: config.languageId || "plaintext", // Use plaintext as fallback, actual language will be detected per file
   };
   
   // Track open documents
@@ -363,11 +364,14 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     }
   }
 
-  function openDocument(uri: string, text: string): void {
+  function openDocument(uri: string, text: string, languageId?: string): void {
+    // Use provided languageId, or detect from file path, or fall back to client's default
+    const actualLanguageId = languageId || getLanguageIdFromPath(uri) || state.languageId;
+    
     const params: DidOpenTextDocumentParams = {
       textDocument: {
         uri,
-        languageId: state.languageId,
+        languageId: actualLanguageId,
         version: 1,
         text,
       },

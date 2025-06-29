@@ -85,8 +85,8 @@ export async function withLSPDocument<T>(
     throw new Error(formatError(new Error("LSP client not initialized. Ensure the language server is started."), context));
   }
 
-  // Open the document in LSP
-  client.openDocument(fileUri, content);
+  // Open the document in LSP with language ID if provided
+  client.openDocument(fileUri, content, language);
 
   try {
     // Wait a bit for LSP to process the document

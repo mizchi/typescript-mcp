@@ -197,7 +197,7 @@ export interface LSPClientConfig {
 export type LSPClient = {
   start: () => Promise<void>;
   stop: () => Promise<void>;
-  openDocument: (uri: string, text: string) => void;
+  openDocument: (uri: string, text: string, languageId?: string) => void;
   closeDocument: (uri: string) => void;
   updateDocument: (uri: string, text: string, version: number) => void;
   isDocumentOpen: (uri: string) => boolean;
