@@ -1,15 +1,15 @@
 {
-  "source_dir": "/home/mizchi/mizchi/typescript-mcp/playground/moonbit-project",
+  "source_dir": "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project",
   "name": "moonbit-test",
   "packages": [
     {
       "is-main": false,
       "is-third-party": false,
-      "root-path": "/home/mizchi/mizchi/typescript-mcp/playground/moonbit-project/src/test",
+      "root-path": "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project/src/test",
       "root": "moonbit-test",
       "rel": "src/test",
       "files": {
-        "/home/mizchi/mizchi/typescript-mcp/playground/moonbit-project/src/test/error.mbt": {
+        "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project/src/test/error.mbt": {
           "backend": [
             "Wasm",
             "WasmGC",
@@ -30,21 +30,34 @@
         {
           "path": "moonbit-test/src/lib",
           "alias": "lib",
-          "fspath": "/home/mizchi/mizchi/typescript-mcp/playground/moonbit-project/src/lib"
+          "fspath": "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project/src/lib"
         }
       ],
       "wbtest-deps": [],
       "test-deps": [],
-      "artifact": "/home/mizchi/mizchi/typescript-mcp/playground/moonbit-project/target/wasm-gc/release/check/src/test/test.mi"
+      "artifact": "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project/target/wasm-gc/release/check/src/test/test.mi"
     },
     {
       "is-main": false,
       "is-third-party": false,
-      "root-path": "/home/mizchi/mizchi/typescript-mcp/playground/moonbit-project/src/lib",
+      "root-path": "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project/src/lib",
       "root": "moonbit-test",
       "rel": "src/lib",
       "files": {
-        "/home/mizchi/mizchi/typescript-mcp/playground/moonbit-project/src/lib/hello.mbt": {
+        "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project/src/lib/hello.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Debug",
+            "Release"
+          ]
+        },
+        "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project/src/lib/fixed.mbt": {
           "backend": [
             "Wasm",
             "WasmGC",
@@ -64,16 +77,16 @@
       "deps": [],
       "wbtest-deps": [],
       "test-deps": [],
-      "artifact": "/home/mizchi/mizchi/typescript-mcp/playground/moonbit-project/target/wasm-gc/release/check/src/lib/lib.mi"
+      "artifact": "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project/target/wasm-gc/release/check/src/lib/lib.mi"
     },
     {
       "is-main": true,
       "is-third-party": false,
-      "root-path": "/home/mizchi/mizchi/typescript-mcp/playground/moonbit-project/src/main",
+      "root-path": "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project/src/main",
       "root": "moonbit-test",
       "rel": "src/main",
       "files": {
-        "/home/mizchi/mizchi/typescript-mcp/playground/moonbit-project/src/main/main.mbt": {
+        "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project/src/main/main.mbt": {
           "backend": [
             "Wasm",
             "WasmGC",
@@ -94,12 +107,12 @@
         {
           "path": "moonbit-test/src/lib",
           "alias": "lib",
-          "fspath": "/home/mizchi/mizchi/typescript-mcp/playground/moonbit-project/src/lib"
+          "fspath": "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project/src/lib"
         }
       ],
       "wbtest-deps": [],
       "test-deps": [],
-      "artifact": "/home/mizchi/mizchi/typescript-mcp/playground/moonbit-project/target/wasm-gc/release/check/src/main/main.mi"
+      "artifact": "/home/mizchi/mizchi/typescript-mcp/examples/moonbit-project/target/wasm-gc/release/check/src/main/main.mi"
     }
   ],
   "deps": [],

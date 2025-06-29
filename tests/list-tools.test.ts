@@ -80,12 +80,14 @@ describe("list_tools functionality", () => {
       const SERVER_PATH = path.join(__dirname, "../dist/generic-lsp-mcp.js");
       await fs.access(SERVER_PATH);
 
+      // Use typescript-language-server from node_modules to avoid npx overhead
+      const tsLangServerPath = path.join(__dirname, "../node_modules/.bin/typescript-language-server");
       transport = new StdioClientTransport({
         command: "node",
-        args: [SERVER_PATH, "--lsp-command=fsautocomplete"],
+        args: [SERVER_PATH, `--lsp-command=${tsLangServerPath} --stdio`],
         env: {
           ...process.env,
-          LSP_COMMAND: "fsautocomplete"
+          LSP_COMMAND: `${tsLangServerPath} --stdio`
         },
       });
 

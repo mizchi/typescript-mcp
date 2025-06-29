@@ -2,7 +2,13 @@
   "mcpServers": {
     "moonbit": {
       "command": "node",
-      "args": ["../../dist/moonbit-mcp.js"]
+      "args": [
+        "../../dist/lsmcp.js",
+        "-l",
+        "moonbit",
+        "--bin",
+        "npx -y @moonbit/moonbit-lsp"
+      ]
     }
   }
 }
