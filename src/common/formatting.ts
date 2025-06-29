@@ -23,7 +23,7 @@ export function formatRange(range: Range | undefined | null): string {
   const startChar = range.start.character + 1;
   const endLine = range.end.line + 1;
   const endChar = range.end.character + 1;
-  
+
   if (startLine === endLine) {
     return `${startLine}:${startChar}-${endChar}`;
   }
@@ -36,7 +36,7 @@ export function formatRange(range: Range | undefined | null): string {
 export function formatFilePath(absolutePath: string, root: string): string {
   if (absolutePath.startsWith(root)) {
     // Remove root, handling both trailing slash and no trailing slash
-    const offset = root.endsWith('/') ? root.length : root.length + 1;
+    const offset = root.endsWith("/") ? root.length : root.length + 1;
     return absolutePath.slice(offset);
   }
   return absolutePath;
@@ -58,7 +58,7 @@ export function truncateText(text: string, maxLength: number = 50): string {
 export function formatCodeSnippet(
   lines: string[],
   startLine: number,
-  highlightLine?: number
+  highlightLine?: number,
 ): string {
   return lines
     .map((line, index) => {

@@ -2,7 +2,13 @@ import { z } from "zod";
 import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath, pathToFileURL } from "url";
-import { WorkspaceEdit, TextEdit, Range, Position, Location } from "vscode-languageserver-types";
+import {
+  Location,
+  Position,
+  Range,
+  TextEdit,
+  WorkspaceEdit,
+} from "vscode-languageserver-types";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
 import { getLSPClient } from "../lspClient.ts";
 import { resolveLineParameter } from "../../textUtils/resolveLineParameter.ts";
@@ -60,15 +66,15 @@ async function handleDeleteSymbol({
   client.openDocument(fileUri, content);
 
   let locations: Location[] = [];
-  
+
   try {
     // Resolve line parameter
     const resolveResult = resolveLineParameter(content, line);
-    
+
     if (!resolveResult.success) {
       throw new Error(resolveResult.error);
     }
-    
+
     const resolvedLine = resolveResult.lineIndex + 1; // Convert back to 1-based
 
     // Find the symbol position on the line
@@ -77,7 +83,7 @@ async function handleDeleteSymbol({
 
     if (symbolIndex === -1) {
       throw new Error(
-        `Symbol "${target}" not found on line ${resolvedLine}: "${lineContent.trim()}"`
+        `Symbol "${target}" not found on line ${resolvedLine}: "${lineContent.trim()}"`,
       );
     }
 
@@ -108,7 +114,7 @@ async function handleDeleteSymbol({
 
     // Group locations by file
     const fileChanges = new Map<string, Range[]>();
-    
+
     for (const location of locations) {
       const ranges = fileChanges.get(location.uri) || [];
       ranges.push(location.range);
@@ -128,7 +134,7 @@ async function handleDeleteSymbol({
       // Read file content if it's different from the current file
       let fileContent: string;
       let fileLines: string[];
-      
+
       if (uri === fileUri) {
         fileContent = content;
         fileLines = lines;
@@ -145,7 +151,8 @@ async function handleDeleteSymbol({
       for (const range of sortedRanges) {
         // Check if this is a complete line deletion
         const lineText = fileLines[range.start.line];
-        const beforeSymbol = lineText.substring(0, range.start.character).trim();
+        const beforeSymbol = lineText.substring(0, range.start.character)
+          .trim();
         const afterSymbol = lineText.substring(range.end.character).trim();
 
         if (!beforeSymbol && !afterSymbol) {
@@ -170,7 +177,10 @@ async function handleDeleteSymbol({
     }
 
     // Apply the workspace edit
-    const result = await client.applyEdit(workspaceEdit, `Delete symbol "${target}"`);
+    const result = await client.applyEdit(
+      workspaceEdit,
+      `Delete symbol "${target}"`,
+    );
 
     if (!result.applied) {
       return {
@@ -188,7 +198,7 @@ async function handleDeleteSymbol({
     };
   } finally {
     // Close all opened documents
-    for (const uri of new Set([fileUri, ...locations.map(l => l.uri)])) {
+    for (const uri of new Set([fileUri, ...locations.map((l) => l.uri)])) {
       client.closeDocument(uri);
     }
   }
@@ -201,7 +211,7 @@ function formatDeleteSymbolResult(result: DeleteSymbolResult): string {
 
   const fileCount = result.deletedFromFiles.size;
   const fileList = Array.from(result.deletedFromFiles)
-    .map(uri => {
+    .map((uri) => {
       try {
         return fileURLToPath(uri);
       } catch {

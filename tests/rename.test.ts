@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
+  addSourceFile,
   createProject,
   renameSymbol,
-  addSourceFile,
 } from "../src/ts/commands/renameSymbol.ts";
 import fs from "fs/promises";
 import path from "path";
@@ -31,7 +31,7 @@ describe("rename", () => {
 
   // Find all .input.ts files in the fixtures directory
   const inputFiles = globSync("*.input.ts", { cwd: FIXTURES_DIR });
-  const testCases = inputFiles.map(file => path.basename(file, ".input.ts"));
+  const testCases = inputFiles.map((file) => path.basename(file, ".input.ts"));
 
   testCases.forEach((testName) => {
     it(`should rename ${testName}`, async () => {
@@ -60,7 +60,7 @@ describe("rename", () => {
 
       expect(result.isOk()).toBe(true);
       if (result.isErr()) {
-        console.error('Rename failed:', result.error);
+        console.error("Rename failed:", result.error);
       }
 
       // Compare with expected output

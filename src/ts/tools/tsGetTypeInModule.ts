@@ -1,6 +1,9 @@
 import { z } from "zod";
 import path from "path";
-import { getTypeSignature, type TypeSignature } from "../navigations/getTypeSignature.ts";
+import {
+  getTypeSignature,
+  type TypeSignature,
+} from "../navigations/getTypeSignature.ts";
 import { findProjectForFile } from "../projectCache.ts";
 import {
   formatTypeSignature,
@@ -29,7 +32,7 @@ function handleGetTypeInModule({
   filePath,
 }: z.infer<typeof schema>): GetTypeInModuleResult {
   const project = findProjectForFile(
-    filePath ? path.join(root, filePath) : root
+    filePath ? path.join(root, filePath) : root,
   );
 
   // Get type signature
@@ -202,7 +205,11 @@ Overload 2:
               name: "setName",
               signatures: [
                 {
-                  parameters: [{ name: "name", type: "string", optional: false }],
+                  parameters: [{
+                    name: "name",
+                    type: "string",
+                    optional: false,
+                  }],
                   returnType: "void",
                 },
               ],

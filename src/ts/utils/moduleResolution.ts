@@ -1,4 +1,4 @@
-import { resolve, dirname, join } from "path";
+import { dirname, join, resolve } from "path";
 import { existsSync } from "fs";
 import { type Project } from "ts-morph";
 
@@ -12,10 +12,10 @@ import { type Project } from "ts-morph";
 export function resolveModulePath(
   fromFile: string,
   moduleSpecifier: string,
-  project: Project
+  project: Project,
 ): string | null {
   // Skip external modules
-  if (!moduleSpecifier.startsWith('.') && !moduleSpecifier.startsWith('/')) {
+  if (!moduleSpecifier.startsWith(".") && !moduleSpecifier.startsWith("/")) {
     return null;
   }
 
@@ -23,8 +23,8 @@ export function resolveModulePath(
   const resolvedPath = resolve(fromDir, moduleSpecifier);
 
   // Try with TypeScript extensions
-  const extensions = ['.ts', '.tsx', '.d.ts', '.js', '.jsx'];
-  
+  const extensions = [".ts", ".tsx", ".d.ts", ".js", ".jsx"];
+
   // Helper function to try to get or add a source file
   const tryGetOrAddSourceFile = (filePath: string): string | null => {
     let sourceFile = project.getSourceFile(filePath);

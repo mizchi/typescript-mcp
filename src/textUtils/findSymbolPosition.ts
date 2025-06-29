@@ -19,16 +19,16 @@ export function findSymbolPosition(
   fullText: string,
   lineIndex: number,
   symbolName: string,
-  symbolIndex = 0
+  symbolIndex = 0,
 ): SymbolPositionResult {
   const lines = fullText.split("\n");
 
   if (lineIndex < 0 || lineIndex >= lines.length) {
     return {
       success: false,
-      error: `Invalid line number: ${lineIndex + 1}. File has ${
-        lines.length
-      } lines.`,
+      error: `Invalid line number: ${
+        lineIndex + 1
+      }. File has ${lines.length} lines.`,
     };
   }
 
@@ -45,11 +45,10 @@ export function findSymbolPosition(
   if (symbolIndex < 0 || symbolIndex >= occurrences.length) {
     return {
       success: false,
-      error: `Symbol "${symbolName}" only appears ${
-        occurrences.length
-      } time(s) on line ${
-        lineIndex + 1
-      }, but index ${symbolIndex} was requested`,
+      error:
+        `Symbol "${symbolName}" only appears ${occurrences.length} time(s) on line ${
+          lineIndex + 1
+        }, but index ${symbolIndex} was requested`,
     };
   }
 

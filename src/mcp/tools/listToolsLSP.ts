@@ -17,7 +17,8 @@ interface ToolInfo {
 const LSP_TOOLS_REGISTRY: ToolInfo[] = [
   {
     name: "lsp_get_hover",
-    description: "Get hover information (type signature, documentation) using LSP",
+    description:
+      "Get hover information (type signature, documentation) using LSP",
     category: "lsp",
     requiresLSP: true,
   },
@@ -41,7 +42,8 @@ const LSP_TOOLS_REGISTRY: ToolInfo[] = [
   },
   {
     name: "lsp_rename_symbol",
-    description: "Rename a symbol across the codebase using Language Server Protocol",
+    description:
+      "Rename a symbol across the codebase using Language Server Protocol",
     category: "lsp",
     requiresLSP: true,
   },
@@ -53,7 +55,8 @@ const LSP_TOOLS_REGISTRY: ToolInfo[] = [
   },
   {
     name: "lsp_get_document_symbols",
-    description: "Get all symbols (functions, classes, variables, etc.) in a document using LSP",
+    description:
+      "Get all symbols (functions, classes, variables, etc.) in a document using LSP",
     category: "lsp",
     requiresLSP: true,
   },
@@ -65,25 +68,29 @@ const LSP_TOOLS_REGISTRY: ToolInfo[] = [
   },
   {
     name: "lsp_get_completion",
-    description: "Get code completion suggestions at a specific position using LSP",
+    description:
+      "Get code completion suggestions at a specific position using LSP",
     category: "lsp",
     requiresLSP: true,
   },
   {
     name: "lsp_get_signature_help",
-    description: "Get signature help (parameter hints) for function calls using LSP",
+    description:
+      "Get signature help (parameter hints) for function calls using LSP",
     category: "lsp",
     requiresLSP: true,
   },
   {
     name: "lsp_get_code_actions",
-    description: "Get available code actions (quick fixes, refactorings, etc.) using LSP",
+    description:
+      "Get available code actions (quick fixes, refactorings, etc.) using LSP",
     category: "lsp",
     requiresLSP: true,
   },
   {
     name: "lsp_format_document",
-    description: "Format an entire document using the language server's formatting provider",
+    description:
+      "Format an entire document using the language server's formatting provider",
     category: "lsp",
     requiresLSP: true,
   },
@@ -91,21 +98,24 @@ const LSP_TOOLS_REGISTRY: ToolInfo[] = [
 
 function formatToolsList(tools: ToolInfo[]): string {
   let result = `# Available MCP Tools\n\n`;
-  
+
   result += "## 🌐 LSP Tools (Language Server Protocol)\n";
   result += "These tools work with any language that has an LSP server.\n";
-  result += "Make sure the appropriate LSP server is installed and running for your language.\n\n";
-  
-  tools.forEach(tool => {
+  result +=
+    "Make sure the appropriate LSP server is installed and running for your language.\n\n";
+
+  tools.forEach((tool) => {
     result += `### ${tool.name}\n`;
     result += `${tool.description}\n\n`;
   });
-  
+
   result += "## 💡 Tips\n";
   result += "- All tools use the Language Server Protocol (LSP)\n";
-  result += "- These tools work with any programming language that has LSP support\n";
-  result += "- Get help for any tool: use the tool with no parameters to see its schema\n";
-  
+  result +=
+    "- These tools work with any programming language that has LSP support\n";
+  result +=
+    "- Get help for any tool: use the tool with no parameters to see its schema\n";
+
   return result;
 }
 

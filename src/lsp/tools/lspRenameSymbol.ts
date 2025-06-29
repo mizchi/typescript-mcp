@@ -1,20 +1,19 @@
 import { z } from "zod";
-import { type Result, ok, err } from "neverthrow";
+import { err, ok, type Result } from "neverthrow";
 import { getActiveClient } from "../lspClient.ts";
 import { parseLineNumber } from "../../textUtils/parseLineNumber.ts";
 import { findSymbolInLine } from "../../textUtils/findSymbolInLine.ts";
 import { findTargetInFile } from "../../textUtils/findTargetInFile.ts";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
-import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
+import { readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import path from "path";
-import { 
-  WorkspaceEdit,
+import {
+  Position,
   TextDocumentEdit,
   TextEdit,
-  Position,
+  WorkspaceEdit,
 } from "vscode-languageserver-types";
 import { debug } from "../../mcp/_mcplib.ts";
-
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -44,12 +43,11 @@ interface RenameSymbolSuccess {
   }[];
 }
 
-
 /**
  * Helper to handle rename request when line is not provided
  */
 async function performRenameWithoutLine(
-  request: RenameSymbolRequest
+  request: RenameSymbolRequest,
 ): Promise<Result<RenameSymbolSuccess, string>> {
   try {
     // Read file content
@@ -72,7 +70,7 @@ async function performRenameWithoutLine(
       fileUri,
       fileContent,
       targetLine,
-      symbolPosition
+      symbolPosition,
     );
   } catch (error) {
     return err(error instanceof Error ? error.message : String(error));
@@ -83,7 +81,7 @@ async function performRenameWithoutLine(
  * Handle rename request when line is provided
  */
 async function performRenameWithLine(
-  request: RenameSymbolRequest
+  request: RenameSymbolRequest,
 ): Promise<Result<RenameSymbolSuccess, string>> {
   try {
     // Read file content
@@ -96,9 +94,9 @@ async function performRenameWithLine(
     const lineResult = parseLineNumber(fileContent, request.line!);
     if ("error" in lineResult) {
       return err(
-        `Line parameter "${String(request.line)}" not found in ${
-          request.filePath
-        }: ${lineResult.error}`
+        `Line parameter "${
+          String(request.line)
+        }" not found in ${request.filePath}: ${lineResult.error}`,
       );
     }
 
@@ -109,7 +107,9 @@ async function performRenameWithLine(
     const symbolResult = findSymbolInLine(line, request.target);
     if ("error" in symbolResult) {
       return err(
-        `Symbol "${request.target}" not found on line ${String(targetLine + 1)}: ${symbolResult.error}`
+        `Symbol "${request.target}" not found on line ${
+          String(targetLine + 1)
+        }: ${symbolResult.error}`,
       );
     }
     const symbolPosition = symbolResult.characterIndex;
@@ -119,7 +119,7 @@ async function performRenameWithLine(
       fileUri,
       fileContent,
       targetLine,
-      symbolPosition
+      symbolPosition,
     );
   } catch (error) {
     return err(error instanceof Error ? error.message : String(error));
@@ -134,7 +134,7 @@ async function performRenameAtPosition(
   fileUri: string,
   fileContent: string,
   targetLine: number,
-  symbolPosition: number
+  symbolPosition: number,
 ): Promise<Result<RenameSymbolSuccess, string>> {
   try {
     const client = getActiveClient();
@@ -169,7 +169,7 @@ async function performRenameAtPosition(
         return err(
           `Cannot rename symbol at line ${targetLine + 1}, column ${
             symbolPosition + 1
-          }`
+          }`,
         );
       }
     } catch {
@@ -178,19 +178,21 @@ async function performRenameAtPosition(
 
     // Perform rename
     let workspaceEdit: WorkspaceEdit | null = null;
-    
+
     try {
       // Use the client's rename method which handles errors properly
       workspaceEdit = await client.rename(
         fileUri,
         position,
-        request.newName
+        request.newName,
       );
     } catch (error: any) {
       // Check if LSP doesn't support rename (e.g., TypeScript Native Preview)
-      if (error.code === -32601 || 
-          error.message?.includes("Unhandled method") ||
-          error.message?.includes("Method not found")) {
+      if (
+        error.code === -32601 ||
+        error.message?.includes("Unhandled method") ||
+        error.message?.includes("Method not found")
+      ) {
         return err("LSP server doesn't support rename operation");
       }
       // Re-throw other errors
@@ -203,11 +205,14 @@ async function performRenameAtPosition(
     }
 
     // Debug: Log the workspace edit
-    debug("[lspRenameSymbol] WorkspaceEdit from LSP:", JSON.stringify(workspaceEdit, null, 2));
+    debug(
+      "[lspRenameSymbol] WorkspaceEdit from LSP:",
+      JSON.stringify(workspaceEdit, null, 2),
+    );
 
     // Apply changes and format result
     const result = await applyWorkspaceEdit(request.root, workspaceEdit);
-    
+
     // Close all opened documents
     client.closeDocument(fileUri);
     for (const file of projectFiles) {
@@ -231,7 +236,7 @@ async function performRenameAtPosition(
  */
 async function applyWorkspaceEdit(
   _root: string,
-  workspaceEdit: WorkspaceEdit
+  workspaceEdit: WorkspaceEdit,
 ): Promise<RenameSymbolSuccess> {
   const changedFiles: RenameSymbolSuccess["changedFiles"] = [];
   const allFileContents = new Map<string, string[]>();
@@ -263,10 +268,10 @@ async function applyWorkspaceEdit(
       const filePath = uri.replace("file://", "");
       const lines = allFileContents.get(filePath)!;
       const fileChanges = processTextEdits(filePath, lines, edits);
-      
+
       if (fileChanges.changes.length > 0) {
         changedFiles.push(fileChanges);
-        
+
         // Apply edits to file
         const newContent = applyTextEditsToContent(lines.join("\n"), edits);
         writeFileSync(filePath, newContent, "utf-8");
@@ -281,18 +286,23 @@ async function applyWorkspaceEdit(
         const filePath = change.textDocument.uri.replace("file://", "");
         const lines = allFileContents.get(filePath)!;
         const fileChanges = processTextEdits(filePath, lines, change.edits);
-        
+
         if (fileChanges.changes.length > 0) {
           // Check if we already processed this file
-          const existingFile = changedFiles.find(f => f.filePath === filePath);
+          const existingFile = changedFiles.find((f) =>
+            f.filePath === filePath
+          );
           if (existingFile) {
             existingFile.changes.push(...fileChanges.changes);
           } else {
             changedFiles.push(fileChanges);
           }
-          
+
           // Apply edits to file
-          const newContent = applyTextEditsToContent(lines.join("\n"), change.edits);
+          const newContent = applyTextEditsToContent(
+            lines.join("\n"),
+            change.edits,
+          );
           writeFileSync(filePath, newContent, "utf-8");
         }
       }
@@ -301,11 +311,12 @@ async function applyWorkspaceEdit(
 
   const totalChanges = changedFiles.reduce(
     (sum, file) => sum + file.changes.length,
-    0
+    0,
   );
 
   return {
-    message: `Successfully renamed symbol in ${changedFiles.length} file(s) with ${totalChanges} change(s)`,
+    message:
+      `Successfully renamed symbol in ${changedFiles.length} file(s) with ${totalChanges} change(s)`,
     changedFiles,
   };
 }
@@ -316,7 +327,7 @@ async function applyWorkspaceEdit(
 function processTextEdits(
   filePath: string,
   lines: string[],
-  edits: TextEdit[]
+  edits: TextEdit[],
 ): RenameSymbolSuccess["changedFiles"][0] {
   const changes: RenameSymbolSuccess["changedFiles"][0]["changes"] = [];
 
@@ -376,8 +387,7 @@ function applyTextEditsToContent(content: string, edits: TextEdit[]): string {
 
     if (startLine === endLine) {
       // Single line edit
-      lines[startLine] =
-        lines[startLine].substring(0, startCol) +
+      lines[startLine] = lines[startLine].substring(0, startCol) +
         edit.newText +
         lines[startLine].substring(endCol);
     } else {
@@ -385,10 +395,10 @@ function applyTextEditsToContent(content: string, edits: TextEdit[]): string {
       const newLines = edit.newText.split("\n");
       const before = lines[startLine].substring(0, startCol);
       const after = lines[endLine].substring(endCol);
-      
+
       // Remove old lines
       lines.splice(startLine, endLine - startLine + 1);
-      
+
       // Insert new lines
       if (newLines.length === 1) {
         lines.splice(startLine, 0, before + newLines[0] + after);
@@ -410,7 +420,7 @@ function applyTextEditsToContent(content: string, edits: TextEdit[]): string {
  * Handle rename symbol request
  */
 async function handleRenameSymbol(
-  request: RenameSymbolRequest
+  request: RenameSymbolRequest,
 ): Promise<Result<RenameSymbolSuccess, string>> {
   try {
     if (request.line !== undefined) {
@@ -429,14 +439,14 @@ async function handleRenameSymbol(
 async function findProjectFiles(rootPath: string): Promise<string[]> {
   const files: string[] = [];
   const extensions = [".ts", ".tsx", ".js", ".jsx", ".mts", ".mjs"];
-  
+
   function walkDir(dir: string) {
     try {
       const entries = readdirSync(dir);
       for (const entry of entries) {
         const fullPath = path.join(dir, entry);
         const stat = statSync(fullPath);
-        
+
         if (stat.isDirectory()) {
           // Skip node_modules and hidden directories
           if (entry !== "node_modules" && !entry.startsWith(".")) {
@@ -453,7 +463,7 @@ async function findProjectFiles(rootPath: string): Promise<string[]> {
       debug(`[lspRenameSymbol] Error walking directory ${dir}:`, e);
     }
   }
-  
+
   walkDir(rootPath);
   return files;
 }
@@ -476,10 +486,10 @@ export const lspRenameSymbolTool: ToolDef<typeof schema> = {
     for (const file of changedFiles) {
       const relativePath = path.relative(args.root, file.filePath);
       output.push(`  ${relativePath}:`);
-      
+
       for (const change of file.changes) {
         output.push(
-          `    Line ${change.line}: "${change.oldText}" → "${change.newText}"`
+          `    Line ${change.line}: "${change.oldText}" → "${change.newText}"`,
         );
       }
     }

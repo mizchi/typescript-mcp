@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { type Result, ok, err } from "neverthrow";
+import { err, ok, type Result } from "neverthrow";
 import { readFileSync } from "fs";
 import path from "path";
 import { getActiveClient } from "../lspClient.ts";
@@ -56,7 +56,7 @@ type DefinitionResult = Location | Location[] | null;
  * Gets definitions for a TypeScript symbol using LSP
  */
 async function getDefinitionsWithLSP(
-  request: GetDefinitionsRequest
+  request: GetDefinitionsRequest,
 ): Promise<Result<GetDefinitionsSuccess, string>> {
   try {
     const client = getActiveClient();
@@ -177,7 +177,7 @@ export const lspGetDefinitionsTool: ToolDef<typeof schema> = {
       if (result.value.definitions.length > 0) {
         for (const def of result.value.definitions) {
           messages.push(
-            `\n${def.filePath}:${def.line}:${def.column} - ${def.symbolName}\n${def.preview}`
+            `\n${def.filePath}:${def.line}:${def.column} - ${def.symbolName}\n${def.preview}`,
           );
         }
       }
@@ -256,7 +256,7 @@ if (import.meta.vitest) {
           filePath: "examples/typescript/types.ts",
           line: 1,
           symbolName: "nonexistent",
-        })
+        }),
       ).rejects.toThrow('Symbol "nonexistent" not found on line');
     });
 
@@ -267,7 +267,7 @@ if (import.meta.vitest) {
           filePath: "examples/typescript/types.ts",
           line: "nonexistent line",
           symbolName: "Value",
-        })
+        }),
       ).rejects.toThrow('Line containing "nonexistent line" not found');
     });
 
@@ -278,7 +278,7 @@ if (import.meta.vitest) {
           filePath: "nonexistent.ts",
           line: 1,
           symbolName: "test",
-        })
+        }),
       ).rejects.toThrow();
     });
 

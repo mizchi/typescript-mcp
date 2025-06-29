@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * lsmcp - Language Service MCP
- * 
+ *
  * Main entry point for the lsmcp tool that provides MCP integration
  * for TypeScript/JavaScript (built-in) or any LSP server (via --bin).
  */
@@ -9,37 +9,42 @@
 import { parseArgs } from "node:util";
 import { existsSync } from "fs";
 import { readdir } from "fs/promises";
-import { join, dirname, relative } from "path";
+import { dirname, join, relative } from "path";
 import { fileURLToPath } from "url";
 import { spawn } from "child_process";
 import { debug } from "./_mcplib.ts";
-import { formatError, ErrorContext } from "./utils/errorHandler.ts";
-import { getLSPCommandForLanguage, getSupportedLanguages } from "./utils/languageInit.ts";
+import { ErrorContext, formatError } from "./utils/errorHandler.ts";
+import {
+  getLSPCommandForLanguage,
+  getSupportedLanguages,
+} from "./utils/languageInit.ts";
 
 // Parse command line arguments
 const { values, positionals } = parseArgs({
   options: {
     language: {
-      type: 'string',
-      short: 'l',
-      description: 'Language to use (typescript, moonbit, rust, etc.)'
+      type: "string",
+      short: "l",
+      description: "Language to use (typescript, moonbit, rust, etc.)",
     },
     bin: {
-      type: 'string',
-      description: 'Custom LSP server command (e.g., "deno lsp", "rust-analyzer")'
+      type: "string",
+      description:
+        'Custom LSP server command (e.g., "deno lsp", "rust-analyzer")',
     },
     include: {
-      type: 'string',
-      description: 'Glob pattern for files to get diagnostics (e.g., "src/**/*.ts")'
+      type: "string",
+      description:
+        'Glob pattern for files to get diagnostics (e.g., "src/**/*.ts")',
     },
     help: {
-      type: 'boolean',
-      short: 'h',
-      description: 'Show help message'
+      type: "boolean",
+      short: "h",
+      description: "Show help message",
     },
     list: {
-      type: 'boolean',
-      description: 'List supported languages'
+      type: "boolean",
+      description: "List supported languages",
     },
   },
   allowPositionals: true,
@@ -75,66 +80,84 @@ Environment Variables:
 `);
 }
 
-async function runLanguageServer(language: string, args: string[] = [], customEnv?: Record<string, string | undefined>) {
-  debug(`[lsmcp] runLanguageServer called with language: ${language}, args: ${JSON.stringify(args)}`);
-  
+async function runLanguageServer(
+  language: string,
+  args: string[] = [],
+  customEnv?: Record<string, string | undefined>,
+) {
+  debug(
+    `[lsmcp] runLanguageServer called with language: ${language}, args: ${
+      JSON.stringify(args)
+    }`,
+  );
+
   // Handle language-specific LSP servers
   if (language !== "typescript" && language !== "javascript") {
     const lspCommand = getLSPCommandForLanguage(language);
     if (!lspCommand) {
       const supported = getSupportedLanguages();
       console.error(`Error: Language '${language}' is not supported.`);
-      console.error(`Supported languages: typescript, javascript, ${supported.join(", ")}`);
+      console.error(
+        `Supported languages: typescript, javascript, ${supported.join(", ")}`,
+      );
       console.error("Or use --bin option to specify a custom LSP server.");
       process.exit(1);
     }
-    
+
     // Use generic LSP server with the detected command
-    debug(`[lsmcp] Using LSP command '${lspCommand}' for language '${language}'`);
-    const env: Record<string, string | undefined> = { 
+    debug(
+      `[lsmcp] Using LSP command '${lspCommand}' for language '${language}'`,
+    );
+    const env: Record<string, string | undefined> = {
       ...process.env,
       ...customEnv,
       LSP_COMMAND: lspCommand,
     };
-    
+
     // Get the path to the generic LSP server
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
     const genericServerPath = join(__dirname, "generic-lsp-mcp.js");
-    
+
     if (!existsSync(genericServerPath)) {
       const context: ErrorContext = {
         operation: "Generic LSP MCP server startup",
         language,
-        details: { path: genericServerPath }
+        details: { path: genericServerPath },
       };
-      const error = new Error(`Generic LSP MCP server not found at ${genericServerPath}`);
+      const error = new Error(
+        `Generic LSP MCP server not found at ${genericServerPath}`,
+      );
       console.error(formatError(error, context));
       process.exit(1);
     }
-    
+
     debug(`Starting generic LSP MCP server: ${genericServerPath}`);
-    
+
     // Forward to generic LSP server
-    const serverProcess = spawn("node", [genericServerPath, `--lsp-command=${lspCommand}`, ...args], {
+    const serverProcess = spawn("node", [
+      genericServerPath,
+      `--lsp-command=${lspCommand}`,
+      ...args,
+    ], {
       stdio: "inherit",
       env,
     });
-    
+
     serverProcess.on("error", (error) => {
       const context: ErrorContext = {
         operation: "Generic LSP MCP server process",
         language,
-        details: { command: lspCommand }
+        details: { command: lspCommand },
       };
       console.error(formatError(error, context));
       process.exit(1);
     });
-    
+
     serverProcess.on("exit", (code) => {
       process.exit(code || 0);
     });
-    
+
     return;
   }
 
@@ -150,7 +173,7 @@ async function runLanguageServer(language: string, args: string[] = [], customEn
     const context: ErrorContext = {
       operation: "MCP server startup",
       language,
-      filePath: serverPath
+      filePath: serverPath,
     };
     const error = new Error(`MCP server not found at ${serverPath}`);
     console.error(formatError(error, context));
@@ -168,7 +191,7 @@ async function runLanguageServer(language: string, args: string[] = [], customEn
   serverProcess.on("error", (error) => {
     const context: ErrorContext = {
       operation: "MCP server process",
-      language
+      language,
     };
     console.error(formatError(error, context));
     process.exit(1);
@@ -180,8 +203,12 @@ async function runLanguageServer(language: string, args: string[] = [], customEn
 }
 
 async function main() {
-  debug(`[lsmcp] main() called with values: ${JSON.stringify(values)}, positionals: ${JSON.stringify(positionals)}`);
-  
+  debug(
+    `[lsmcp] main() called with values: ${
+      JSON.stringify(values)
+    }, positionals: ${JSON.stringify(positionals)}`,
+  );
+
   // Show help if requested
   if (values.help) {
     showHelp();
@@ -193,109 +220,124 @@ async function main() {
     console.log("Supported languages with --language:");
     console.log("  typescript - TypeScript files (.ts, .tsx)");
     console.log("  javascript - JavaScript files (.js, .jsx)");
-    
+
     const otherLanguages = getSupportedLanguages();
     for (const lang of otherLanguages) {
       const lspCommand = getLSPCommandForLanguage(lang);
       if (lspCommand) {
-        console.log(`  ${lang.padEnd(10)} - ${lang.charAt(0).toUpperCase() + lang.slice(1)} [requires ${lspCommand}]`);
+        console.log(
+          `  ${lang.padEnd(10)} - ${
+            lang.charAt(0).toUpperCase() + lang.slice(1)
+          } [requires ${lspCommand}]`,
+        );
       }
     }
-    
+
     console.log("\nFor other languages or custom LSP servers, use --bin:");
-    console.log("  --bin \"deno lsp\" for Deno");
-    console.log("  --bin \"clangd\" for C/C++");
-    console.log("  --bin \"jdtls\" for Java");
+    console.log('  --bin "deno lsp" for Deno');
+    console.log('  --bin "clangd" for C/C++');
+    console.log('  --bin "jdtls" for Java');
     process.exit(0);
   }
-
 
   // Check if custom LSP command is provided
   if (values.bin) {
     debug(`[lsmcp] Using custom LSP command: ${values.bin}`);
     // Use generic LSP MCP server for non-TypeScript languages
-    const env: Record<string, string | undefined> = { 
-      ...process.env, 
+    const env: Record<string, string | undefined> = {
+      ...process.env,
       LSP_COMMAND: values.bin,
     };
-    
+
     // Get the path to the generic LSP server
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
     const genericServerPath = join(__dirname, "generic-lsp-mcp.js");
-    
+
     if (!existsSync(genericServerPath)) {
       const context: ErrorContext = {
         operation: "Generic LSP MCP server startup",
-        details: { path: genericServerPath }
+        details: { path: genericServerPath },
       };
-      const error = new Error(`Generic LSP MCP server not found at ${genericServerPath}`);
+      const error = new Error(
+        `Generic LSP MCP server not found at ${genericServerPath}`,
+      );
       console.error(formatError(error, context));
       process.exit(1);
     }
-    
+
     debug(`Starting generic LSP MCP server: ${genericServerPath}`);
-    
+
     // Forward to generic LSP server
-    const serverProcess = spawn("node", [genericServerPath, `--lsp-command=${values.bin}`, ...positionals], {
+    const serverProcess = spawn("node", [
+      genericServerPath,
+      `--lsp-command=${values.bin}`,
+      ...positionals,
+    ], {
       stdio: "inherit",
       env,
     });
-    
+
     serverProcess.on("error", (error) => {
       const context: ErrorContext = {
         operation: "Generic LSP MCP server process",
-        details: { command: values.bin }
+        details: { command: values.bin },
       };
       console.error(formatError(error, context));
       process.exit(1);
     });
-    
+
     serverProcess.on("exit", (code) => {
       process.exit(code || 0);
     });
-    
+
     return;
   }
 
   // Check if --include option is provided for diagnostics
   if (values.include) {
     debug(`Getting diagnostics for pattern: ${values.include}`);
-    
+
     // For diagnostics, we need to use TypeScript MCP
-    const language = values.language || process.env.FORCE_LANGUAGE || "typescript";
-    
+    const language = values.language || process.env.FORCE_LANGUAGE ||
+      "typescript";
+
     if (language !== "typescript" && language !== "javascript") {
       const context: ErrorContext = {
         operation: "diagnostics",
         language,
-        details: { option: "--include" }
+        details: { option: "--include" },
       };
-      const error = new Error("--include option is currently only supported for TypeScript/JavaScript");
+      const error = new Error(
+        "--include option is currently only supported for TypeScript/JavaScript",
+      );
       console.error(formatError(error, context));
       process.exit(1);
     }
-    
+
     // Get matching files
     // TODO: When MCP adds client cwd support, use that
     const projectRoot = process.cwd();
-    
+
     // Simple glob pattern matching for TypeScript files
     const files: string[] = [];
     const pattern = values.include;
-    
+
     // Simple implementation for common patterns
     if (pattern.includes("**")) {
       // Recursive search
       const searchDir = pattern.split("**")[0] || ".";
       const extension = pattern.match(/\*\.(\w+)$/)?.[1] || "ts";
-      
+
       async function findFiles(dir: string): Promise<void> {
         try {
           const entries = await readdir(dir, { withFileTypes: true });
           for (const entry of entries) {
             const fullPath = join(dir, entry.name);
-            if (entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "node_modules") {
+            if (
+              entry.isDirectory() && !entry.name.startsWith(".") &&
+              entry.name !== "node_modules"
+            ) {
               await findFiles(fullPath);
             } else if (entry.isFile() && entry.name.endsWith(`.${extension}`)) {
               files.push(relative(projectRoot, fullPath));
@@ -305,15 +347,17 @@ async function main() {
           // Directory doesn't exist, skip
         }
       }
-      
+
       await findFiles(join(projectRoot, searchDir));
     } else if (pattern.includes("*")) {
       // Single directory search
       const dir = dirname(pattern);
       const extension = pattern.match(/\*\.(\w+)$/)?.[1] || "ts";
-      
+
       try {
-        const entries = await readdir(join(projectRoot, dir), { withFileTypes: true });
+        const entries = await readdir(join(projectRoot, dir), {
+          withFileTypes: true,
+        });
         for (const entry of entries) {
           if (entry.isFile() && entry.name.endsWith(`.${extension}`)) {
             files.push(join(dir, entry.name));
@@ -328,59 +372,67 @@ async function main() {
         files.push(pattern);
       }
     }
-    
+
     if (files.length === 0) {
       console.error(`No files found matching pattern: ${values.include}`);
       process.exit(1);
     }
-    
-    console.log(`Found ${files.length} files matching pattern: ${values.include}`);
+
+    console.log(
+      `Found ${files.length} files matching pattern: ${values.include}`,
+    );
     console.log("Getting diagnostics...\n");
-    
+
     // Import and use TypeScript diagnostics directly
-    const { getDiagnostics } = await import("../ts/navigations/getDiagnostics.ts");
+    const { getDiagnostics } = await import(
+      "../ts/navigations/getDiagnostics.ts"
+    );
     const { findProjectForFile } = await import("../ts/projectCache.ts");
-    
+
     // Get absolute paths
-    const absolutePaths = files.map(f => join(projectRoot, f));
-    
+    const absolutePaths = files.map((f) => join(projectRoot, f));
+
     // Find or create project
     const project = findProjectForFile(absolutePaths[0]);
-    
+
     // Ensure all files are loaded
     for (const filePath of absolutePaths) {
       if (!project.getSourceFile(filePath)) {
         project.addSourceFileAtPath(filePath);
       }
     }
-    
+
     // Get diagnostics
     const result = getDiagnostics(project, {
       filePaths: absolutePaths,
     });
-    
+
     if (result.isErr()) {
       console.error(`Error: ${result.error}`);
       process.exit(1);
     }
-    
+
     // Output the formatted diagnostics
     console.log(result.value.message);
-    
+
     // Exit with appropriate code
-    const hasErrors = result.value.diagnostics.some(d => d.category === "error");
+    const hasErrors = result.value.diagnostics.some((d) =>
+      d.category === "error"
+    );
     process.exit(hasErrors ? 1 : 0);
   }
 
   // Require either --language or --bin option
   const language = values.language || process.env.FORCE_LANGUAGE;
-  debug(`[lsmcp] Resolved language: ${language}, env.FORCE_LANGUAGE: ${process.env.FORCE_LANGUAGE}`);
+  debug(
+    `[lsmcp] Resolved language: ${language}, env.FORCE_LANGUAGE: ${process.env.FORCE_LANGUAGE}`,
+  );
 
   if (!language && !values.bin) {
     console.error("Error: Either --language or --bin option is required");
     console.error("\nExamples:");
     console.error("  lsmcp --language=typescript");
-    console.error("  lsmcp --bin=\"deno lsp\"");
+    console.error('  lsmcp --bin="deno lsp"');
     console.error("\nRun 'lsmcp --help' for more information.");
     process.exit(1);
   }
@@ -393,7 +445,7 @@ async function main() {
 }
 
 // Always run main when this script is executed directly
-main().catch(error => {
+main().catch((error) => {
   console.error("Fatal error:", error);
   process.exit(1);
 });

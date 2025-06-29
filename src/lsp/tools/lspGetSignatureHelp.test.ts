@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { spawn, ChildProcess } from "child_process";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { ChildProcess, spawn } from "child_process";
 import path from "path";
 import fs from "fs/promises";
 import {
@@ -100,7 +100,9 @@ calculate(5, 10, "add");
       target: "calculate(5,",
     });
 
-    expect(result).toContain("calculate(a: number, b: number, operation: string): number");
+    expect(result).toContain(
+      "calculate(a: number, b: number, operation: string): number",
+    );
     expect(result).toContain("→"); // Active parameter indicator
   });
 

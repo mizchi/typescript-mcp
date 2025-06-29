@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { spawn, ChildProcess } from "child_process";
-import { 
-  initialize as initializeLSPClient, 
-  shutdown as shutdownLSPClient
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { ChildProcess, spawn } from "child_process";
+import {
+  initialize as initializeLSPClient,
+  shutdown as shutdownLSPClient,
 } from "../src/lsp/lspClient.ts";
 import { lspGetHoverTool } from "../src/lsp/tools/lspGetHover.ts";
 import { lspFindReferencesTool } from "../src/lsp/tools/lspFindReferences.ts";
@@ -50,7 +50,7 @@ describe("LSP error handling tests", () => {
     if (tmpDir) {
       await fs.rm(tmpDir, { recursive: true, force: true });
     }
-    
+
     if (lspProcess) {
       await shutdownLSPClient();
       lspProcess.kill();
@@ -70,7 +70,7 @@ describe("LSP error handling tests", () => {
           filePath: "non-existent.ts",
           line: 1,
           character: 0,
-        })
+        }),
       ).rejects.toThrow(/ENOENT/);
 
       await expect(
@@ -79,7 +79,7 @@ describe("LSP error handling tests", () => {
           filePath: "non-existent.ts",
           line: 1,
           symbolName: "foo",
-        })
+        }),
       ).rejects.toThrow(/ENOENT/);
 
       await expect(
@@ -88,7 +88,7 @@ describe("LSP error handling tests", () => {
           filePath: "non-existent.ts",
           line: 1,
           symbolName: "foo",
-        })
+        }),
       ).rejects.toThrow(/ENOENT/);
 
       await expect(
@@ -98,14 +98,14 @@ describe("LSP error handling tests", () => {
           line: 1,
           target: "foo",
           newName: "bar",
-        })
+        }),
       ).rejects.toThrow(/ENOENT/);
 
       await expect(
         lspGetDocumentSymbolsTool.execute({
           root: tmpDir,
           filePath: "non-existent.ts",
-        })
+        }),
       ).rejects.toThrow(/ENOENT/);
     });
 
@@ -125,7 +125,7 @@ describe("LSP error handling tests", () => {
             filePath: "restricted.ts",
             line: 1,
             character: 6,
-          })
+          }),
         ).rejects.toThrow(/EACCES|permission/i);
       } finally {
         // Restore permissions for cleanup
@@ -151,7 +151,7 @@ describe("LSP error handling tests", () => {
           line: 999,
           target: "x",
           newName: "y",
-        })
+        }),
       ).rejects.toThrow(/Invalid line number|line.*not found/i);
 
       // Negative line number
@@ -161,7 +161,7 @@ describe("LSP error handling tests", () => {
           filePath: "test.ts",
           line: -1,
           character: 0,
-        })
+        }),
       ).rejects.toThrow(/Invalid line number/i);
     });
 
@@ -198,7 +198,7 @@ describe("LSP error handling tests", () => {
           filePath: "test.ts",
           line: 1,
           symbolName: "",
-        })
+        }),
       ).rejects.toThrow(/Symbol.*not found|empty/i);
     });
 
@@ -219,7 +219,7 @@ console.log(message);`;
           line: 1,
           target: '"hello"',
           newName: '"goodbye"',
-        })
+        }),
       ).rejects.toThrow(/not found/i);
 
       // Try to rename to invalid identifier
@@ -230,7 +230,7 @@ console.log(message);`;
           line: 1,
           target: "message",
           newName: "123invalid", // Invalid identifier
-        })
+        }),
       ).rejects.toThrow(/not a valid|invalid/i);
     });
   });
@@ -251,7 +251,7 @@ console.log(message);`;
           filePath: "test.ts",
           line: 1,
           character: 0,
-        })
+        }),
       ).rejects.toThrow(/LSP client not initialized/);
 
       // Re-initialize for other tests
@@ -279,7 +279,7 @@ const y = process();
           filePath: "ambiguous.ts",
           line: "process()",
           symbolName: "process",
-        })
+        }),
       ).rejects.toThrow(/Multiple lines found|ambiguous/i);
     });
 
@@ -301,7 +301,7 @@ const z = 3;`;
           line: 2,
           target: "x",
           newName: "a",
-        })
+        }),
       ).rejects.toThrow(/Symbol "x" not found on line 2/);
     });
   });

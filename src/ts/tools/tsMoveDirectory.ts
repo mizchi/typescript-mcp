@@ -4,7 +4,9 @@ import { moveDirectory } from "../commands/moveDirectory.ts";
 import { resolve } from "node:path";
 
 const schema = z.object({
-  root: z.string().optional().describe("Root directory for resolving relative paths"),
+  root: z.string().optional().describe(
+    "Root directory for resolving relative paths",
+  ),
   sourcePath: z.string().describe("The relative path of the directory to move"),
   targetPath: z.string().describe("The new relative path for the directory"),
   overwrite: z
@@ -37,10 +39,11 @@ export const moveDirectoryTool: ToolDef<typeof schema> = {
         movedFiles: result.movedFiles.map((filePath) => ({
           path: filePath.replace(rootPath + "/", ""),
         })),
-        message: `Successfully moved directory from ${input.sourcePath} to ${input.targetPath}. Moved ${result.movedFiles.length} files.`,
+        message:
+          `Successfully moved directory from ${input.sourcePath} to ${input.targetPath}. Moved ${result.movedFiles.length} files.`,
       },
       null,
-      2
+      2,
     );
   },
 };
@@ -71,19 +74,19 @@ if (import.meta.vitest) {
       // Create test files
       await writeFile(
         path.join(testDir, "src", "components", "Button.ts"),
-        `export const Button = () => "Button";`
+        `export const Button = () => "Button";`,
       );
 
       await writeFile(
         path.join(testDir, "src", "components", "Card.ts"),
         `import { Button } from "./Button.ts";
-export const Card = () => Button();`
+export const Card = () => Button();`,
       );
 
       await writeFile(
         path.join(testDir, "src", "utils", "helpers.ts"),
         `import { Button } from "../components/Button.ts";
-export const useButton = () => Button();`
+export const useButton = () => Button();`,
       );
 
       await writeFile(
@@ -94,7 +97,7 @@ export const useButton = () => Button();`
             module: "commonjs",
             strict: true,
           },
-        })
+        }),
       );
 
       // Initialize project and add source files
@@ -117,30 +120,32 @@ export const useButton = () => Button();`
         overwrite: false,
       });
 
-        const parsed = JSON.parse(result) as MoveDirectoryResult;
-        expect(parsed.success).toBe(true);
-        expect(parsed.movedFiles).toHaveLength(2);
-        expect(parsed.movedFiles).toContainEqual({
-          path: "src/ui/components/Button.ts",
-        });
-        expect(parsed.movedFiles).toContainEqual({
-          path: "src/ui/components/Card.ts",
-        });
+      const parsed = JSON.parse(result) as MoveDirectoryResult;
+      expect(parsed.success).toBe(true);
+      expect(parsed.movedFiles).toHaveLength(2);
+      expect(parsed.movedFiles).toContainEqual({
+        path: "src/ui/components/Button.ts",
+      });
+      expect(parsed.movedFiles).toContainEqual({
+        path: "src/ui/components/Card.ts",
+      });
 
-        // Verify directory was moved
-        expect(existsSync(path.join(testDir, "src", "components"))).toBe(false);
-        expect(existsSync(path.join(testDir, "src", "ui", "components"))).toBe(true);
+      // Verify directory was moved
+      expect(existsSync(path.join(testDir, "src", "components"))).toBe(false);
+      expect(existsSync(path.join(testDir, "src", "ui", "components"))).toBe(
+        true,
+      );
 
-        // Verify imports were updated
-        const project = new Project({
-          tsConfigFilePath: path.join(testDir, "tsconfig.json"),
-        });
-        const helpersFile = project.getSourceFileOrThrow(
-          path.join(testDir, "src", "utils", "helpers.ts")
-        );
-        const helpersText = helpersFile.getFullText();
-        // Helper file content should contain updated import
-        expect(helpersText).toContain("../ui/components/Button");
+      // Verify imports were updated
+      const project = new Project({
+        tsConfigFilePath: path.join(testDir, "tsconfig.json"),
+      });
+      const helpersFile = project.getSourceFileOrThrow(
+        path.join(testDir, "src", "utils", "helpers.ts"),
+      );
+      const helpersText = helpersFile.getFullText();
+      // Helper file content should contain updated import
+      expect(helpersText).toContain("../ui/components/Button");
     });
 
     it("should throw error for non-existent directory", async () => {
@@ -149,16 +154,18 @@ export const useButton = () => Button();`
           root: testDir,
           sourcePath: "src/nonexistent",
           targetPath: "src/moved",
-        })
+        }),
       ).rejects.toThrow("Directory not found");
     });
 
     it("should handle overwrite option", async () => {
       // Create target directory
-      await mkdir(path.join(testDir, "src", "ui", "components"), { recursive: true });
+      await mkdir(path.join(testDir, "src", "ui", "components"), {
+        recursive: true,
+      });
       await writeFile(
         path.join(testDir, "src", "ui", "components", "existing.ts"),
-        `export const existing = true;`
+        `export const existing = true;`,
       );
 
       const result = await moveDirectoryTool.execute({

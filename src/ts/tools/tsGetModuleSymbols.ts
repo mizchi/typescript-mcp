@@ -38,7 +38,7 @@ function handleGetModuleSymbols({
   filePath,
 }: z.infer<typeof schema>): GetModuleSymbolsResult {
   const project = findProjectForFile(
-    filePath ? path.join(root, filePath) : root
+    filePath ? path.join(root, filePath) : root,
   );
 
   // Get module symbols
@@ -55,7 +55,7 @@ function handleGetModuleSymbols({
 }
 
 function formatGetModuleSymbolsResult(
-  result: GetModuleSymbolsResult
+  result: GetModuleSymbolsResult,
 ): string {
   const { message, symbols } = result;
 
@@ -68,7 +68,7 @@ function formatGetModuleSymbolsResult(
   }
   if (symbols.interfaces.length > 0) {
     output.push(
-      `📐 Interfaces: ${symbols.interfaces.map((s) => s.name).join(", ")}`
+      `📐 Interfaces: ${symbols.interfaces.map((s) => s.name).join(", ")}`,
     );
   }
   if (symbols.classes.length > 0) {
@@ -76,12 +76,12 @@ function formatGetModuleSymbolsResult(
   }
   if (symbols.functions.length > 0) {
     output.push(
-      `⚡ Functions: ${symbols.functions.map((s) => s.name).join(", ")}`
+      `⚡ Functions: ${symbols.functions.map((s) => s.name).join(", ")}`,
     );
   }
   if (symbols.variables.length > 0) {
     output.push(
-      `📦 Variables: ${symbols.variables.map((s) => s.name).join(", ")}`
+      `📦 Variables: ${symbols.variables.map((s) => s.name).join(", ")}`,
     );
   }
   if (symbols.others.length > 0) {

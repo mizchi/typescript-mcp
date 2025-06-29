@@ -12,7 +12,9 @@ export interface RenameOperation {
  * @param filePath Path to the file to parse
  * @returns Array of rename operations found in the file
  */
-export async function parseRenameComments(filePath: string): Promise<RenameOperation[]> {
+export async function parseRenameComments(
+  filePath: string,
+): Promise<RenameOperation[]> {
   const content = await fs.readFile(filePath, "utf-8");
   return parseRenameCommentsFromContent(content);
 }
@@ -23,7 +25,9 @@ export async function parseRenameComments(filePath: string): Promise<RenameOpera
  * @param content File content to parse
  * @returns Array of rename operations found in the content
  */
-export function parseRenameCommentsFromContent(content: string): RenameOperation[] {
+export function parseRenameCommentsFromContent(
+  content: string,
+): RenameOperation[] {
   const lines = content.split("\n");
   const operations: RenameOperation[] = [];
 
@@ -58,9 +62,9 @@ export async function getExpectedContent(filePath: string): Promise<string> {
  */
 export function removeRenameComments(content: string): string {
   const lines = content.split("\n");
-  
+
   // Remove lines that contain only @rename comments
-  const filteredLines = lines.filter(line => {
+  const filteredLines = lines.filter((line) => {
     const trimmed = line.trim();
     return !trimmed.match(/^\/\/\s*@rename\s+\S+\s+\S+\s*$/);
   });

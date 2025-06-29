@@ -8,7 +8,7 @@ import {
 import { resolveLineParameterForSourceFile as resolveLineParameter } from "../../textUtils/resolveLineParameterForSourceFile.ts";
 import { findSymbolInLineForSourceFile as findSymbolInLine } from "../../textUtils/findSymbolInLineForSourceFile.ts";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
-import { ts, type SourceFile, type Node, type Symbol } from "ts-morph";
+import { type Node, type SourceFile, type Symbol, ts } from "ts-morph";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -26,7 +26,7 @@ const schema = z.object({
     .optional()
     .default(0)
     .describe(
-      "Index of the symbol occurrence if it appears multiple times on the line (0-based)"
+      "Index of the symbol occurrence if it appears multiple times on the line (0-based)",
     ),
 });
 
@@ -83,7 +83,7 @@ function getSymbolDocumentation(symbol: Symbol): string | undefined {
 
 async function validateAndGetSourceFile(
   root: string,
-  filePath: string
+  filePath: string,
 ): Promise<{
   absolutePath: string;
   sourceFile: SourceFile;
@@ -100,17 +100,17 @@ async function validateAndGetSourceFile(
 function getNodeAtPosition(
   sourceFile: SourceFile,
   line: number,
-  column: number
+  column: number,
 ): Node {
   const position = sourceFile.compilerNode.getPositionOfLineAndCharacter(
     line - 1, // Convert to 0-based
-    column - 1 // Convert to 0-based
+    column - 1, // Convert to 0-based
   );
 
   const node = sourceFile.getDescendantAtPos(position);
   if (!node) {
     throw new Error(
-      `No node found at position ${String(line)}:${String(column)}`
+      `No node found at position ${String(line)}:${String(column)}`,
     );
   }
   return node;
@@ -120,12 +120,14 @@ function getSymbolFromNode(
   node: Node,
   symbolName: string,
   line: number,
-  column: number
+  column: number,
 ): Symbol {
   const symbol = node.getSymbol();
   if (!symbol) {
     throw new Error(
-      `No symbol found for "${symbolName}" at ${String(line)}:${String(column)}`
+      `No symbol found for "${symbolName}" at ${String(line)}:${
+        String(column)
+      }`,
     );
   }
   return symbol;
@@ -141,7 +143,7 @@ async function handleGetTypeAtSymbol({
   // Validate file and get source file
   const { absolutePath, sourceFile } = await validateAndGetSourceFile(
     root,
-    filePath
+    filePath,
   );
 
   // Resolve line parameter
@@ -152,7 +154,7 @@ async function handleGetTypeAtSymbol({
     sourceFile,
     resolvedLine,
     symbolName,
-    symbolIndex
+    symbolIndex,
   );
 
   // Get the node at the position
@@ -186,7 +188,7 @@ async function handleGetTypeAtSymbol({
 
 function formatGetTypeAtSymbolResult(
   result: GetTypeAtSymbolResult,
-  root: string
+  root: string,
 ): string {
   const { symbol, type, documentation, location } = result;
   const relativePath = path.relative(root, location.filePath);
@@ -237,7 +239,8 @@ if (import.meta.vitest) {
           },
         };
 
-        expect(formatGetTypeAtSymbolResult(result, "/project")).toMatchInlineSnapshot(`
+        expect(formatGetTypeAtSymbolResult(result, "/project"))
+          .toMatchInlineSnapshot(`
           "Type information for "count" (variable)
           Location: src/utils.ts:10:7
 
@@ -259,7 +262,8 @@ if (import.meta.vitest) {
           },
         };
 
-        expect(formatGetTypeAtSymbolResult(result, "/project")).toMatchInlineSnapshot(`
+        expect(formatGetTypeAtSymbolResult(result, "/project"))
+          .toMatchInlineSnapshot(`
           "Type information for "calculateSum" (function)
           Location: src/math.ts:5:17
 
@@ -274,7 +278,8 @@ if (import.meta.vitest) {
             kind: "interface",
           },
           type: "User",
-          documentation: "@description Represents a user in the system\n@since 1.0.0",
+          documentation:
+            "@description Represents a user in the system\n@since 1.0.0",
           location: {
             filePath: "/project/src/types/user.ts",
             line: 3,
@@ -282,7 +287,8 @@ if (import.meta.vitest) {
           },
         };
 
-        expect(formatGetTypeAtSymbolResult(result, "/project")).toMatchInlineSnapshot(`
+        expect(formatGetTypeAtSymbolResult(result, "/project"))
+          .toMatchInlineSnapshot(`
           "Type information for "User" (interface)
           Location: src/types/user.ts:3:18
 
@@ -308,7 +314,8 @@ if (import.meta.vitest) {
           },
         };
 
-        expect(formatGetTypeAtSymbolResult(result, "/project")).toMatchInlineSnapshot(`
+        expect(formatGetTypeAtSymbolResult(result, "/project"))
+          .toMatchInlineSnapshot(`
           "Type information for "config" (variable)
           Location: src/config.ts:15:7
 
@@ -330,7 +337,8 @@ if (import.meta.vitest) {
           },
         };
 
-        expect(formatGetTypeAtSymbolResult(result, "/project")).toMatchInlineSnapshot(`
+        expect(formatGetTypeAtSymbolResult(result, "/project"))
+          .toMatchInlineSnapshot(`
           "Type information for "getName" (method)
           Location: src/models/Person.ts:20:3
 
@@ -352,7 +360,8 @@ if (import.meta.vitest) {
           },
         };
 
-        expect(formatGetTypeAtSymbolResult(result, "/project")).toMatchInlineSnapshot(`
+        expect(formatGetTypeAtSymbolResult(result, "/project"))
+          .toMatchInlineSnapshot(`
           "Type information for "UserID" (type alias)
           Location: src/types/index.ts:1:13
 

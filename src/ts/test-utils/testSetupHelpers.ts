@@ -14,18 +14,18 @@ export interface TestSetupResult {
  */
 export async function createTestProjectWithMocks(
   sourceContent: string,
-  filePath: string = "/project/test.ts"
+  filePath: string = "/project/test.ts",
 ): Promise<TestSetupResult> {
   const { Project } = await import("ts-morph");
   const projectCacheMock = await import("../projectCache.ts");
-  
+
   const project = new Project({
     useInMemoryFileSystem: true,
   });
 
   const testFile = project.createSourceFile(
     filePath,
-    sourceContent.trim()
+    sourceContent.trim(),
   );
 
   await testFile.save();
@@ -33,7 +33,7 @@ export async function createTestProjectWithMocks(
   // Mock the project cache functions
   vi.mocked(projectCacheMock.findProjectForFile).mockReturnValue(project);
   vi.mocked(projectCacheMock.getOrCreateSourceFileWithRefresh).mockReturnValue(
-    testFile
+    testFile,
   );
 
   return { project, testFile };

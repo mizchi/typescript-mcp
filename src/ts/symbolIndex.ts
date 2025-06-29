@@ -1,6 +1,6 @@
-import { Project, SourceFile, Node, SyntaxKind } from "ts-morph";
-import { existsSync, watch, FSWatcher } from "fs";
-import { join, relative, dirname } from "path";
+import { Node, Project, SourceFile, SyntaxKind } from "ts-morph";
+import { existsSync, FSWatcher, watch } from "fs";
+import { dirname, join, relative } from "path";
 import { glob } from "glob";
 import { debug } from "../mcp/_mcplib.ts";
 
@@ -27,7 +27,8 @@ export class ProjectSymbolIndexer {
   private rootPath: string;
   private watchers: Map<string, FSWatcher> = new Map();
   private watchedDirs: Set<string> = new Set();
-  private updateQueue: Map<string, { eventType: string; timestamp: number }> = new Map();
+  private updateQueue: Map<string, { eventType: string; timestamp: number }> =
+    new Map();
   private updateTimer: NodeJS.Timeout | null = null;
   private readonly UPDATE_DELAY_MS = 100; // Debounce delay in milliseconds
 
@@ -44,15 +45,20 @@ export class ProjectSymbolIndexer {
   /**
    * Build or rebuild the symbol index for the entire project
    */
-  async buildIndex(includePatterns: string[] = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"], enableWatch: boolean = true): Promise<void> {
+  async buildIndex(
+    includePatterns: string[] = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+    enableWatch: boolean = true,
+  ): Promise<void> {
     // Always disable file watching in test environment
-    if (process.env.NODE_ENV === 'test' || process.env.VITEST || process.env.CI === 'true') {
+    if (
+      process.env.NODE_ENV === "test" || process.env.VITEST ||
+      process.env.CI === "true"
+    ) {
       enableWatch = false;
     }
-    
+
     debug("Building project symbol index...");
     const startTime = Date.now();
-
 
     // Clear existing index
     this.index.symbols.clear();
@@ -86,7 +92,9 @@ export class ProjectSymbolIndexer {
 
     this.index.lastUpdated = new Date();
     const duration = Date.now() - startTime;
-    debug(`Symbol index built in ${duration}ms. Total symbols: ${this.index.symbols.size}`);
+    debug(
+      `Symbol index built in ${duration}ms. Total symbols: ${this.index.symbols.size}`,
+    );
 
     // Set up file watchers if enabled
     if (enableWatch) {
@@ -105,9 +113,14 @@ export class ProjectSymbolIndexer {
     const exportedDeclarations = sourceFile.getExportedDeclarations();
     for (const [name, declarations] of exportedDeclarations) {
       exportedSymbols.push(name);
-      
+
       for (const declaration of declarations) {
-        const symbolInfo = this.createSymbolInfo(declaration, name, filePath, true);
+        const symbolInfo = this.createSymbolInfo(
+          declaration,
+          name,
+          filePath,
+          true,
+        );
         if (symbolInfo) {
           this.addSymbolToIndex(symbolInfo);
         }
@@ -124,7 +137,12 @@ export class ProjectSymbolIndexer {
       if (this.isDeclarationNode(node)) {
         const symbol = node.getSymbol();
         if (symbol && !exportedSymbols.includes(symbol.getName())) {
-          const symbolInfo = this.createSymbolInfo(node, symbol.getName(), filePath, false);
+          const symbolInfo = this.createSymbolInfo(
+            node,
+            symbol.getName(),
+            filePath,
+            false,
+          );
           if (symbolInfo) {
             this.addSymbolToIndex(symbolInfo);
           }
@@ -136,7 +154,12 @@ export class ProjectSymbolIndexer {
   /**
    * Create symbol information from a node
    */
-  private createSymbolInfo(node: Node, name: string, filePath: string, isExported: boolean): SymbolInfo | null {
+  private createSymbolInfo(
+    node: Node,
+    name: string,
+    filePath: string,
+    isExported: boolean,
+  ): SymbolInfo | null {
     const sourceFile = node.getSourceFile();
     const start = node.getStart();
     const pos = sourceFile.getLineAndColumnAtPos(start);
@@ -156,7 +179,7 @@ export class ProjectSymbolIndexer {
       const jsDocTags = symbol.getJsDocTags();
       if (jsDocTags.length > 0) {
         symbolInfo.documentation = jsDocTags
-          .map(tag => `${tag.getName()}: ${tag.getText()}`)
+          .map((tag) => `${tag.getName()}: ${tag.getText()}`)
           .join("\n");
       }
     }
@@ -230,14 +253,15 @@ export class ProjectSymbolIndexer {
     limit?: number;
   }): SymbolInfo[] {
     const results: SymbolInfo[] = [];
-    const { exact = false, includeNonExported = false, kinds, limit = 50 } = options || {};
+    const { exact = false, includeNonExported = false, kinds, limit = 50 } =
+      options || {};
 
     for (const [name, symbols] of this.index.symbols) {
       if (exact ? name === query : name.startsWith(query)) {
         for (const symbol of symbols) {
           if (!includeNonExported && !symbol.isExported) continue;
           if (kinds && !kinds.includes(symbol.kind)) continue;
-          
+
           results.push(symbol);
           if (results.length >= limit) {
             return results;
@@ -284,7 +308,7 @@ export class ProjectSymbolIndexer {
     watchedDirectories: number;
   } {
     const symbolsByKind = new Map<string, number>();
-    
+
     for (const symbols of this.index.symbols.values()) {
       for (const symbol of symbols) {
         const count = symbolsByKind.get(symbol.kind) || 0;
@@ -310,7 +334,7 @@ export class ProjectSymbolIndexer {
 
     // Get all directories containing source files
     const dirsToWatch = new Set<string>();
-    
+
     for (const [filePath] of this.index.modules) {
       const dir = dirname(join(this.rootPath, filePath));
       dirsToWatch.add(dir);
@@ -322,20 +346,24 @@ export class ProjectSymbolIndexer {
     // Set up watchers for each directory
     for (const dir of dirsToWatch) {
       if (!existsSync(dir)) continue;
-      
+
       try {
-        const watcher = watch(dir, { recursive: false }, (eventType, filename) => {
-          if (!filename) return;
-          
-          // Check if the file matches our patterns
-          const fullPath = join(dir, filename);
-          const relativePath = relative(this.rootPath, fullPath);
-          
-          if (this.shouldIndexFile(relativePath)) {
-            debug(`File ${eventType}: ${relativePath}`);
-            this.handleFileChange(fullPath, eventType);
-          }
-        });
+        const watcher = watch(
+          dir,
+          { recursive: false },
+          (eventType, filename) => {
+            if (!filename) return;
+
+            // Check if the file matches our patterns
+            const fullPath = join(dir, filename);
+            const relativePath = relative(this.rootPath, fullPath);
+
+            if (this.shouldIndexFile(relativePath)) {
+              debug(`File ${eventType}: ${relativePath}`);
+              this.handleFileChange(fullPath, eventType);
+            }
+          },
+        );
 
         this.watchers.set(dir, watcher);
         this.watchedDirs.add(dir);
@@ -351,11 +379,11 @@ export class ProjectSymbolIndexer {
    * Check if a file should be indexed based on include patterns
    */
   private shouldIndexFile(relativePath: string): boolean {
-    const extensions = ['.ts', '.tsx', '.js', '.jsx'];
-    return extensions.some(ext => relativePath.endsWith(ext)) &&
-           !relativePath.includes('node_modules') &&
-           !relativePath.includes('dist') &&
-           !relativePath.endsWith('.d.ts');
+    const extensions = [".ts", ".tsx", ".js", ".jsx"];
+    return extensions.some((ext) => relativePath.endsWith(ext)) &&
+      !relativePath.includes("node_modules") &&
+      !relativePath.includes("dist") &&
+      !relativePath.endsWith(".d.ts");
   }
 
   /**
@@ -364,65 +392,65 @@ export class ProjectSymbolIndexer {
   private handleFileChange(filePath: string, eventType: string): void {
     // Add to update queue
     this.updateQueue.set(filePath, { eventType, timestamp: Date.now() });
-    
+
     // Clear existing timer
     if (this.updateTimer) {
       clearTimeout(this.updateTimer);
     }
-    
+
     // Set new timer to process queued updates
     this.updateTimer = setTimeout(() => {
       this.processUpdateQueue();
     }, this.UPDATE_DELAY_MS);
   }
-  
+
   /**
    * Process all queued file updates
    */
   private processUpdateQueue(): void {
     if (this.updateQueue.size === 0) return;
-    
+
     debug(`Processing ${this.updateQueue.size} queued file updates`);
     const startTime = Date.now();
-    
+
     // Group updates by type to optimize processing
     const updates = Array.from(this.updateQueue.entries());
     const toRemove: string[] = [];
     const toUpdate: string[] = [];
-    
+
     for (const [filePath, { eventType }] of updates) {
       const relativePath = relative(this.rootPath, filePath);
-      
-      if (eventType === 'rename') {
+
+      if (eventType === "rename") {
         // File deleted or renamed
         toRemove.push(relativePath);
-        
+
         // If file still exists, it was renamed (not deleted)
         if (existsSync(filePath)) {
           toUpdate.push(filePath);
         }
-      } else if (eventType === 'change') {
+      } else if (eventType === "change") {
         // File modified - only update if not already scheduled for removal
         if (!toRemove.includes(relativePath)) {
           toUpdate.push(filePath);
         }
       }
     }
-    
+
     // Process removals first
     for (const relativePath of toRemove) {
       this.removeFileFromIndex(relativePath);
     }
-    
+
     // Then process updates
     for (const filePath of toUpdate) {
       this.updateFileInIndex(filePath);
     }
-    
+
     // Clear the queue
     this.updateQueue.clear();
     this.updateTimer = null;
-    
+
     const duration = Date.now() - startTime;
     debug(`Processed file updates in ${duration}ms`);
   }
@@ -436,7 +464,7 @@ export class ProjectSymbolIndexer {
 
     // Remove symbols from this file
     for (const [symbolName, symbols] of this.index.symbols) {
-      const filtered = symbols.filter(s => s.filePath !== relativePath);
+      const filtered = symbols.filter((s) => s.filePath !== relativePath);
       if (filtered.length === 0) {
         this.index.symbols.delete(symbolName);
       } else if (filtered.length !== symbols.length) {
@@ -454,20 +482,20 @@ export class ProjectSymbolIndexer {
   private updateFileInIndex(filePath: string): void {
     try {
       const relativePath = relative(this.rootPath, filePath);
-      
+
       // Remove old entries
       this.removeFileFromIndex(relativePath);
-      
+
       // Remove the source file from the project to clear any cached content
       const existingSourceFile = this.project.getSourceFile(filePath);
       if (existingSourceFile) {
         this.project.removeSourceFile(existingSourceFile);
       }
-      
+
       // Re-add and index the file with fresh content
       const sourceFile = this.project.addSourceFileAtPath(filePath);
       this.indexSourceFile(sourceFile);
-      
+
       this.index.lastUpdated = new Date();
       debug(`Updated file in index: ${relativePath}`);
     } catch (error) {
@@ -496,7 +524,7 @@ export class ProjectSymbolIndexer {
       this.updateTimer = null;
     }
     this.updateQueue.clear();
-    
+
     // Clear watchers and index
     this.clearWatchers();
     this.index.symbols.clear();

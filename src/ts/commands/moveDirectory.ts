@@ -5,7 +5,7 @@ export async function moveDirectory(
   rootPath: string,
   sourcePath: string,
   targetPath: string,
-  options?: { overwrite?: boolean }
+  options?: { overwrite?: boolean },
 ): Promise<{
   success: boolean;
   movedFiles: string[];
@@ -74,7 +74,7 @@ export async function moveDirectory(
         const fileSystem = project.getFileSystem();
         const targetParentPath = absoluteTargetPath.substring(
           0,
-          absoluteTargetPath.lastIndexOf("/")
+          absoluteTargetPath.lastIndexOf("/"),
         );
         fileSystem.mkdirSync(targetParentPath);
         // Retry the move

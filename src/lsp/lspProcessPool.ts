@@ -1,4 +1,4 @@
-import { spawn, type ChildProcess } from "node:child_process";
+import { type ChildProcess, spawn } from "node:child_process";
 import { createLSPClient, type LSPClient } from "./lspClient.ts";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -22,12 +22,18 @@ const poolState: LSPProcessPoolState = {
 
 async function createClient(root: string): Promise<PooledLSPClient> {
   const useNativePreview = process.env.USE_TSGO === "true";
-  
+
   // Use direct node_modules/.bin path to avoid npx overhead
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const tsLangServerPath = path.join(__dirname, "../../node_modules/.bin/typescript-language-server");
-  const tsgoPath = path.join(__dirname, "../../node_modules/.bin/@typescript/native-preview");
-  
+  const tsLangServerPath = path.join(
+    __dirname,
+    "../../node_modules/.bin/typescript-language-server",
+  );
+  const tsgoPath = path.join(
+    __dirname,
+    "../../node_modules/.bin/@typescript/native-preview",
+  );
+
   const command = useNativePreview
     ? [tsgoPath, "--", "--lsp", "--stdio"]
     : [tsLangServerPath, "--stdio"];
@@ -42,7 +48,7 @@ async function createClient(root: string): Promise<PooledLSPClient> {
     process: lspProcess,
     languageId: "typescript",
   });
-  
+
   await client.start();
 
   return {
@@ -103,7 +109,7 @@ async function release(root: string): Promise<void> {
 
 async function shutdown(): Promise<void> {
   const cleanupPromises: Promise<void>[] = [];
-  
+
   for (const [root, pooledClient] of poolState.pool.entries()) {
     poolState.pool.delete(root);
     cleanupPromises.push(cleanup(pooledClient));

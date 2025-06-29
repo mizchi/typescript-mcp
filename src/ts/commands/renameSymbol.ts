@@ -1,10 +1,10 @@
 import {
+  getCompilerOptionsFromTsConfig,
+  Node,
   Project,
   type SourceFile,
-  Node,
-  getCompilerOptionsFromTsConfig,
 } from "ts-morph";
-import { type Result, ok, err } from "neverthrow";
+import { err, ok, type Result } from "neverthrow";
 
 export interface RenameRequest {
   filePath: string;
@@ -36,14 +36,16 @@ export function createProject(tsConfigPath?: string): Project {
     const { errors } = getCompilerOptionsFromTsConfig(tsConfigPath);
     if (errors.length > 0) {
       throw new Error(
-        `Failed to read tsconfig: ${errors
-          .map((e) => {
-            const messageText = e.getMessageText();
-            return typeof messageText === "string"
-              ? messageText
-              : messageText.getMessageText();
-          })
-          .join(", ")}`
+        `Failed to read tsconfig: ${
+          errors
+            .map((e) => {
+              const messageText = e.getMessageText();
+              return typeof messageText === "string"
+                ? messageText
+                : messageText.getMessageText();
+            })
+            .join(", ")
+        }`,
       );
     }
     return new Project({
@@ -62,7 +64,7 @@ export function createProject(tsConfigPath?: string): Project {
  */
 export async function renameSymbol(
   project: Project,
-  request: RenameRequest
+  request: RenameRequest,
 ): Promise<Result<RenameSuccess, string>> {
   try {
     // ソースファイルを取得
@@ -81,9 +83,11 @@ export async function renameSymbol(
 
     if (!node) {
       return err(
-        `Symbol "${request.symbolName}" not found at line ${String(
-          request.line
-        )}`
+        `Symbol "${request.symbolName}" not found at line ${
+          String(
+            request.line,
+          )
+        }`,
       );
     }
 
@@ -100,7 +104,7 @@ export async function renameSymbol(
       const renameableNode = node as Node & {
         rename: (
           newName: string,
-          options?: { renameInComments?: boolean; renameInStrings?: boolean }
+          options?: { renameInComments?: boolean; renameInStrings?: boolean },
         ) => void;
       };
       renameableNode.rename(request.newName, {
@@ -118,7 +122,8 @@ export async function renameSymbol(
     await project.save();
 
     return ok({
-      message: `Successfully renamed symbol "${request.symbolName}" to "${request.newName}"`,
+      message:
+        `Successfully renamed symbol "${request.symbolName}" to "${request.newName}"`,
       changedFiles,
     });
   } catch (error) {
@@ -132,7 +137,7 @@ export async function renameSymbol(
 function findSymbolAtLine(
   sourceFile: SourceFile,
   line: number,
-  symbolName: string
+  symbolName: string,
 ): Node | undefined {
   const candidateNodes: Node[] = [];
 
@@ -193,7 +198,7 @@ function findSymbolAtLine(
     if (duplicates.length > 1) {
       // 名前付きノード（クラス、関数など）を優先
       const namedNodes = duplicates.filter(
-        (n) => hasGetNameMethod(n) || Node.isVariableDeclaration(n)
+        (n) => hasGetNameMethod(n) || Node.isVariableDeclaration(n),
       );
       if (namedNodes.length > 0) {
         return namedNodes[0] === node;
@@ -207,18 +212,20 @@ function findSymbolAtLine(
   if (uniqueNodes.length > 1) {
     // 列位置でソートして、同じ列位置のものだけをチェック
     const firstNodeCol = sourceFile.getLineAndColumnAtPos(
-      uniqueNodes[0].getStart()
+      uniqueNodes[0].getStart(),
     ).column;
     const sameColumnNodes = uniqueNodes.filter(
       (n) =>
-        sourceFile.getLineAndColumnAtPos(n.getStart()).column === firstNodeCol
+        sourceFile.getLineAndColumnAtPos(n.getStart()).column === firstNodeCol,
     );
 
     if (sameColumnNodes.length > 1) {
       throw new Error(
-        `Multiple occurrences of symbol "${symbolName}" found on line ${String(
-          line
-        )}. Please be more specific.`
+        `Multiple occurrences of symbol "${symbolName}" found on line ${
+          String(
+            line,
+          )
+        }. Please be more specific.`,
       );
     }
 
@@ -245,7 +252,7 @@ function captureFileStates(project: Project): Map<string, string> {
  */
 function detectChanges(
   project: Project,
-  beforeStates: Map<string, string>
+  beforeStates: Map<string, string>,
 ): RenameSuccess["changedFiles"] {
   const changedFiles: RenameSuccess["changedFiles"] = [];
 
@@ -274,7 +281,7 @@ function detectChanges(
 function diffTexts(
   _sourceFile: SourceFile,
   beforeText: string,
-  afterText: string
+  afterText: string,
 ): { line: number; column: number; oldText: string; newText: string }[] {
   const changes: {
     line: number;

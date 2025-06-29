@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { type Result, ok, err } from "neverthrow";
+import { err, ok, type Result } from "neverthrow";
 import { getActiveClient } from "../lspClient.ts";
 import { parseLineNumber } from "../../textUtils/parseLineNumber.ts";
 import { findSymbolInLine } from "../../textUtils/findSymbolInLine.ts";
@@ -21,7 +21,8 @@ const schema = z.object({
     .number()
     .describe("Character position in the line (0-based)")
     .optional(),
-  target: z.string().describe("Text to find and get hover information for").optional(),
+  target: z.string().describe("Text to find and get hover information for")
+    .optional(),
 });
 
 type GetHoverRequest = z.infer<typeof schema>;
@@ -59,7 +60,7 @@ interface GetHoverSuccess {
  * Helper to handle hover request when line is not provided
  */
 async function getHoverWithoutLine(
-  request: GetHoverRequest
+  request: GetHoverRequest,
 ): Promise<Result<GetHoverSuccess, string>> {
   try {
     const client = getActiveClient();
@@ -102,13 +103,13 @@ function formatHoverResult(
   result: HoverResult | null,
   request: GetHoverRequest,
   targetLine: number,
-  symbolPosition: number
+  symbolPosition: number,
 ): Result<GetHoverSuccess, string> {
   if (!result) {
     return ok({
-      message: `No hover information available${request.target ? ` for "${request.target}"` : ""} at ${
-        request.filePath
-      }:${targetLine + 1}:${symbolPosition + 1}`,
+      message: `No hover information available${
+        request.target ? ` for "${request.target}"` : ""
+      } at ${request.filePath}:${targetLine + 1}:${symbolPosition + 1}`,
       hover: null,
     });
   }
@@ -147,9 +148,9 @@ function formatHoverResult(
   }
 
   return ok({
-    message: `Hover information for ${request.target ? `"${request.target}" at ` : ""}${
-      request.filePath
-    }:${targetLine + 1}:${symbolPosition + 1}`,
+    message: `Hover information for ${
+      request.target ? `"${request.target}" at ` : ""
+    }${request.filePath}:${targetLine + 1}:${symbolPosition + 1}`,
     hover: {
       contents: formattedContents,
       range,
@@ -161,7 +162,7 @@ function formatHoverResult(
  * Gets hover information for a TypeScript symbol using LSP
  */
 async function getHover(
-  request: GetHoverRequest
+  request: GetHoverRequest,
 ): Promise<Result<GetHoverSuccess, string>> {
   // If line is not provided, we need to find the target text
   if (request.line === undefined) {
@@ -170,21 +171,21 @@ async function getHover(
 
   try {
     const client = getActiveClient();
-    
+
     // Read file content
     const absolutePath = path.resolve(request.root, request.filePath);
     const fileContent = readFileSync(absolutePath, "utf-8");
     const fileUri = `file://${absolutePath}`;
-    
+
     // Parse line number
     const lines = fileContent.split("\n");
     const lineResult = parseLineNumber(fileContent, request.line);
     if ("error" in lineResult) {
       return err(`${lineResult.error} in ${request.filePath}`);
     }
-    
+
     const targetLine = lineResult.lineIndex;
-    
+
     // Determine character position
     let symbolPosition: number;
     if (request.character !== undefined) {
@@ -202,10 +203,10 @@ async function getHover(
       // Default to beginning of line if neither character nor target is provided
       symbolPosition = 0;
     }
-    
+
     // Open document in LSP
     client.openDocument(fileUri, fileContent);
-    
+
     // Give LSP server time to process the document
     await new Promise<void>((resolve) => setTimeout(resolve, 1000));
     // Get hover info
@@ -224,7 +225,7 @@ async function getHover(
  * Formats hover contents from various LSP formats to a string
  */
 function formatHoverContents(
-  contents: MarkedString | MarkedString[] | MarkupContent
+  contents: MarkedString | MarkedString[] | MarkupContent,
 ): string {
   if (typeof contents === "string") {
     return contents;
@@ -265,16 +266,18 @@ export const lspGetHoverTool: ToolDef<typeof schema> = {
 
 if (import.meta.vitest) {
   const { describe, it, expect, beforeAll, afterAll } = import.meta.vitest;
-  const { setupLSPForTest, teardownLSPForTest } = await import("../testHelpers.ts");
+  const { setupLSPForTest, teardownLSPForTest } = await import(
+    "../testHelpers.ts"
+  );
   const { default: path } = await import("path");
 
   describe("lspGetHoverTool", () => {
     const root = path.resolve(import.meta.dirname, "../../..");
-    
+
     beforeAll(async () => {
       await setupLSPForTest(root);
     });
-    
+
     afterAll(async () => {
       await teardownLSPForTest();
     });
@@ -332,7 +335,7 @@ if (import.meta.vitest) {
           filePath: "examples/typescript/types.ts",
           line: 3, // Empty line
           target: "v",
-        })
+        }),
       ).rejects.toThrow('Symbol "v" not found');
     });
 
@@ -343,7 +346,7 @@ if (import.meta.vitest) {
           filePath: "examples/typescript/types.ts",
           line: 1,
           target: "NonExistentSymbol",
-        })
+        }),
       ).rejects.toThrow('Symbol "NonExistentSymbol" not found');
     });
 
@@ -354,7 +357,7 @@ if (import.meta.vitest) {
           filePath: "examples/typescript/does-not-exist.ts",
           line: 1,
           target: "something",
-        })
+        }),
       ).rejects.toThrow("ENOENT");
     });
 
@@ -365,7 +368,7 @@ if (import.meta.vitest) {
           filePath: "examples/typescript/types.ts",
           line: "NonExistentLine",
           target: "something",
-        })
+        }),
       ).rejects.toThrow('Line containing "NonExistentLine" not found');
     });
 
@@ -384,11 +387,11 @@ if (import.meta.vitest) {
   // @typescript/native-preview
   describe("lspGetHoverTool with fresh LSP instance", () => {
     const root = path.resolve(import.meta.dirname, "../../..");
-    
+
     beforeAll(async () => {
       await setupLSPForTest(root);
     });
-    
+
     afterAll(async () => {
       await teardownLSPForTest();
     });

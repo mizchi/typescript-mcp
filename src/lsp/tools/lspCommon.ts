@@ -4,7 +4,7 @@ import fs from "fs/promises";
 import { pathToFileURL } from "url";
 import { getLSPClient } from "../lspClient.ts";
 import { resolveLineParameter } from "../../textUtils/resolveLineParameter.ts";
-import { formatError, ErrorContext } from "../../mcp/utils/errorHandler.ts";
+import { ErrorContext, formatError } from "../../mcp/utils/errorHandler.ts";
 
 // Common schema shapes for LSP tools
 export const filePathShape = {
@@ -31,7 +31,7 @@ export const characterShape = {
 // Common file operations
 export async function prepareFileContext(
   root: string,
-  filePath: string
+  filePath: string,
 ): Promise<{
   absolutePath: string;
   fileUri: string;
@@ -48,7 +48,7 @@ export async function prepareFileContext(
   } catch (error) {
     const context: ErrorContext = {
       operation: "file access",
-      filePath: path.relative(root, absolutePath)
+      filePath: path.relative(root, absolutePath),
     };
     throw new Error(formatError(error, context));
   }
@@ -63,7 +63,7 @@ export async function prepareFileContext(
   } catch (error) {
     const context: ErrorContext = {
       operation: "file read",
-      filePath: path.relative(root, absolutePath)
+      filePath: path.relative(root, absolutePath),
     };
     throw new Error(formatError(error, context));
   }
@@ -74,15 +74,22 @@ export async function withLSPDocument<T>(
   fileUri: string,
   content: string,
   operation: () => Promise<T>,
-  language?: string
+  language?: string,
 ): Promise<T> {
   const client = getLSPClient();
   if (!client) {
     const context: ErrorContext = {
       operation: "LSP document operation",
-      language
+      language,
     };
-    throw new Error(formatError(new Error("LSP client not initialized. Ensure the language server is started."), context));
+    throw new Error(
+      formatError(
+        new Error(
+          "LSP client not initialized. Ensure the language server is started.",
+        ),
+        context,
+      ),
+    );
   }
 
   // Open the document in LSP with language ID if provided
@@ -90,8 +97,8 @@ export async function withLSPDocument<T>(
 
   try {
     // Wait a bit for LSP to process the document
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     // Execute the operation
     return await operation();
   } finally {
@@ -104,18 +111,23 @@ export async function withLSPDocument<T>(
 export function resolveLineOrThrow(
   content: string,
   line: string | number,
-  filePath: string
+  filePath: string,
 ): number {
   const resolveResult = resolveLineParameter(content, line);
-  
+
   if (!resolveResult.success) {
     const context: ErrorContext = {
       operation: "line resolution",
       filePath,
-      details: { line, error: resolveResult.error }
+      details: { line, error: resolveResult.error },
     };
-    throw new Error(formatError(new Error(`Failed to resolve line: ${resolveResult.error}`), context));
+    throw new Error(
+      formatError(
+        new Error(`Failed to resolve line: ${resolveResult.error}`),
+        context,
+      ),
+    );
   }
-  
+
   return resolveResult.lineIndex;
 }

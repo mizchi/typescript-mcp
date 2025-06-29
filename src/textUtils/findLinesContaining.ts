@@ -6,7 +6,7 @@
  */
 export function findLinesContaining(
   fullText: string,
-  searchString: string
+  searchString: string,
 ): number[] {
   const lines = fullText.split("\n");
   const matchingLines: number[] = [];
@@ -26,7 +26,7 @@ if (import.meta.vitest) {
       const fullText = `const foo = 1;
 const bar = 2;
 const baz = 3;`;
-      
+
       const result = findLinesContaining(fullText, "bar");
       expect(result).toEqual([1]);
     });
@@ -35,7 +35,7 @@ const baz = 3;`;
       const fullText = `const foo = 1;
 const foo2 = 2;
 const bar = foo;`;
-      
+
       const result = findLinesContaining(fullText, "foo");
       expect(result).toEqual([0, 1, 2]);
     });
@@ -43,7 +43,7 @@ const bar = foo;`;
     it("should return empty array if string not found", () => {
       const fullText = `const foo = 1;
 const bar = 2;`;
-      
+
       const result = findLinesContaining(fullText, "baz");
       expect(result).toEqual([]);
     });

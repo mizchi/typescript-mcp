@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { spawn, ChildProcess } from "child_process";
-import { 
-  initialize as initializeLSPClient, 
-  shutdown as shutdownLSPClient
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { ChildProcess, spawn } from "child_process";
+import {
+  initialize as initializeLSPClient,
+  shutdown as shutdownLSPClient,
 } from "../src/lsp/lspClient.ts";
 import { lspDeleteSymbolTool } from "../src/lsp/tools/lspDeleteSymbol.ts";
 import fs from "fs/promises";
@@ -45,7 +45,7 @@ describe("lsp delete symbol", () => {
     if (tmpDir) {
       await fs.rm(tmpDir, { recursive: true, force: true });
     }
-    
+
     if (lspProcess) {
       await shutdownLSPClient();
       lspProcess.kill();
@@ -82,9 +82,9 @@ export { foo };`;
     // Verify file content - all foo references should be removed
     const actualContent = await fs.readFile(testFile, "utf-8");
     expect(actualContent).not.toContain("foo");
-    
+
     // The first line should be deleted entirely
-    const lines = actualContent.split("\n").filter(line => line.trim());
+    const lines = actualContent.split("\n").filter((line) => line.trim());
     expect(lines[0]).toBe("const bar =  + 2;");
   });
 
@@ -137,7 +137,7 @@ console.log(processData("world"));`;
         line: 1,
         target: "foo",
         removeReferences: true,
-      })
+      }),
     ).rejects.toThrow();
   });
 
@@ -160,7 +160,7 @@ const baz = 2;`;
         line: 1,
         target: "foo", // foo doesn't exist on line 1
         removeReferences: true,
-      })
+      }),
     ).rejects.toThrow('Symbol "foo" not found on line 1');
   });
 });

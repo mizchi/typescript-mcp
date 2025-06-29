@@ -1,13 +1,13 @@
 // FIXME later
 import {
-  type Project,
   Node,
-  ts,
+  type Project,
   type SourceFile,
   type Symbol,
+  ts,
   type Type,
 } from "ts-morph";
-import { type Result, ok, err } from "neverthrow";
+import { err, ok, type Result } from "neverthrow";
 
 export interface GetTypeSignatureRequest {
   moduleName: string;
@@ -84,7 +84,7 @@ function simplifyTypeName(typeName: string): string {
  */
 function findRelatedTypes(
   sourceFile: SourceFile,
-  signature: TypeSignature
+  signature: TypeSignature,
 ): Definition[] {
   const relatedTypes: Definition[] = [];
   const processedTypes = new Set<string>();
@@ -114,10 +114,9 @@ function findRelatedTypes(
             const currentDir = sourceFile.getDirectoryPath();
             const resolvedPath = moduleSpecifier.replace(
               /^\.\//,
-              currentDir + "/"
+              currentDir + "/",
             );
-            targetFile =
-              project.getSourceFile(resolvedPath + ".ts") ||
+            targetFile = project.getSourceFile(resolvedPath + ".ts") ||
               project.getSourceFile(resolvedPath + ".tsx") ||
               project.getSourceFile(resolvedPath + "/index.ts");
           }
@@ -172,7 +171,7 @@ function findRelatedTypes(
     for (const funcSig of signature.functionSignatures) {
       // Extract from return type
       const returnTypeMatch = funcSig.returnType.match(
-        /\b([A-Z][a-zA-Z0-9]*)\b/g
+        /\b([A-Z][a-zA-Z0-9]*)\b/g,
       );
       if (returnTypeMatch) {
         returnTypeMatch.forEach((t) => typeNames.add(t));
@@ -221,7 +220,7 @@ function findRelatedTypes(
  */
 function extractDefinitions(
   symbol: Symbol,
-  requestedName?: string
+  requestedName?: string,
 ): Definition[] {
   const definitions: Definition[] = [];
 
@@ -379,7 +378,7 @@ function extractDefinitions(
  */
 function extractFunctionSignatures(
   type: Type,
-  contextNode: Node
+  contextNode: Node,
 ): FunctionSignature[] {
   const signatures: FunctionSignature[] = [];
   const callSignatures = type.getCallSignatures();
@@ -400,8 +399,8 @@ function extractFunctionSignatures(
           const firstDecl = paramDeclarations[0];
           if (Node.isParameterDeclaration(firstDecl)) {
             const paramDecl = firstDecl;
-            isOptional =
-              paramDecl.hasQuestionToken() || paramDecl.hasInitializer();
+            isOptional = paramDecl.hasQuestionToken() ||
+              paramDecl.hasInitializer();
 
             const initializer = paramDecl.getInitializer();
             if (initializer) {
@@ -443,21 +442,22 @@ function extractFunctionSignatures(
 
     // Get type parameters
     const typeParams = sig.getTypeParameters();
-    const typeParamStrings =
-      typeParams.length > 0
-        ? typeParams.map((t: any) => {
-            const constraint = t.getConstraint();
-            if (constraint) {
-              const symbol = t.getSymbol();
-              const name = symbol ? symbol.getName() : "T";
-              return `${name} extends ${simplifyTypeName(
-                constraint.getText()
-              )}`;
-            }
-            const symbol = t.getSymbol();
-            return symbol ? (symbol as Symbol).getName() : "T";
-          })
-        : undefined;
+    const typeParamStrings = typeParams.length > 0
+      ? typeParams.map((t: any) => {
+        const constraint = t.getConstraint();
+        if (constraint) {
+          const symbol = t.getSymbol();
+          const name = symbol ? symbol.getName() : "T";
+          return `${name} extends ${
+            simplifyTypeName(
+              constraint.getText(),
+            )
+          }`;
+        }
+        const symbol = t.getSymbol();
+        return symbol ? (symbol as Symbol).getName() : "T";
+      })
+      : undefined;
 
     signatures.push({
       parameters,
@@ -484,8 +484,9 @@ function extractProperties(type: Type, contextNode: Node): PropertyInfo[] {
       propName.startsWith("_") ||
       propName.startsWith("#") ||
       propName === "constructor"
-    )
+    ) {
       continue;
+    }
 
     const propDeclarations = prop.getDeclarations();
     if (!propDeclarations || propDeclarations.length === 0) {
@@ -546,8 +547,9 @@ function extractMethods(type: Type, contextNode: Node): MethodInfo[] {
       propName.startsWith("_") ||
       propName.startsWith("#") ||
       propName === "constructor"
-    )
+    ) {
       continue;
+    }
 
     const propDeclarations = prop.getDeclarations();
     let propType;
@@ -582,7 +584,7 @@ function extractMethods(type: Type, contextNode: Node): MethodInfo[] {
  */
 export function getTypeSignature(
   project: Project,
-  request: GetTypeSignatureRequest
+  request: GetTypeSignatureRequest,
 ): Result<GetTypeSignatureSuccess, string> {
   try {
     // For relative imports, ensure the source file is fresh
@@ -596,12 +598,11 @@ export function getTypeSignature(
       // Also refresh the target module file
       const contextDir = request.filePath.substring(
         0,
-        request.filePath.lastIndexOf("/")
+        request.filePath.lastIndexOf("/"),
       );
       const modulePath = request.moduleName.replace(/^\.\//, "");
       const resolvedPath = contextDir + "/" + modulePath;
-      const targetFile =
-        project.getSourceFile(resolvedPath) ||
+      const targetFile = project.getSourceFile(resolvedPath) ||
         project.getSourceFile(resolvedPath + ".ts");
       if (targetFile) {
         void targetFile.refreshFromFileSystem();
@@ -610,7 +611,8 @@ export function getTypeSignature(
     }
 
     // Create a temporary source file that imports the module
-    const importPath = `import { ${request.typeName} } from "${request.moduleName}";`;
+    const importPath =
+      `import { ${request.typeName} } from "${request.moduleName}";`;
 
     const tempFileName = request.filePath
       ? request.filePath.replace(/\.[^.]+$/, "_temp_type_analysis.ts")
@@ -625,7 +627,7 @@ export function getTypeSignature(
       return err(
         `Failed to create source file: ${
           error instanceof Error ? error.message : String(error)
-        }`
+        }`,
       );
     }
 
@@ -639,13 +641,13 @@ export function getTypeSignature(
     // Get the named import
     const namedImports = importDecl.getNamedImports();
     const typeImport = namedImports.find(
-      (i) => i.getName() === request.typeName
+      (i) => i.getName() === request.typeName,
     );
 
     if (!typeImport) {
       sourceFile.delete();
       return err(
-        `Type "${request.typeName}" not found in module "${request.moduleName}"`
+        `Type "${request.typeName}" not found in module "${request.moduleName}"`,
       );
     }
 
@@ -673,7 +675,7 @@ export function getTypeSignature(
       // Try to resolve relative import
       const contextDir = request.filePath.substring(
         0,
-        request.filePath.lastIndexOf("/")
+        request.filePath.lastIndexOf("/"),
       );
       const modulePath = request.moduleName.replace(/^\.\//, "");
       const resolvedPath = contextDir + "/" + modulePath;
@@ -724,21 +726,21 @@ export function getTypeSignature(
         functionSignatures: extractFunctionSignatures(type, firstDecl),
         definitions,
       };
-    }
-    // Check if it's a class
+    } // Check if it's a class
     else if (Node.isClassDeclaration(firstDecl)) {
       const typeParams = firstDecl.getTypeParameters();
-      const typeParamStrings =
-        typeParams.length > 0
-          ? typeParams.map((p: any) => {
-              const constraint = p.getConstraint();
-              return constraint
-                ? `${p.getName()} extends ${simplifyTypeName(
-                    constraint.getText()
-                  )}`
-                : p.getName();
-            })
-          : undefined;
+      const typeParamStrings = typeParams.length > 0
+        ? typeParams.map((p: any) => {
+          const constraint = p.getConstraint();
+          return constraint
+            ? `${p.getName()} extends ${
+              simplifyTypeName(
+                constraint.getText(),
+              )
+            }`
+            : p.getName();
+        })
+        : undefined;
 
       // For classes, get the instance type
       let instanceType = type;
@@ -755,21 +757,21 @@ export function getTypeSignature(
         typeParameters: typeParamStrings,
         definitions,
       };
-    }
-    // Check if it's an interface
+    } // Check if it's an interface
     else if (Node.isInterfaceDeclaration(firstDecl)) {
       const typeParams = firstDecl.getTypeParameters();
-      const typeParamStrings =
-        typeParams.length > 0
-          ? typeParams.map((p: any) => {
-              const constraint = p.getConstraint();
-              return constraint
-                ? `${p.getName()} extends ${simplifyTypeName(
-                    constraint.getText()
-                  )}`
-                : p.getName();
-            })
-          : undefined;
+      const typeParamStrings = typeParams.length > 0
+        ? typeParams.map((p: any) => {
+          const constraint = p.getConstraint();
+          return constraint
+            ? `${p.getName()} extends ${
+              simplifyTypeName(
+                constraint.getText(),
+              )
+            }`
+            : p.getName();
+        })
+        : undefined;
 
       // For interfaces, use the declaration's type directly
       const interfaceType = firstDecl.getType();
@@ -781,21 +783,21 @@ export function getTypeSignature(
         typeParameters: typeParamStrings,
         definitions,
       };
-    }
-    // Check if it's a type alias
+    } // Check if it's a type alias
     else if (Node.isTypeAliasDeclaration(firstDecl)) {
       const typeParams = firstDecl.getTypeParameters();
-      const typeParamStrings =
-        typeParams.length > 0
-          ? typeParams.map((p: any) => {
-              const constraint = p.getConstraint();
-              return constraint
-                ? `${p.getName()} extends ${simplifyTypeName(
-                    constraint.getText()
-                  )}`
-                : p.getName();
-            })
-          : undefined;
+      const typeParamStrings = typeParams.length > 0
+        ? typeParams.map((p: any) => {
+          const constraint = p.getConstraint();
+          return constraint
+            ? `${p.getName()} extends ${
+              simplifyTypeName(
+                constraint.getText(),
+              )
+            }`
+            : p.getName();
+        })
+        : undefined;
 
       signature = {
         kind: "type",
@@ -803,8 +805,7 @@ export function getTypeSignature(
         typeParameters: typeParamStrings,
         definitions,
       };
-    }
-    // Otherwise it's a variable
+    } // Otherwise it's a variable
     else {
       signature = {
         kind: "variable",
@@ -816,7 +817,7 @@ export function getTypeSignature(
     // Get documentation
     const symbolDeclarations = actualSymbol.getDeclarations();
     let jsDocComment = "";
-    
+
     if (symbolDeclarations.length > 0) {
       const firstDeclaration = symbolDeclarations[0];
       // Try to get JSDoc comment text from various node types
@@ -825,31 +826,34 @@ export function getTypeSignature(
         const jsDocs = jsDocableNode.getJsDocs();
         if (jsDocs.length > 0) {
           jsDocComment = jsDocs[0].getComment() || "";
-          if (typeof jsDocComment === 'object' && jsDocComment !== null && 'text' in jsDocComment) {
+          if (
+            typeof jsDocComment === "object" && jsDocComment !== null &&
+            "text" in jsDocComment
+          ) {
             jsDocComment = (jsDocComment as any).text;
           }
         }
       }
     }
-    
+
     const jsDocs = actualSymbol.getJsDocTags();
-    const jsDocTags =
-      jsDocs.length > 0
-        ? jsDocs
-            .map((tag: any) => {
-              const tagName = tag.getName();
-              const tagText =
-                typeof tag.getText === "function" 
-                  ? (Array.isArray(tag.getText()) 
-                      ? tag.getText().map((t: any) => typeof t === 'object' ? t.text || '' : t).join(' ')
-                      : tag.getText()) 
-                  : "";
-              return `@${tagName} ${tagText}`;
-            })
-            .join("\n")
-        : "";
-        
-    const documentation = jsDocComment 
+    const jsDocTags = jsDocs.length > 0
+      ? jsDocs
+        .map((tag: any) => {
+          const tagName = tag.getName();
+          const tagText = typeof tag.getText === "function"
+            ? (Array.isArray(tag.getText())
+              ? tag.getText().map((t: any) =>
+                typeof t === "object" ? t.text || "" : t
+              ).join(" ")
+              : tag.getText())
+            : "";
+          return `@${tagName} ${tagText}`;
+        })
+        .join("\n")
+      : "";
+
+    const documentation = jsDocComment
       ? (jsDocTags ? `${jsDocComment}\n${jsDocTags}` : jsDocComment)
       : (jsDocTags || undefined);
 
@@ -951,7 +955,7 @@ if (import.meta.vitest) {
       export const arrowFunction = <T>(items: T[], predicate: (item: T) => boolean): T[] => {
         return items.filter(predicate);
       };
-      `
+      `,
       );
 
       const result = getTypeSignature(project, {
@@ -1035,7 +1039,7 @@ if (import.meta.vitest) {
       export function overloaded(x: string | number | boolean): string | number | boolean {
         return x;
       }
-      `
+      `,
       );
 
       const result = getTypeSignature(project, {
@@ -1055,19 +1059,19 @@ if (import.meta.vitest) {
         // Check each overload
         const stringOverload = signature.functionSignatures!.find(
           (s: any) =>
-            s.parameters[0]?.type === "string" && s.returnType === "string"
+            s.parameters[0]?.type === "string" && s.returnType === "string",
         );
         expect(stringOverload).toBeDefined();
 
         const numberOverload = signature.functionSignatures!.find(
           (s: any) =>
-            s.parameters[0]?.type === "number" && s.returnType === "number"
+            s.parameters[0]?.type === "number" && s.returnType === "number",
         );
         expect(numberOverload).toBeDefined();
 
         const booleanOverload = signature.functionSignatures!.find(
           (s: any) =>
-            s.parameters[0]?.type === "boolean" && s.returnType === "boolean"
+            s.parameters[0]?.type === "boolean" && s.returnType === "boolean",
         );
         expect(booleanOverload).toBeDefined();
       }
@@ -1099,7 +1103,7 @@ if (import.meta.vitest) {
       export type AdminUser = User & {
         permissions: string[];
       };
-      `
+      `,
       );
 
       const result = getTypeSignature(project, {
@@ -1173,7 +1177,7 @@ if (import.meta.vitest) {
             return array.map(fn);
           }
         `,
-        { overwrite: true }
+        { overwrite: true },
       );
 
       const result = getTypeSignature(project, {
@@ -1184,7 +1188,10 @@ if (import.meta.vitest) {
       expect(result.isOk()).toBe(true);
       if (result.isOk()) {
         const { signature } = result.value;
-        expect(signature.functionSignatures![0].typeParameters).toEqual(["T", "U"]);
+        expect(signature.functionSignatures![0].typeParameters).toEqual([
+          "T",
+          "U",
+        ]);
       }
     });
 
@@ -1200,7 +1207,7 @@ if (import.meta.vitest) {
           
           export const DB_VERSION = "1.0.0";
         `,
-        { overwrite: true }
+        { overwrite: true },
       );
 
       project.createSourceFile(
@@ -1208,7 +1215,7 @@ if (import.meta.vitest) {
         `
           export { Database as DB, DB_VERSION as VERSION } from "./lib";
         `,
-        { overwrite: true }
+        { overwrite: true },
       );
 
       const result = getTypeSignature(project, {
@@ -1239,7 +1246,7 @@ if (import.meta.vitest) {
             return a + b;
           }
         `,
-        { overwrite: true }
+        { overwrite: true },
       );
 
       const result = getTypeSignature(project, {
@@ -1257,7 +1264,7 @@ if (import.meta.vitest) {
 
     it("should handle unknown symbol kinds", () => {
       const project = new Project();
-      
+
       // Create a file with a const assertion
       project.createSourceFile(
         "test.ts",
@@ -1267,14 +1274,14 @@ if (import.meta.vitest) {
             value: 42
           } as const;
         `,
-        { overwrite: true }
+        { overwrite: true },
       );
 
       const result = getTypeSignature(project, {
         moduleName: "./test",
         typeName: "config",
       });
-      
+
       expect(result.isOk()).toBe(true);
       if (result.isOk()) {
         const { signature } = result.value;

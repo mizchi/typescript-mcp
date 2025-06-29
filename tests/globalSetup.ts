@@ -8,17 +8,26 @@ export function setup() {
 export async function teardown() {
   console.log("Global teardown: Shutting down LSP process pool");
   const startTime = Date.now();
-  
+
   try {
     // Add timeout for shutdown
     await Promise.race([
       lspProcessPool.shutdown(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("LSP shutdown timeout")), 15000))
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("LSP shutdown timeout")), 15000)
+      ),
     ]);
-    
-    console.log(`Global teardown: LSP process pool shutdown completed in ${Date.now() - startTime}ms`);
+
+    console.log(
+      `Global teardown: LSP process pool shutdown completed in ${
+        Date.now() - startTime
+      }ms`,
+    );
   } catch (error) {
-    console.error("Global teardown: Failed to shutdown LSP process pool:", error);
+    console.error(
+      "Global teardown: Failed to shutdown LSP process pool:",
+      error,
+    );
     // Force exit in CI to prevent hanging
     if (process.env.CI === "true") {
       process.exit(0);

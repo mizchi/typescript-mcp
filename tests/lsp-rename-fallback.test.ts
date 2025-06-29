@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { spawn, ChildProcess } from "child_process";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { ChildProcess, spawn } from "child_process";
 import path from "path";
 import fs from "fs/promises";
 import {
@@ -15,7 +15,7 @@ describe.skip("LSP Rename with TypeScript fallback", () => {
   beforeAll(async () => {
     // Create test project
     await fs.mkdir(projectRoot, { recursive: true });
-    
+
     const testCode = `// Test file for rename
 export function oldFunctionName(param: string): string {
   return "Hello " + param;
@@ -29,7 +29,7 @@ function test() {
   return oldFunctionName("test");
 }
 `;
-    
+
     await fs.writeFile(path.join(projectRoot, "test.ts"), testCode);
 
     // Start a mock LSP that doesn't support rename
@@ -38,7 +38,7 @@ function test() {
       cwd: projectRoot,
       stdio: ["pipe", "pipe", "pipe"],
     });
-    
+
     // Initialize LSP client
     await initializeLSPClient(projectRoot, lspProcess);
   }, 10000);
@@ -53,7 +53,7 @@ function test() {
   it("should fall back to TypeScript tool when LSP doesn't support rename", async () => {
     // Mock the rename to fail by using a special test mode
     // In real scenario, TypeScript Native Preview would fail here
-    
+
     const result = await lspRenameSymbolTool.execute({
       root: projectRoot,
       filePath: "test.ts",
@@ -66,15 +66,20 @@ function test() {
     expect(result).toMatch(/renamed|Renamed/);
     expect(result).toContain("oldFunctionName");
     expect(result).toContain("newFunctionName");
-    
+
     // Check if the file was actually modified
-    const content = await fs.readFile(path.join(projectRoot, "test.ts"), "utf-8");
-    
+    const content = await fs.readFile(
+      path.join(projectRoot, "test.ts"),
+      "utf-8",
+    );
+
     // The rename should have been applied
     if (content.includes("newFunctionName")) {
       console.log("✅ Rename was successful");
     } else if (content.includes("oldFunctionName")) {
-      console.log("ℹ️  Rename might have used dry-run mode or needs manual application");
+      console.log(
+        "ℹ️  Rename might have used dry-run mode or needs manual application",
+      );
     }
   });
 
@@ -88,7 +93,7 @@ export function targetFunction(param: string): string {
 const result = targetFunction("world");
 `;
     await fs.writeFile(path.join(projectRoot, "test2.ts"), freshCode);
-    
+
     const result = await lspRenameSymbolTool.execute({
       root: projectRoot,
       filePath: "test2.ts",

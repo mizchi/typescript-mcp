@@ -6,10 +6,10 @@
  */
 export function parseLineNumber(
   fullText: string,
-  line: number | string
+  line: number | string,
 ): { lineIndex: number } | { error: string } {
-  const lines = fullText.split('\n');
-  
+  const lines = fullText.split("\n");
+
   if (typeof line === "string") {
     const lineIndex = lines.findIndex((l) => l.includes(line));
     if (lineIndex === -1) {
@@ -27,23 +27,25 @@ if (import.meta.vitest) {
   describe("parseLineNumber", () => {
     it("should parse line number to 0-based index", () => {
       const fullText = "line 1\nline 2\nline 3";
-      
+
       const result = parseLineNumber(fullText, 2);
       expect(result).toEqual({ lineIndex: 1 });
     });
 
     it("should find line by string match", () => {
       const fullText = "const foo = 1;\nconst bar = 2;\nconst baz = 3;";
-      
+
       const result = parseLineNumber(fullText, "bar = 2");
       expect(result).toEqual({ lineIndex: 1 });
     });
 
     it("should return error if string not found", () => {
       const fullText = "const foo = 1;\nconst bar = 2;";
-      
+
       const result = parseLineNumber(fullText, "not found");
-      expect(result).toEqual({ error: 'Line containing "not found" not found' });
+      expect(result).toEqual({
+        error: 'Line containing "not found" not found',
+      });
     });
   });
 }

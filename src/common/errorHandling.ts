@@ -1,4 +1,4 @@
-import { Result, ok, err } from "neverthrow";
+import { err, ok, Result } from "neverthrow";
 
 export type ToolError = {
   error: string;
@@ -26,7 +26,7 @@ export function toolErr(error: string, details?: unknown): ToolResult<never> {
  */
 export async function tryCatch<T>(
   operation: () => Promise<T>,
-  errorMessage: string
+  errorMessage: string,
 ): Promise<ToolResult<T>> {
   try {
     const result = await operation();

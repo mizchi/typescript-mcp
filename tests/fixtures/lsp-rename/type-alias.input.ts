@@ -9,7 +9,7 @@ type UserData = {
 function processUser(user: UserData): UserData {
   return {
     ...user,
-    name: user.name.toUpperCase()
+    name: user.name.toUpperCase(),
   };
 }
 
@@ -17,18 +17,18 @@ function processUser(user: UserData): UserData {
 const testUser: UserData = {
   id: 1,
   name: "John",
-  email: "john@example.com"
+  email: "john@example.com",
 };
 
 // Use type in class
 class UserService {
   private users: UserData[] = [];
-  
+
   addUser(user: UserData): void {
     this.users.push(user);
   }
-  
+
   getUser(id: number): UserData | undefined {
-    return this.users.find(u => u.id === id);
+    return this.users.find((u) => u.id === id);
   }
 }

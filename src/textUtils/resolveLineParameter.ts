@@ -15,16 +15,17 @@ export type LineResolutionResult =
  */
 export function resolveLineParameter(
   fullText: string,
-  lineParam: number | string
+  lineParam: number | string,
 ): LineResolutionResult {
   const lines = fullText.split("\n");
-  
+
   if (typeof lineParam === "number") {
     const lineIndex = lineParam - 1;
     if (lineIndex < 0 || lineIndex >= lines.length) {
       return {
         success: false,
-        error: `Invalid line number: ${lineParam}. File has ${lines.length} lines.`,
+        error:
+          `Invalid line number: ${lineParam}. File has ${lines.length} lines.`,
       };
     }
     return { success: true, lineIndex };
@@ -44,7 +45,8 @@ export function resolveLineParameter(
     const lineNumbers = matchingIndices.map((i) => i + 1).join(", ");
     return {
       success: false,
-      error: `Multiple lines found containing "${lineParam}". Found on lines: ${lineNumbers}. Please be more specific or use a line number.`,
+      error:
+        `Multiple lines found containing "${lineParam}". Found on lines: ${lineNumbers}. Please be more specific or use a line number.`,
     };
   }
 
@@ -59,7 +61,7 @@ if (import.meta.vitest) {
       const fullText = `line 1
 line 2
 line 3`;
-      
+
       const result = resolveLineParameter(fullText, 2);
       expect(result).toEqual({ success: true, lineIndex: 1 });
     });
@@ -68,45 +70,46 @@ line 3`;
       const fullText = `const foo = 1;
 const bar = 2;
 const baz = 3;`;
-      
+
       const result = resolveLineParameter(fullText, "bar = 2");
       expect(result).toEqual({ success: true, lineIndex: 1 });
     });
 
     it("should return error for invalid line number", () => {
       const fullText = `line 1`;
-      
+
       const result1 = resolveLineParameter(fullText, 0);
-      expect(result1).toEqual({ 
-        success: false, 
-        error: "Invalid line number: 0. File has 1 lines." 
+      expect(result1).toEqual({
+        success: false,
+        error: "Invalid line number: 0. File has 1 lines.",
       });
-      
+
       const result2 = resolveLineParameter(fullText, 10);
-      expect(result2).toEqual({ 
-        success: false, 
-        error: "Invalid line number: 10. File has 1 lines." 
+      expect(result2).toEqual({
+        success: false,
+        error: "Invalid line number: 10. File has 1 lines.",
       });
     });
 
     it("should return error if string not found", () => {
       const fullText = `const foo = 1;`;
-      
+
       const result = resolveLineParameter(fullText, "not found");
-      expect(result).toEqual({ 
-        success: false, 
-        error: 'No line found containing: "not found"' 
+      expect(result).toEqual({
+        success: false,
+        error: 'No line found containing: "not found"',
       });
     });
 
     it("should return error for multiple matches", () => {
       const fullText = `const foo = 1;
 const foo2 = 2;`;
-      
+
       const result = resolveLineParameter(fullText, "foo");
-      expect(result).toEqual({ 
-        success: false, 
-        error: 'Multiple lines found containing "foo". Found on lines: 1, 2. Please be more specific or use a line number.' 
+      expect(result).toEqual({
+        success: false,
+        error:
+          'Multiple lines found containing "foo". Found on lines: 1, 2. Please be more specific or use a line number.',
       });
     });
   });

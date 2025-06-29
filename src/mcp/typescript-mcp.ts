@@ -2,9 +2,9 @@
 
 import {
   BaseMcpServer,
-  StdioServerTransport,
-  readJsonFile,
   debug,
+  readJsonFile,
+  StdioServerTransport,
   type ToolDef,
 } from "./_mcplib.ts";
 import { moveFileTool } from "../ts/tools/tsMoveFile.ts";
@@ -31,49 +31,55 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { spawn } from "child_process";
 import { initialize as initializeLSPClient } from "../lsp/lspClient.ts";
-import { formatError, ErrorContext } from "./utils/errorHandler.ts";
-import { LanguageMappingConfig, setGlobalLanguageMapping } from "../lsp/languageMapping.ts";
+import { ErrorContext, formatError } from "./utils/errorHandler.ts";
+import {
+  LanguageMappingConfig,
+  setGlobalLanguageMapping,
+} from "../lsp/languageMapping.ts";
 
 // Use LSP mode when LSP_COMMAND is provided or FORCE_LSP is set
-const USE_LSP: boolean = process.env.LSP_COMMAND != null || process.env.FORCE_LSP === "true";
-debug(`[typescript-mcp] Starting TypeScript MCP server, USE_LSP: ${USE_LSP}, LSP_COMMAND: ${process.env.LSP_COMMAND}`);
+const USE_LSP: boolean = process.env.LSP_COMMAND != null ||
+  process.env.FORCE_LSP === "true";
+debug(
+  `[typescript-mcp] Starting TypeScript MCP server, USE_LSP: ${USE_LSP}, LSP_COMMAND: ${process.env.LSP_COMMAND}`,
+);
 
 // Define tools based on configuration
 const tools: ToolDef<any>[] = [
   listToolsTool, // Help tool to list all available tools
-  
+
   // Only include TypeScript-specific tools when not in forced LSP mode
   ...(process.env.FORCE_LSP !== "true"
     ? [
-        moveFileTool,
-        moveDirectoryTool,
-        getModuleSymbolsTool,
-        getTypeInModuleTool,
-        getTypeAtSymbolTool,
-        getSymbolsInScopeTool,
-        searchSymbolsTool,
-        findImportCandidatesTool,
-        // WIP: does not work yet correctly
-        // getModuleGraphTool,
-        // getRelatedModulesTool,
-      ]
+      moveFileTool,
+      moveDirectoryTool,
+      getModuleSymbolsTool,
+      getTypeInModuleTool,
+      getTypeAtSymbolTool,
+      getSymbolsInScopeTool,
+      searchSymbolsTool,
+      findImportCandidatesTool,
+      // WIP: does not work yet correctly
+      // getModuleGraphTool,
+      // getRelatedModulesTool,
+    ]
     : []),
-  
+
   // LSP tools (only when LSP_COMMAND is set or FORCE_LSP is true)
   ...(USE_LSP
     ? [
-        lspGetHoverTool,
-        lspFindReferencesTool,
-        lspGetDefinitionsTool,
-        lspGetDiagnosticsTool,
-        lspRenameSymbolTool,
-        lspDeleteSymbolTool,
-        lspGetDocumentSymbolsTool,
-        lspGetCompletionTool,
-        lspGetSignatureHelpTool,
-        lspFormatDocumentTool,
-        lspGetCodeActionsTool,
-      ]
+      lspGetHoverTool,
+      lspFindReferencesTool,
+      lspGetDefinitionsTool,
+      lspGetDiagnosticsTool,
+      lspRenameSymbolTool,
+      lspDeleteSymbolTool,
+      lspGetDocumentSymbolsTool,
+      lspGetCompletionTool,
+      lspGetSignatureHelpTool,
+      lspFormatDocumentTool,
+      lspGetCodeActionsTool,
+    ]
     : []),
 ];
 
@@ -118,17 +124,17 @@ async function main() {
     const projectRoot = process.cwd();
 
     // Start MCP server
-    const serverName = process.env.FORCE_LSP === "true" 
-      ? "lsp" 
-      : "typescript";
+    const serverName = process.env.FORCE_LSP === "true" ? "lsp" : "typescript";
     const serverDescription = process.env.FORCE_LSP === "true"
-      ? "Language Server Protocol tools for MCP" 
+      ? "Language Server Protocol tools for MCP"
       : "TypeScript refactoring and analysis tools for MCP";
-      
+
     // Configure language mappings if provided
     const languageMappingStr = process.env.LANGUAGE_MAPPING;
     if (languageMappingStr) {
-      const mappings = LanguageMappingConfig.parseFromString(languageMappingStr);
+      const mappings = LanguageMappingConfig.parseFromString(
+        languageMappingStr,
+      );
       const config = LanguageMappingConfig.createWithDefaults(); // Start with TypeScript defaults
       config.addMappings(mappings); // Add custom mappings
       setGlobalLanguageMapping(config);
@@ -143,7 +149,7 @@ async function main() {
         tools: true,
       },
     });
-    
+
     server.setDefaultRoot(projectRoot);
     server.registerTools(tools);
 
@@ -153,7 +159,7 @@ async function main() {
       const parts = process.env.LSP_COMMAND.split(" ");
       const command = parts[0];
       const args = parts.slice(1);
-      
+
       let lspProcess;
       try {
         lspProcess = spawn(command, args, {
@@ -164,11 +170,11 @@ async function main() {
         const context: ErrorContext = {
           operation: "LSP server startup",
           language: "typescript",
-          details: { command: process.env.LSP_COMMAND }
+          details: { command: process.env.LSP_COMMAND },
         };
         throw new Error(formatError(error, context));
       }
-      
+
       try {
         await initializeLSPClient(projectRoot, lspProcess, "typescript");
         debug(`[lsp] Initialized LSP client: ${process.env.LSP_COMMAND}`);
@@ -176,7 +182,7 @@ async function main() {
         const context: ErrorContext = {
           operation: "LSP client initialization",
           language: "typescript",
-          details: { command: process.env.LSP_COMMAND }
+          details: { command: process.env.LSP_COMMAND },
         };
         throw new Error(formatError(error, context));
       }
@@ -185,7 +191,7 @@ async function main() {
     // Connect transport and start server
     const transport = new StdioServerTransport();
     await server.getServer().connect(transport);
-    
+
     debug("TypeScript Refactoring MCP Server running on stdio");
     debug(`Project root: ${projectRoot}`);
 
@@ -193,7 +199,7 @@ async function main() {
     const tsInfo = getTypescriptInfo();
     if (tsInfo) {
       debug(
-        `Detected typescript path: ${tsInfo.path} version: ${tsInfo.version}`
+        `Detected typescript path: ${tsInfo.path} version: ${tsInfo.version}`,
       );
     } else {
       debug("Warning: TypeScript not detected in current project");

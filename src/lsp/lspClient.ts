@@ -1,63 +1,63 @@
 import { EventEmitter } from "events";
 import {
-  Position,
-  Location,
-  Diagnostic,
-  WorkspaceEdit,
-  DocumentSymbol,
-  SymbolInformation,
-  CompletionItem,
-  SignatureHelp,
   CodeAction,
   Command,
-  Range,
-  TextEdit,
+  CompletionItem,
+  Diagnostic,
+  DocumentSymbol,
   FormattingOptions,
+  Location,
+  Position,
+  Range,
+  SignatureHelp,
+  SymbolInformation,
+  TextEdit,
+  WorkspaceEdit,
 } from "vscode-languageserver-types";
 import { ChildProcess } from "child_process";
 import {
-  LSPMessage,
-  TextDocumentPositionParams,
-  PublishDiagnosticsParams,
-  ReferenceParams,
-  InitializeParams,
-  InitializeResult,
-  DidOpenTextDocumentParams,
-  DidChangeTextDocumentParams,
-  DidCloseTextDocumentParams,
-  HoverResult,
-  DefinitionResult,
-  ReferencesResult,
-  HoverContents,
-  LSPClientState,
-  LSPClientConfig,
-  LSPClient,
   ApplyWorkspaceEditParams,
   ApplyWorkspaceEditResponse,
-  DocumentSymbolResult,
-  WorkspaceSymbolResult,
-  CompletionResult,
-  SignatureHelpResult,
   CodeActionResult,
+  CompletionResult,
+  DefinitionResult,
+  DidChangeTextDocumentParams,
+  DidCloseTextDocumentParams,
+  DidOpenTextDocumentParams,
+  DocumentSymbolResult,
   FormattingResult,
+  HoverContents,
+  HoverResult,
+  InitializeParams,
+  InitializeResult,
+  LSPClient,
+  LSPClientConfig,
+  LSPClientState,
+  LSPMessage,
+  PublishDiagnosticsParams,
+  ReferenceParams,
+  ReferencesResult,
+  SignatureHelpResult,
+  TextDocumentPositionParams,
+  WorkspaceSymbolResult,
 } from "./lspTypes.ts";
 import { debug } from "../mcp/_mcplib.ts";
 import {
-  formatError,
   debugLog,
   ErrorContext,
+  formatError,
 } from "../mcp/utils/errorHandler.ts";
 import { getLanguageIdFromPath } from "./languageDetection.ts";
 import { getLanguageInitialization } from "./languageInitialization.ts";
 
 // Re-export types for backward compatibility
 export type {
-  HoverResult,
   DefinitionResult,
-  ReferencesResult,
   HoverContents,
-  LSPClientConfig,
+  HoverResult,
   LSPClient,
+  LSPClientConfig,
+  ReferencesResult,
 };
 
 // Global state for active client
@@ -89,7 +89,7 @@ export function getLSPClient(): LSPClient | undefined {
 export async function initialize(
   rootPath: string,
   process: ChildProcess,
-  languageId?: string
+  languageId?: string,
 ): Promise<LSPClient> {
   // Stop existing client if any
   if (activeClient) {
@@ -238,7 +238,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
   function sendRequest<T = unknown>(
     method: string,
-    params?: unknown
+    params?: unknown,
   ): Promise<T> {
     const id = ++state.messageId;
     const message: LSPMessage = {
@@ -261,9 +261,9 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
           new Error(
             formatError(
               new Error(`Request '${method}' timed out after 30 seconds`),
-              context
-            )
-          )
+              context,
+            ),
+          ),
         );
       }, 30000);
 
@@ -281,7 +281,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
             },
           };
           reject(
-            new Error(formatError(new Error(response.error.message), context))
+            new Error(formatError(new Error(response.error.message), context)),
           );
         } else {
           resolve(response.result as T);
@@ -349,22 +349,23 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
         },
       },
       // Add language-specific initialization options
-      initializationOptions: getLanguageInitialization(state.languageId).initializationOptions,
+      initializationOptions:
+        getLanguageInitialization(state.languageId).initializationOptions,
     };
 
     debugLog(`Language ID: ${state.languageId}`);
     debugLog(`InitializationOptions set:`, initParams.initializationOptions);
     debugLog(
       `Initializing LSP for ${state.languageId} with params:`,
-      JSON.stringify(initParams, null, 2)
+      JSON.stringify(initParams, null, 2),
     );
     const initResult = await sendRequest<InitializeResult>(
       "initialize",
-      initParams
+      initParams,
     );
     debugLog(
       `LSP initialized for ${state.languageId}:`,
-      JSON.stringify(initResult, null, 2)
+      JSON.stringify(initResult, null, 2),
     );
 
     // Send initialized notification
@@ -375,7 +376,11 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     // Execute language-specific post-initialization
     const langInit = getLanguageInitialization(state.languageId);
     if (langInit.postInitialize) {
-      await langInit.postInitialize(sendRequest, sendNotification, state.rootPath);
+      await langInit.postInitialize(
+        sendRequest,
+        sendNotification,
+        state.rootPath,
+      );
     }
   }
 
@@ -407,7 +412,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
           details: { exitCode: code, stderr: stderrBuffer },
         };
         const error = new Error(
-          `LSP server exited unexpectedly with code ${code}`
+          `LSP server exited unexpectedly with code ${code}`,
         );
         debug(formatError(error, context));
       }
@@ -436,8 +441,8 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
   function openDocument(uri: string, text: string, languageId?: string): void {
     // Use provided languageId, or detect from file path, or fall back to client's default
-    const actualLanguageId =
-      languageId || getLanguageIdFromPath(uri) || state.languageId;
+    const actualLanguageId = languageId || getLanguageIdFromPath(uri) ||
+      state.languageId;
 
     const params: DidOpenTextDocumentParams = {
       textDocument: {
@@ -480,7 +485,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
   async function findReferences(
     uri: string,
-    position: Position
+    position: Position,
   ): Promise<Location[]> {
     const params: ReferenceParams = {
       textDocument: { uri },
@@ -491,14 +496,14 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     };
     const result = await sendRequest<ReferencesResult>(
       "textDocument/references",
-      params
+      params,
     );
     return result ?? [];
   }
 
   async function getDefinition(
     uri: string,
-    position: Position
+    position: Position,
   ): Promise<Location | Location[]> {
     const params: TextDocumentPositionParams = {
       textDocument: { uri },
@@ -506,7 +511,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     };
     const result = await sendRequest<DefinitionResult>(
       "textDocument/definition",
-      params
+      params,
     );
 
     if (!result) {
@@ -532,7 +537,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
   async function getHover(
     uri: string,
-    position: Position
+    position: Position,
   ): Promise<HoverResult> {
     const params: TextDocumentPositionParams = {
       textDocument: { uri },
@@ -549,32 +554,32 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   }
 
   async function getDocumentSymbols(
-    uri: string
+    uri: string,
   ): Promise<DocumentSymbol[] | SymbolInformation[]> {
     const params = {
       textDocument: { uri },
     };
     const result = await sendRequest<DocumentSymbolResult>(
       "textDocument/documentSymbol",
-      params
+      params,
     );
     return result ?? [];
   }
 
   async function getWorkspaceSymbols(
-    query: string
+    query: string,
   ): Promise<SymbolInformation[]> {
     const params = { query };
     const result = await sendRequest<WorkspaceSymbolResult>(
       "workspace/symbol",
-      params
+      params,
     );
     return result ?? [];
   }
 
   async function getCompletion(
     uri: string,
-    position: Position
+    position: Position,
   ): Promise<CompletionItem[]> {
     const params: TextDocumentPositionParams = {
       textDocument: { uri },
@@ -582,7 +587,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     };
     const result = await sendRequest<CompletionResult>(
       "textDocument/completion",
-      params
+      params,
     );
 
     if (!result) {
@@ -600,18 +605,18 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   }
 
   async function resolveCompletionItem(
-    item: CompletionItem
+    item: CompletionItem,
   ): Promise<CompletionItem> {
     const result = await sendRequest<CompletionItem>(
       "completionItem/resolve",
-      item
+      item,
     );
     return result ?? item;
   }
 
   async function getSignatureHelp(
     uri: string,
-    position: Position
+    position: Position,
   ): Promise<SignatureHelp | null> {
     const params: TextDocumentPositionParams = {
       textDocument: { uri },
@@ -619,7 +624,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     };
     const result = await sendRequest<SignatureHelpResult>(
       "textDocument/signatureHelp",
-      params
+      params,
     );
     return result;
   }
@@ -627,7 +632,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   async function getCodeActions(
     uri: string,
     range: Range,
-    context?: { diagnostics?: Diagnostic[] }
+    context?: { diagnostics?: Diagnostic[] },
   ): Promise<(Command | CodeAction)[]> {
     const params = {
       textDocument: { uri },
@@ -636,14 +641,14 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     };
     const result = await sendRequest<CodeActionResult>(
       "textDocument/codeAction",
-      params
+      params,
     );
     return result ?? [];
   }
 
   async function formatDocument(
     uri: string,
-    options: FormattingOptions
+    options: FormattingOptions,
   ): Promise<TextEdit[]> {
     const params = {
       textDocument: { uri },
@@ -651,7 +656,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     };
     const result = await sendRequest<FormattingResult>(
       "textDocument/formatting",
-      params
+      params,
     );
     return result ?? [];
   }
@@ -659,7 +664,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   async function formatRange(
     uri: string,
     range: Range,
-    options: FormattingOptions
+    options: FormattingOptions,
   ): Promise<TextEdit[]> {
     const params = {
       textDocument: { uri },
@@ -668,14 +673,14 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     };
     const result = await sendRequest<FormattingResult>(
       "textDocument/rangeFormatting",
-      params
+      params,
     );
     return result ?? [];
   }
 
   async function prepareRename(
     uri: string,
-    position: Position
+    position: Position,
   ): Promise<Range | null> {
     const params = {
       textDocument: { uri },
@@ -684,7 +689,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     try {
       const result = await sendRequest<Range | { range: Range } | null>(
         "textDocument/prepareRename",
-        params
+        params,
       );
       if (result && "range" in result) {
         return result.range;
@@ -699,7 +704,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   async function rename(
     uri: string,
     position: Position,
-    newName: string
+    newName: string,
   ): Promise<WorkspaceEdit | null> {
     const params = {
       textDocument: { uri },
@@ -709,7 +714,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     try {
       const result = await sendRequest<WorkspaceEdit>(
         "textDocument/rename",
-        params
+        params,
       );
       return result ?? null;
     } catch (error: any) {
@@ -728,7 +733,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
 
   async function applyEdit(
     edit: WorkspaceEdit,
-    label?: string
+    label?: string,
   ): Promise<ApplyWorkspaceEditResponse> {
     const params: ApplyWorkspaceEditParams = {
       edit,
@@ -736,7 +741,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
     };
     const result = await sendRequest<ApplyWorkspaceEditResponse>(
       "workspace/applyEdit",
-      params
+      params,
     );
     return (
       result ?? { applied: false, failureReason: "No response from server" }
@@ -770,7 +775,7 @@ export function createLSPClient(config: LSPClientConfig): LSPClient {
   // Helper function to wait for diagnostics
   function waitForDiagnostics(
     fileUri: string,
-    timeout: number = 2000
+    timeout: number = 2000,
   ): Promise<Diagnostic[]> {
     return new Promise((resolve, reject) => {
       let timeoutId: NodeJS.Timeout | undefined;

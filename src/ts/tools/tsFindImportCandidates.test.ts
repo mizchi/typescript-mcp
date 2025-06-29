@@ -1,8 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
-import { mkdtemp, rm, writeFile, mkdir } from "fs/promises";
+import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
+import { mkdir, mkdtemp, rm, writeFile } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
-import { findImportCandidatesTool, disposeAllIndexers } from "./tsFindImportCandidates.ts";
+import {
+  disposeAllIndexers,
+  findImportCandidatesTool,
+} from "./tsFindImportCandidates.ts";
 
 describe("findImportCandidatesTool", () => {
   let tmpDir: string;
@@ -18,7 +21,7 @@ describe("findImportCandidatesTool", () => {
   afterEach(async () => {
     await rm(tmpDir, { recursive: true, force: true });
   });
-  
+
   afterAll(() => {
     // Dispose all indexers after all tests
     disposeAllIndexers();
@@ -38,7 +41,7 @@ export class Logger {
 export function createLogger(name: string): Logger {
   return new Logger();
 }
-      `
+      `,
     );
 
     await writeFile(
@@ -54,7 +57,7 @@ export class UserService {
     return null;
   }
 }
-      `
+      `,
     );
 
     // Find candidates for "Logger"
@@ -65,7 +68,7 @@ export class UserService {
       limit: 10,
     });
 
-    expect(result).toContain("Found 1 import candidates for \"Logger\"");
+    expect(result).toContain('Found 1 import candidates for "Logger"');
     expect(result).toContain("Logger [Class]");
     expect(result).toContain("File: src/utils/logger.ts");
     expect(result).toContain('import { Logger } from "./utils/logger"');
@@ -74,7 +77,7 @@ export class UserService {
   it("should calculate relative import paths correctly", async () => {
     await writeFile(
       join(tmpDir, "src/models/product.ts"),
-      `export interface Product { id: string; }`
+      `export interface Product { id: string; }`,
     );
 
     // From a file in the same directory
@@ -112,7 +115,7 @@ export class UserService {
 export const Config = {};
 export class ConfigManager {}
 export interface ConfigOptions {}
-      `
+      `,
     );
 
     const result = await findImportCandidatesTool.execute({
@@ -140,7 +143,7 @@ export interface ConfigOptions {}
     for (let i = 0; i < 5; i++) {
       await writeFile(
         join(tmpDir, `src/test${i}.ts`),
-        `export class TestClass {}`
+        `export class TestClass {}`,
       );
     }
 
@@ -152,7 +155,7 @@ export interface ConfigOptions {}
 
     expect(result).toContain("Found 5 import candidates");
     expect(result).toContain("... and 3 more candidates");
-    
+
     // Should only show 2 candidates
     const matches = result.match(/TestClass \[Class\]/g) || [];
     expect(matches.length).toBe(2);

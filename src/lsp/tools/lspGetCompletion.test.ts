@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { spawn, ChildProcess } from "child_process";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { ChildProcess, spawn } from "child_process";
 import path from "path";
 import fs from "fs/promises";
 import {

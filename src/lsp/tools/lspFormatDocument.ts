@@ -2,7 +2,7 @@ import { z } from "zod";
 import path from "path";
 import fs from "fs/promises";
 import { pathToFileURL } from "url";
-import { TextEdit, FormattingOptions } from "vscode-languageserver-types";
+import { FormattingOptions, TextEdit } from "vscode-languageserver-types";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
 import { getLSPClient } from "../lspClient.ts";
 import { applyTextEdits } from "../../textUtils/applyTextEdits.ts";
@@ -41,32 +41,36 @@ const schemaShape = {
 const schema = z.object(schemaShape);
 
 function formatTextEdit(edit: TextEdit, content: string): string {
-  const lines = content.split('\n');
+  const lines = content.split("\n");
   const startLine = edit.range.start.line;
   const endLine = edit.range.end.line;
-  
+
   // Extract the text being replaced
   let originalText = "";
   if (startLine === endLine) {
     const line = lines[startLine] || "";
-    originalText = line.substring(edit.range.start.character, edit.range.end.character);
+    originalText = line.substring(
+      edit.range.start.character,
+      edit.range.end.character,
+    );
   } else {
     // Multi-line range
     for (let i = startLine; i <= endLine && i < lines.length; i++) {
       if (i === startLine) {
         originalText += (lines[i] || "").substring(edit.range.start.character);
       } else if (i === endLine) {
-        originalText += "\n" + (lines[i] || "").substring(0, edit.range.end.character);
+        originalText += "\n" +
+          (lines[i] || "").substring(0, edit.range.end.character);
       } else {
         originalText += "\n" + (lines[i] || "");
       }
     }
   }
-  
+
   // Show the change
   const arrow = " → ";
   const newText = edit.newText;
-  
+
   // For readability, truncate very long texts
   const maxLength = 50;
   const truncate = (text: string) => {
@@ -75,11 +79,13 @@ function formatTextEdit(edit: TextEdit, content: string): string {
     }
     return text;
   };
-  
+
   const displayOld = truncate(originalText.replace(/\n/g, "\\n"));
   const displayNew = truncate(newText.replace(/\n/g, "\\n"));
-  
-  return `Line ${startLine + 1}:${edit.range.start.character + 1}: "${displayOld}"${arrow}"${displayNew}"`;
+
+  return `Line ${startLine + 1}:${
+    edit.range.start.character + 1
+  }: "${displayOld}"${arrow}"${displayNew}"`;
 }
 
 async function handleFormatDocument({
@@ -116,7 +122,7 @@ async function handleFormatDocument({
 
   try {
     // Wait a bit for LSP to process the document
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Prepare formatting options
     const options: FormattingOptions = {
@@ -143,12 +149,12 @@ async function handleFormatDocument({
 
     // Format the result
     let result = `Formatting changes for ${filePath}:\n\n`;
-    
+
     // Show each edit
     for (const edit of sortedEdits) {
       result += formatTextEdit(edit, content) + "\n";
     }
-    
+
     result += `\nTotal changes: ${edits.length}`;
 
     // Apply changes if requested

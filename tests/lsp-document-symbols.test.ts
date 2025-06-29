@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { spawn, ChildProcess } from "child_process";
-import { 
-  initialize as initializeLSPClient, 
-  shutdown as shutdownLSPClient
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { ChildProcess, spawn } from "child_process";
+import {
+  initialize as initializeLSPClient,
+  shutdown as shutdownLSPClient,
 } from "../src/lsp/lspClient.ts";
 import { lspGetDocumentSymbolsTool } from "../src/lsp/tools/lspGetDocumentSymbols.ts";
 import path from "path";
@@ -53,14 +53,14 @@ describe("lsp document symbols", () => {
     expect(result).toContain("UserService [Class]");
     expect(result).toContain("processUser [Function]");
     expect(result).toContain("defaultUser [Constant]"); // TypeScript LSP reports const as Constant
-    
+
     // Check for class members
     expect(result).toContain("users [Property]");
     expect(result).toContain("constructor [Constructor]");
     expect(result).toContain("addUser [Method]");
     expect(result).toContain("getUser [Method]");
     expect(result).toContain("userCount [Method]"); // getter is reported as Method
-    
+
     // Check for interface members
     expect(result).toContain("id [Property]");
     expect(result).toContain("name [Property]");
@@ -74,7 +74,9 @@ describe("lsp document symbols", () => {
 
     // Create an empty test file
     const emptyFile = path.join(FIXTURES_DIR, "empty.ts");
-    await import("fs/promises").then(fs => fs.writeFile(emptyFile, "// Empty file\n"));
+    await import("fs/promises").then((fs) =>
+      fs.writeFile(emptyFile, "// Empty file\n")
+    );
 
     try {
       const result = await lspGetDocumentSymbolsTool.execute({
@@ -85,7 +87,9 @@ describe("lsp document symbols", () => {
       expect(result).toBe("No symbols found in empty.ts");
     } finally {
       // Clean up
-      await import("fs/promises").then(fs => fs.unlink(emptyFile).catch(() => {}));
+      await import("fs/promises").then((fs) =>
+        fs.unlink(emptyFile).catch(() => {})
+      );
     }
   });
 
@@ -98,7 +102,7 @@ describe("lsp document symbols", () => {
       lspGetDocumentSymbolsTool.execute({
         root: FIXTURES_DIR,
         filePath: "non-existent.ts",
-      })
+      }),
     ).rejects.toThrow();
   });
 });

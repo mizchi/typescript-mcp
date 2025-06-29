@@ -3,7 +3,10 @@ import { join } from "path";
 import { debug } from "../mcp/_mcplib.ts";
 import { debugLog } from "../mcp/utils/errorHandler.ts";
 
-type SendRequestFunction = <T = unknown>(method: string, params?: unknown) => Promise<T>;
+type SendRequestFunction = <T = unknown>(
+  method: string,
+  params?: unknown,
+) => Promise<T>;
 type SendNotificationFunction = (method: string, params?: unknown) => void;
 
 /**
@@ -11,17 +14,20 @@ type SendNotificationFunction = (method: string, params?: unknown) => void;
  */
 export async function findFSharpProjectFiles(dir: string): Promise<string[]> {
   const projectFiles: string[] = [];
-  
+
   async function search(currentDir: string, depth: number = 0): Promise<void> {
     if (depth > 3) return; // Limit search depth
-    
+
     try {
       const entries = await readdir(currentDir, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         if (entry.isFile() && entry.name.endsWith(".fsproj")) {
           projectFiles.push(join(currentDir, entry.name));
-        } else if (entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "node_modules") {
+        } else if (
+          entry.isDirectory() && !entry.name.startsWith(".") &&
+          entry.name !== "node_modules"
+        ) {
           await search(join(currentDir, entry.name), depth + 1);
         }
       }
@@ -29,7 +35,7 @@ export async function findFSharpProjectFiles(dir: string): Promise<string[]> {
       // Ignore errors (e.g., permission denied)
     }
   }
-  
+
   await search(dir);
   return projectFiles;
 }
@@ -43,7 +49,11 @@ export async function initializeFSharp(projectRoot: string): Promise<void> {
   if (projectFiles.length === 0) {
     debug("[lsp] No .fsproj files found in project root");
   } else {
-    debug(`[lsp] Found ${projectFiles.length} F# project file(s): ${projectFiles.join(", ")}`);
+    debug(
+      `[lsp] Found ${projectFiles.length} F# project file(s): ${
+        projectFiles.join(", ")
+      }`,
+    );
   }
 }
 
@@ -69,10 +79,10 @@ export function getFSharpInitializationOptions(): unknown {
 export async function postInitializeFSharp(
   sendRequest: SendRequestFunction,
   sendNotification: SendNotificationFunction,
-  rootPath: string
+  rootPath: string,
 ): Promise<void> {
   debugLog(`Executing F# specific initialization...`);
-  
+
   // Send workspace/didChangeConfiguration to ensure settings are applied
   debugLog(`Sending F# configuration...`);
   sendNotification("workspace/didChangeConfiguration", {
@@ -110,7 +120,7 @@ export async function postInitializeFSharp(
       const projectUris = peekResult.found.map((p: { uri: string }) => p.uri);
       debugLog(
         `Loading F# projects with fsharp/workspaceLoad:`,
-        projectUris
+        projectUris,
       );
 
       await sendRequest("fsharp/workspaceLoad", {
@@ -132,7 +142,7 @@ export async function postInitializeFSharp(
       if (fsprojFile) {
         const projectUri = `file://${join(rootPath, fsprojFile)}`;
         debugLog(
-          `Fallback: Loading F# project with fsharp/loadProject: ${projectUri}`
+          `Fallback: Loading F# project with fsharp/loadProject: ${projectUri}`,
         );
         sendNotification("fsharp/loadProject", { projectUri });
         await new Promise((resolve) => setTimeout(resolve, 5000));

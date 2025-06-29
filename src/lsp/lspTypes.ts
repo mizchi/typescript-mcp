@@ -1,24 +1,24 @@
 import {
-  Position,
-  Location,
-  Diagnostic,
-  Hover,
-  Definition,
-  DocumentUri,
-  integer,
-  MarkupContent,
-  MarkedString,
-  WorkspaceEdit,
-  TextEdit,
-  Range,
-  DocumentSymbol,
-  SymbolInformation,
-  CompletionItem,
-  CompletionList,
-  SignatureHelp,
   CodeAction,
   Command,
+  CompletionItem,
+  CompletionList,
+  Definition,
+  Diagnostic,
+  DocumentSymbol,
+  DocumentUri,
   FormattingOptions,
+  Hover,
+  integer,
+  Location,
+  MarkedString,
+  MarkupContent,
+  Position,
+  Range,
+  SignatureHelp,
+  SymbolInformation,
+  TextEdit,
+  WorkspaceEdit,
 } from "vscode-languageserver-types";
 import { ChildProcess } from "child_process";
 import { EventEmitter } from "events";
@@ -136,7 +136,8 @@ export interface DidOpenTextDocumentParams {
   textDocument: TextDocumentItem;
 }
 
-export interface VersionedTextDocumentIdentifier extends TextDocumentIdentifier {
+export interface VersionedTextDocumentIdentifier
+  extends TextDocumentIdentifier {
   version: integer;
 }
 
@@ -169,7 +170,10 @@ export interface ApplyWorkspaceEditResponse {
 export type HoverResult = Hover | null;
 export type DefinitionResult = Definition | Location | Location[] | null;
 export type ReferencesResult = Location[] | null;
-export type DocumentSymbolResult = DocumentSymbol[] | SymbolInformation[] | null;
+export type DocumentSymbolResult =
+  | DocumentSymbol[]
+  | SymbolInformation[]
+  | null;
 export type WorkspaceSymbolResult = SymbolInformation[] | null;
 export type CompletionResult = CompletionItem[] | CompletionList | null;
 export type SignatureHelpResult = SignatureHelp | null;
@@ -213,23 +217,49 @@ export type LSPClient = {
   findReferences: (uri: string, position: Position) => Promise<Location[]>;
   getDefinition: (
     uri: string,
-    position: Position
+    position: Position,
   ) => Promise<Location | Location[]>;
   getHover: (uri: string, position: Position) => Promise<HoverResult>;
   getDiagnostics: (uri: string) => Diagnostic[];
-  getDocumentSymbols: (uri: string) => Promise<DocumentSymbol[] | SymbolInformation[]>;
+  getDocumentSymbols: (
+    uri: string,
+  ) => Promise<DocumentSymbol[] | SymbolInformation[]>;
   getWorkspaceSymbols: (query: string) => Promise<SymbolInformation[]>;
   getCompletion: (uri: string, position: Position) => Promise<CompletionItem[]>;
   resolveCompletionItem: (item: CompletionItem) => Promise<CompletionItem>;
-  getSignatureHelp: (uri: string, position: Position) => Promise<SignatureHelp | null>;
-  getCodeActions: (uri: string, range: Range, context?: { diagnostics?: Diagnostic[] }) => Promise<(Command | CodeAction)[]>;
-  formatDocument: (uri: string, options: FormattingOptions) => Promise<TextEdit[]>;
-  formatRange: (uri: string, range: Range, options: FormattingOptions) => Promise<TextEdit[]>;
+  getSignatureHelp: (
+    uri: string,
+    position: Position,
+  ) => Promise<SignatureHelp | null>;
+  getCodeActions: (
+    uri: string,
+    range: Range,
+    context?: { diagnostics?: Diagnostic[] },
+  ) => Promise<(Command | CodeAction)[]>;
+  formatDocument: (
+    uri: string,
+    options: FormattingOptions,
+  ) => Promise<TextEdit[]>;
+  formatRange: (
+    uri: string,
+    range: Range,
+    options: FormattingOptions,
+  ) => Promise<TextEdit[]>;
   prepareRename: (uri: string, position: Position) => Promise<Range | null>;
-  rename: (uri: string, position: Position, newName: string) => Promise<WorkspaceEdit | null>;
-  applyEdit: (edit: WorkspaceEdit, label?: string) => Promise<ApplyWorkspaceEditResponse>;
+  rename: (
+    uri: string,
+    position: Position,
+    newName: string,
+  ) => Promise<WorkspaceEdit | null>;
+  applyEdit: (
+    edit: WorkspaceEdit,
+    label?: string,
+  ) => Promise<ApplyWorkspaceEditResponse>;
   sendRequest: <T = unknown>(method: string, params?: unknown) => Promise<T>;
   on: (event: string, listener: (...args: unknown[]) => void) => void;
   emit: (event: string, ...args: unknown[]) => boolean;
-  waitForDiagnostics: (fileUri: string, timeout?: number) => Promise<Diagnostic[]>;
+  waitForDiagnostics: (
+    fileUri: string,
+    timeout?: number,
+  ) => Promise<Diagnostic[]>;
 };

@@ -1,6 +1,6 @@
 import type {
-  TypeSignature,
   Definition,
+  TypeSignature,
 } from "./navigations/getTypeSignature.ts";
 import { relative } from "path";
 
@@ -45,7 +45,8 @@ export function formatTypeSignature(input: FormatTypeSignatureInput): string {
     output.push("🔗 Related Types:");
     for (const relType of relatedTypes) {
       const relativePath = relative(root, relType.filePath);
-      let relStr = `  ${relType.kind}: ${relativePath}:${relType.line}:${relType.column}`;
+      let relStr =
+        `  ${relType.kind}: ${relativePath}:${relType.line}:${relType.column}`;
 
       if (relType.name) {
         relStr += ` (${relType.name})`;
@@ -108,7 +109,7 @@ export function formatTypeSignature(input: FormatTypeSignatureInput): string {
     output.push(`📋 Type Definition:`);
     if (signature.typeParameters && signature.typeParameters.length > 0) {
       output.push(
-        `  Type Parameters: <${signature.typeParameters.join(", ")}>`
+        `  Type Parameters: <${signature.typeParameters.join(", ")}>`,
       );
     }
     output.push(`  Type: ${signature.typeDefinition}`);
@@ -119,12 +120,12 @@ export function formatTypeSignature(input: FormatTypeSignatureInput): string {
     output.push(
       `${
         signature.kind === "interface" ? "📐 Interface" : "🏗️ Class"
-      } Definition:`
+      } Definition:`,
     );
 
     if (signature.typeParameters && signature.typeParameters.length > 0) {
       output.push(
-        `  Type Parameters: <${signature.typeParameters.join(", ")}>`
+        `  Type Parameters: <${signature.typeParameters.join(", ")}>`,
       );
     }
 
@@ -132,7 +133,7 @@ export function formatTypeSignature(input: FormatTypeSignatureInput): string {
       output.push("\n  Properties:");
       for (const prop of signature.properties) {
         output.push(
-          `    ${prop.name}${prop.optional ? "?" : ""}: ${prop.type}`
+          `    ${prop.name}${prop.optional ? "?" : ""}: ${prop.type}`,
         );
       }
     }
@@ -158,9 +159,9 @@ export function formatTypeSignature(input: FormatTypeSignatureInput): string {
             return paramStr;
           });
 
-          const signatureStr = `    ${
-            method.name
-          }${typeParamStr}(${paramStrs.join(", ")}): ${sig.returnType}`;
+          const signatureStr = `    ${method.name}${typeParamStr}(${
+            paramStrs.join(", ")
+          }): ${sig.returnType}`;
           output.push(signatureStr);
         }
       }

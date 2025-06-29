@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { spawn } from "child_process";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -18,16 +18,23 @@ describe("lsmcp --include option", () => {
     await fs.mkdir(tmpDir, { recursive: true });
 
     // Create a minimal tsconfig.json to make it a TypeScript project
-    await fs.writeFile(path.join(tmpDir, "tsconfig.json"), JSON.stringify({
-      compilerOptions: {
-        target: "es2020",
-        module: "commonjs",
-        strict: true,
-        esModuleInterop: true,
-        skipLibCheck: true,
-        forceConsistentCasingInFileNames: true
-      }
-    }, null, 2));
+    await fs.writeFile(
+      path.join(tmpDir, "tsconfig.json"),
+      JSON.stringify(
+        {
+          compilerOptions: {
+            target: "es2020",
+            module: "commonjs",
+            strict: true,
+            esModuleInterop: true,
+            skipLibCheck: true,
+            forceConsistentCasingInFileNames: true,
+          },
+        },
+        null,
+        2,
+      ),
+    );
   });
 
   afterEach(async () => {
@@ -35,7 +42,9 @@ describe("lsmcp --include option", () => {
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
-  async function runLsmcp(args: string[]): Promise<{ stdout: string; stderr: string; code: number | null }> {
+  async function runLsmcp(
+    args: string[],
+  ): Promise<{ stdout: string; stderr: string; code: number | null }> {
     return new Promise((resolve) => {
       const proc = spawn("node", [LSMCP_PATH, ...args], {
         cwd: tmpDir,
@@ -70,20 +79,27 @@ describe("lsmcp --include option", () => {
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
     // Create a TypeScript file with an error
-    await fs.writeFile(path.join(tmpDir, "error.ts"), `
+    await fs.writeFile(
+      path.join(tmpDir, "error.ts"),
+      `
 const x: number = "string"; // Type error
 console.log(x);
-`);
+`,
+    );
 
     const result = await runLsmcp(["--include", "error.ts"]);
 
     expect(result.code).toBe(1); // Should exit with error code
-    expect(result.stdout).toContain("Type 'string' is not assignable to type 'number'");
+    expect(result.stdout).toContain(
+      "Type 'string' is not assignable to type 'number'",
+    );
     expect(result.stdout).toContain("error.ts");
   });
 
@@ -92,7 +108,9 @@ console.log(x);
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
@@ -100,23 +118,32 @@ console.log(x);
     await fs.mkdir(path.join(tmpDir, "src"), { recursive: true });
 
     // Create files with errors
-    await fs.writeFile(path.join(tmpDir, "src/file1.ts"), `
+    await fs.writeFile(
+      path.join(tmpDir, "src/file1.ts"),
+      `
 const a: string = 123; // Type error
-`);
+`,
+    );
 
-    await fs.writeFile(path.join(tmpDir, "src/file2.ts"), `
+    await fs.writeFile(
+      path.join(tmpDir, "src/file2.ts"),
+      `
 function greet(name: string) {
   return "Hello, " + name;
 }
 greet(456); // Type error
-`);
+`,
+    );
 
     // Create a file without errors
-    await fs.writeFile(path.join(tmpDir, "src/clean.ts"), `
+    await fs.writeFile(
+      path.join(tmpDir, "src/clean.ts"),
+      `
 export function add(a: number, b: number): number {
   return a + b;
 }
-`);
+`,
+    );
 
     const result = await runLsmcp(["--include", "src/*.ts"]);
 
@@ -124,8 +151,12 @@ export function add(a: number, b: number): number {
     expect(result.stdout).toContain("Found 3 files matching pattern");
     expect(result.stdout).toContain("file1.ts");
     expect(result.stdout).toContain("file2.ts");
-    expect(result.stdout).toContain("Type 'number' is not assignable to type 'string'");
-    expect(result.stdout).toContain("Argument of type 'number' is not assignable to parameter of type 'string'");
+    expect(result.stdout).toContain(
+      "Type 'number' is not assignable to type 'string'",
+    );
+    expect(result.stdout).toContain(
+      "Argument of type 'number' is not assignable to parameter of type 'string'",
+    );
   });
 
   it("should handle recursive pattern", async () => {
@@ -133,7 +164,9 @@ export function add(a: number, b: number): number {
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
@@ -142,28 +175,41 @@ export function add(a: number, b: number): number {
     await fs.mkdir(path.join(tmpDir, "src/utils"), { recursive: true });
 
     // Create files in different directories
-    await fs.writeFile(path.join(tmpDir, "src/index.ts"), `
+    await fs.writeFile(
+      path.join(tmpDir, "src/index.ts"),
+      `
 const x: boolean = "false"; // Type error
-`);
+`,
+    );
 
-    await fs.writeFile(path.join(tmpDir, "src/components/Button.ts"), `
+    await fs.writeFile(
+      path.join(tmpDir, "src/components/Button.ts"),
+      `
 export const Button = (label: number) => { // Intentional wrong type
   return label.toUpperCase(); // Error: toUpperCase doesn't exist on number
 };
-`);
+`,
+    );
 
-    await fs.writeFile(path.join(tmpDir, "src/utils/helper.ts"), `
+    await fs.writeFile(
+      path.join(tmpDir, "src/utils/helper.ts"),
+      `
 export function identity<T>(value: T): T {
   return value;
 }
-`);
+`,
+    );
 
     const result = await runLsmcp(["--include", "src/**/*.ts"]);
 
     expect(result.code).toBe(1); // Should exit with error code
     expect(result.stdout).toContain("Found 3 files matching pattern");
-    expect(result.stdout).toContain("Type 'string' is not assignable to type 'boolean'");
-    expect(result.stdout).toContain("Property 'toUpperCase' does not exist on type 'number'");
+    expect(result.stdout).toContain(
+      "Type 'string' is not assignable to type 'boolean'",
+    );
+    expect(result.stdout).toContain(
+      "Property 'toUpperCase' does not exist on type 'number'",
+    );
   });
 
   it("should exit with code 0 when no errors found", async () => {
@@ -171,18 +217,23 @@ export function identity<T>(value: T): T {
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
     // Create a clean TypeScript file
-    await fs.writeFile(path.join(tmpDir, "clean.ts"), `
+    await fs.writeFile(
+      path.join(tmpDir, "clean.ts"),
+      `
 export function greet(name: string): string {
   return \`Hello, \${name}!\`;
 }
 
 console.log(greet("World"));
-`);
+`,
+    );
 
     const result = await runLsmcp(["--include", "clean.ts"]);
 
@@ -195,7 +246,9 @@ console.log(greet("World"));
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
@@ -210,13 +263,17 @@ console.log(greet("World"));
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
     const result = await runLsmcp(["-l", "rust", "--include", "**/*.rs"]);
 
     expect(result.code).toBe(1); // Should exit with error code
-    expect(result.stderr).toContain("--include option is currently only supported for TypeScript/JavaScript");
+    expect(result.stderr).toContain(
+      "--include option is currently only supported for TypeScript/JavaScript",
+    );
   });
 });

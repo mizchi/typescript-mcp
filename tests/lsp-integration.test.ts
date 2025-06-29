@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { spawn, ChildProcess } from "child_process";
-import { 
-  initialize as initializeLSPClient, 
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { ChildProcess, spawn } from "child_process";
+import {
+  getLSPClient,
+  initialize as initializeLSPClient,
   shutdown as shutdownLSPClient,
-  getLSPClient
 } from "../src/lsp/lspClient.ts";
 import { lspGetHoverTool } from "../src/lsp/tools/lspGetHover.ts";
 import { lspFindReferencesTool } from "../src/lsp/tools/lspFindReferences.ts";
@@ -52,7 +52,7 @@ describe("LSP integration tests", () => {
     if (tmpDir) {
       await fs.rm(tmpDir, { recursive: true, force: true });
     }
-    
+
     if (lspProcess) {
       await shutdownLSPClient();
       lspProcess.kill();
@@ -170,7 +170,10 @@ export function roundTo(value: number, decimals: number): number {
       expect(renameResult).toContain('"formatResult" → "formatOutput"');
 
       // Verify rename was applied
-      const utilsContent = await fs.readFile(path.join(tmpDir, "utils.ts"), "utf-8");
+      const utilsContent = await fs.readFile(
+        path.join(tmpDir, "utils.ts"),
+        "utf-8",
+      );
       expect(utilsContent).toContain("formatOutput");
       expect(utilsContent).not.toContain("formatResult");
 
@@ -183,14 +186,16 @@ console.log(unknownVariable); // Unknown variable
       await fs.writeFile(path.join(tmpDir, "error.ts"), errorFile);
 
       // Wait a bit for diagnostics to be processed
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const diagnosticsResult = await lspGetDiagnosticsTool.execute({
         root: tmpDir,
         filePath: "error.ts",
       });
       expect(diagnosticsResult).toContain("errors");
-      expect(diagnosticsResult).toContain("Type 'number' is not assignable to type 'string'");
+      expect(diagnosticsResult).toContain(
+        "Type 'number' is not assignable to type 'string'",
+      );
     });
   });
 
@@ -207,7 +212,7 @@ console.log(unknownVariable); // Unknown variable
           filePath: "non-existent.ts",
           line: 1,
           character: 0,
-        })
+        }),
       ).rejects.toThrow();
 
       // Test references on non-existent file
@@ -217,7 +222,7 @@ console.log(unknownVariable); // Unknown variable
           filePath: "non-existent.ts",
           line: 1,
           symbolName: "foo",
-        })
+        }),
       ).rejects.toThrow();
     });
 
@@ -246,7 +251,7 @@ console.log(unknownVariable); // Unknown variable
           line: 1,
           target: "nonExistentSymbol",
           newName: "newName",
-        })
+        }),
       ).rejects.toThrow();
     });
   });
@@ -259,9 +264,10 @@ console.log(unknownVariable); // Unknown variable
 
       const client = getLSPClient();
       expect(client).toBeDefined();
-      
+
       // Perform multiple operations to ensure connection stability
-      const testFile = `export const VERSION = "1.0.0";\nexport const NAME = "Test";`;
+      const testFile =
+        `export const VERSION = "1.0.0";\nexport const NAME = "Test";`;
       await fs.writeFile(path.join(tmpDir, "constants.ts"), testFile);
 
       // Multiple operations on the same file

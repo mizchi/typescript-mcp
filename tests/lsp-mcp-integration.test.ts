@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { spawn, ChildProcess } from "child_process";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { ChildProcess, spawn } from "child_process";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import fs from "fs/promises";
@@ -28,7 +28,9 @@ describe.skip("LSP MCP integration tests", () => {
     try {
       await fs.access(path.join(__dirname, "../dist/generic-lsp-mcp.js"));
     } catch {
-      console.log("Skipping LSP MCP tests: dist/generic-lsp-mcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping LSP MCP tests: dist/generic-lsp-mcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
@@ -41,7 +43,9 @@ describe.skip("LSP MCP integration tests", () => {
     await fs.mkdir(tmpDir, { recursive: true });
 
     // Start MCP server with TypeScript LSP
-    mcpProcess = spawn("node", [path.join(__dirname, "../dist/generic-lsp-mcp.js")], {
+    mcpProcess = spawn("node", [
+      path.join(__dirname, "../dist/generic-lsp-mcp.js"),
+    ], {
       env: {
         ...process.env,
         LSP_COMMAND: "typescript-language-server --stdio",
@@ -66,13 +70,13 @@ describe.skip("LSP MCP integration tests", () => {
       },
       {
         capabilities: {},
-      }
+      },
     );
 
     await client.connect(transport);
 
     // Wait for server to be ready
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   afterAll(async () => {
@@ -80,11 +84,11 @@ describe.skip("LSP MCP integration tests", () => {
     if (tmpDir) {
       await fs.rm(tmpDir, { recursive: true, force: true });
     }
-    
+
     if (client) {
       await client.close();
     }
-    
+
     if (mcpProcess && !mcpProcess.killed) {
       mcpProcess.kill();
     }
@@ -96,9 +100,9 @@ describe.skip("LSP MCP integration tests", () => {
     }
 
     const tools = await client.listTools();
-    
+
     // Verify all LSP tools are available
-    const toolNames = tools.tools.map(t => t.name);
+    const toolNames = tools.tools.map((t) => t.name);
     expect(toolNames).toContain("lsmcp_get_hover");
     expect(toolNames).toContain("lsmcp_find_references");
     expect(toolNames).toContain("lsmcp_get_definitions");
@@ -203,8 +207,12 @@ console.log(calculateSum(10, 20));
     });
 
     const typedResult = result as CallToolResult;
-    expect(typedResult.content[0].text).toContain("Successfully renamed symbol");
-    expect(typedResult.content[0].text).toContain('"calculateSum" → "computeSum"');
+    expect(typedResult.content[0].text).toContain(
+      "Successfully renamed symbol",
+    );
+    expect(typedResult.content[0].text).toContain(
+      '"calculateSum" → "computeSum"',
+    );
 
     // Verify the file was updated
     const updatedContent = await fs.readFile(testPath, "utf-8");

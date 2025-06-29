@@ -1,5 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { parseRenameCommentsFromContent, removeRenameComments } from "./extract-ops.ts";
+import { describe, expect, it } from "vitest";
+import {
+  parseRenameCommentsFromContent,
+  removeRenameComments,
+} from "./extract-ops.ts";
 
 describe("extract-ops", () => {
   describe("parseRenameCommentsFromContent", () => {
@@ -9,12 +12,12 @@ console.log(foo);
 export { foo };`;
 
       const operations = parseRenameCommentsFromContent(content);
-      
+
       expect(operations).toHaveLength(1);
       expect(operations[0]).toEqual({
         line: 1,
         symbolName: "foo",
-        newName: "bar"
+        newName: "bar",
       });
     });
 
@@ -31,11 +34,23 @@ class MyClass { // @rename MyClass YourClass
 }`;
 
       const operations = parseRenameCommentsFromContent(content);
-      
+
       expect(operations).toHaveLength(3);
-      expect(operations[0]).toEqual({ line: 2, symbolName: "foo1", newName: "bar1" });
-      expect(operations[1]).toEqual({ line: 4, symbolName: "foo2", newName: "bar2" });
-      expect(operations[2]).toEqual({ line: 8, symbolName: "MyClass", newName: "YourClass" });
+      expect(operations[0]).toEqual({
+        line: 2,
+        symbolName: "foo1",
+        newName: "bar1",
+      });
+      expect(operations[1]).toEqual({
+        line: 4,
+        symbolName: "foo2",
+        newName: "bar2",
+      });
+      expect(operations[2]).toEqual({
+        line: 8,
+        symbolName: "MyClass",
+        newName: "YourClass",
+      });
     });
 
     it("should handle various whitespace formats", () => {
@@ -44,7 +59,7 @@ const c = 2; //   @rename   c   d
 const e = 3; // @rename e f extra text ignored`;
 
       const operations = parseRenameCommentsFromContent(content);
-      
+
       expect(operations).toHaveLength(3);
       expect(operations[0]).toEqual({ line: 1, symbolName: "a", newName: "b" });
       expect(operations[1]).toEqual({ line: 2, symbolName: "c", newName: "d" });
@@ -57,7 +72,7 @@ const e = 3; // @rename e f extra text ignored`;
 console.log(foo);`;
 
       const operations = parseRenameCommentsFromContent(content);
-      
+
       expect(operations).toHaveLength(0);
     });
   });
@@ -69,7 +84,7 @@ console.log(foo);`;
 console.log(foo);`;
 
       const result = removeRenameComments(content);
-      
+
       expect(result).toBe(`const foo = 1;
 console.log(foo);`);
     });
@@ -79,7 +94,7 @@ console.log(foo);`);
 console.log(foo);`;
 
       const result = removeRenameComments(content);
-      
+
       expect(result).toBe(`const foo = 1; // @rename foo bar
 console.log(foo);`);
     });
@@ -92,7 +107,7 @@ const foo = 1; // @rename foo bar inline
 console.log(foo);`;
 
       const result = removeRenameComments(content);
-      
+
       expect(result).toBe(`// Regular comment
 const foo = 1; // @rename foo bar inline
 console.log(foo);`);

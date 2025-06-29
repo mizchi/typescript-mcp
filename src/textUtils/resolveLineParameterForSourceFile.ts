@@ -9,14 +9,14 @@ import { resolveLineParameter } from "./resolveLineParameter.ts";
  */
 export function resolveLineParameterForSourceFile(
   sourceFile: SourceFile,
-  lineParam: number | string
+  lineParam: number | string,
 ): number {
   const result = resolveLineParameter(sourceFile.getFullText(), lineParam);
-  
+
   if (!result.success) {
     throw new Error(result.error);
   }
-  
+
   return result.lineIndex + 1; // Convert to 1-based
 }
 
@@ -31,7 +31,7 @@ if (import.meta.vitest) {
         "test.ts",
         `const foo = 1;
 const bar = 2;
-const baz = 3;`
+const baz = 3;`,
       );
 
       const result = resolveLineParameterForSourceFile(sourceFile, 2);
@@ -44,7 +44,7 @@ const baz = 3;`
         "test.ts",
         `const foo = 1;
 const bar = 2;
-const baz = 3;`
+const baz = 3;`,
       );
 
       const result = resolveLineParameterForSourceFile(sourceFile, "bar = 2");
@@ -55,12 +55,13 @@ const baz = 3;`
       const project = new Project();
       const sourceFile = project.createSourceFile(
         "test.ts",
-        `const foo = 1;`
+        `const foo = 1;`,
       );
 
-      expect(() => resolveLineParameterForSourceFile(sourceFile, "not found")).toThrow(
-        'No line found containing: "not found"'
-      );
+      expect(() => resolveLineParameterForSourceFile(sourceFile, "not found"))
+        .toThrow(
+          'No line found containing: "not found"',
+        );
     });
   });
 }

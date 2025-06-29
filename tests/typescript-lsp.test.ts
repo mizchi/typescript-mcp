@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { fileURLToPath } from "url";
@@ -24,12 +24,14 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
   let transport: StdioClientTransport | undefined;
   let tmpDir: string | undefined;
 
-  beforeEach(async function(this: any) {
+  beforeEach(async function (this: any) {
     // Skip test if lsmcp.js is not built
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       this.skip();
       return;
     }
@@ -43,26 +45,36 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
     await fs.mkdir(tmpDir, { recursive: true });
 
     // Create a TypeScript project
-    await fs.writeFile(path.join(tmpDir!, "tsconfig.json"), JSON.stringify({
-      compilerOptions: {
-        target: "es2020",
-        module: "commonjs",
-        strict: true,
-        esModuleInterop: true,
-        skipLibCheck: true,
-        forceConsistentCasingInFileNames: true
-      }
-    }, null, 2));
+    await fs.writeFile(
+      path.join(tmpDir!, "tsconfig.json"),
+      JSON.stringify(
+        {
+          compilerOptions: {
+            target: "es2020",
+            module: "commonjs",
+            strict: true,
+            esModuleInterop: true,
+            skipLibCheck: true,
+            forceConsistentCasingInFileNames: true,
+          },
+        },
+        null,
+        2,
+      ),
+    );
 
     // Create transport with server parameters
     // Use typescript-language-server directly from node_modules to avoid npx overhead
-    const tsLangServerPath = path.join(__dirname, "../node_modules/.bin/typescript-language-server");
+    const tsLangServerPath = path.join(
+      __dirname,
+      "../node_modules/.bin/typescript-language-server",
+    );
     transport = new StdioClientTransport({
       command: "node",
       args: [LSMCP_PATH, "--bin", `${tsLangServerPath} --stdio`],
       env: {
         ...process.env,
-        } as Record<string, string>,
+      } as Record<string, string>,
     });
 
     // Create and connect client
@@ -94,7 +106,7 @@ describe("TypeScript Language Server Integration", { timeout: 30000 }, () => {
     if (!client) return;
 
     const response = await client.listTools();
-    const toolNames = response.tools.map(t => t.name);
+    const toolNames = response.tools.map((t) => t.name);
 
     // Check for LSP tools
     expect(toolNames).toContain("lsmcp_get_hover");
@@ -244,7 +256,7 @@ console.log("Hello"  )  ;
 
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
-    
+
     // Read the formatted file
     const formatted = await fs.readFile(filePath, "utf-8");
     // Should be properly formatted
@@ -297,13 +309,19 @@ const total = calculateSum(10, 20);
     }
 
     // Verify the changes
-    const mathContent = await fs.readFile(path.join(tmpDir!, "math.ts"), "utf-8");
-    const mainContent = await fs.readFile(path.join(tmpDir!, "main.ts"), "utf-8");
-    
+    const mathContent = await fs.readFile(
+      path.join(tmpDir!, "math.ts"),
+      "utf-8",
+    );
+    const mainContent = await fs.readFile(
+      path.join(tmpDir!, "main.ts"),
+      "utf-8",
+    );
+
     // At minimum, the file where rename was triggered should be updated
     expect(mathContent).toContain("addNumbers");
     expect(mathContent).not.toContain("calculateSum");
-    
+
     // Cross-file rename might not be supported by all LSP servers
     // So we'll check if it was renamed, but not fail if it wasn't
     if (mainContent.includes("addNumbers")) {
@@ -353,12 +371,14 @@ instance.myProperty = "value"; // Error: private property
 describe("TypeScript MCP with custom LSP via lsmcp", { timeout: 30000 }, () => {
   let tmpDir: string | undefined;
 
-  beforeEach(async function(this: any) {
+  beforeEach(async function (this: any) {
     // Skip test if lsmcp.js is not built
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       this.skip();
       return;
     }
@@ -369,13 +389,20 @@ describe("TypeScript MCP with custom LSP via lsmcp", { timeout: 30000 }, () => {
     await fs.mkdir(tmpDir, { recursive: true });
 
     // Create a TypeScript project
-    await fs.writeFile(path.join(tmpDir!, "tsconfig.json"), JSON.stringify({
-      compilerOptions: {
-        target: "es2020",
-        module: "commonjs",
-        strict: true,
-      }
-    }, null, 2));
+    await fs.writeFile(
+      path.join(tmpDir!, "tsconfig.json"),
+      JSON.stringify(
+        {
+          compilerOptions: {
+            target: "es2020",
+            module: "commonjs",
+            strict: true,
+          },
+        },
+        null,
+        2,
+      ),
+    );
   });
 
   afterEach(async () => {
@@ -391,7 +418,7 @@ describe("TypeScript MCP with custom LSP via lsmcp", { timeout: 30000 }, () => {
       args: [LSMCP_PATH, "--bin", lspCommand],
       env: {
         ...process.env,
-        } as Record<string, string>,
+      } as Record<string, string>,
     });
 
     const client = new Client({
@@ -406,7 +433,9 @@ describe("TypeScript MCP with custom LSP via lsmcp", { timeout: 30000 }, () => {
   it("should work with typescript-language-server via --bin", async () => {
     if (!tmpDir) return;
 
-    const client = await createMCPClient("npx typescript-language-server --stdio");
+    const client = await createMCPClient(
+      "npx typescript-language-server --stdio",
+    );
 
     try {
       // Create a TypeScript file
@@ -448,7 +477,9 @@ console.log(greeting);
     try {
       execSync("deno --version", { stdio: "pipe" });
     } catch {
-      console.log("Skipping test: Deno not found. Install from https://deno.land/");
+      console.log(
+        "Skipping test: Deno not found. Install from https://deno.land/",
+      );
       return;
     }
 
@@ -483,18 +514,25 @@ console.log(content);
   });
 });
 
-describe.skip("TypeScript Native Preview (TSGO) Support - DEPRECATED", { timeout: 30000 }, () => {
+describe.skip("TypeScript Native Preview (TSGO) Support - DEPRECATED", {
+  timeout: 30000,
+}, () => {
   let client: Client | undefined;
   let transport: StdioClientTransport | undefined;
   let tmpDir: string | undefined;
 
-  beforeEach(async function(this: any) {
+  beforeEach(async function (this: any) {
     // Skip test if typescript-mcp.js is not built
-    const TYPESCRIPT_MCP_PATH = path.join(__dirname, "../dist/typescript-mcp.js");
+    const TYPESCRIPT_MCP_PATH = path.join(
+      __dirname,
+      "../dist/typescript-mcp.js",
+    );
     try {
       await fs.access(TYPESCRIPT_MCP_PATH);
     } catch {
-      console.log("Skipping test: dist/typescript-mcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/typescript-mcp.js not found. Run 'pnpm build' first.",
+      );
       this.skip();
       return;
     }
@@ -503,7 +541,9 @@ describe.skip("TypeScript Native Preview (TSGO) Support - DEPRECATED", { timeout
     try {
       execSync("npx @typescript/native-preview --version", { stdio: "pipe" });
     } catch {
-      console.log("Skipping test: @typescript/native-preview not found. Install with: npm install -g @typescript/native-preview");
+      console.log(
+        "Skipping test: @typescript/native-preview not found. Install with: npm install -g @typescript/native-preview",
+      );
       this.skip();
       return;
     }
@@ -514,13 +554,20 @@ describe.skip("TypeScript Native Preview (TSGO) Support - DEPRECATED", { timeout
     await fs.mkdir(tmpDir, { recursive: true });
 
     // Create a TypeScript project
-    await fs.writeFile(path.join(tmpDir!, "tsconfig.json"), JSON.stringify({
-      compilerOptions: {
-        target: "es2020",
-        module: "commonjs",
-        strict: true,
-      }
-    }, null, 2));
+    await fs.writeFile(
+      path.join(tmpDir!, "tsconfig.json"),
+      JSON.stringify(
+        {
+          compilerOptions: {
+            target: "es2020",
+            module: "commonjs",
+            strict: true,
+          },
+        },
+        null,
+        2,
+      ),
+    );
 
     // Create transport with TSGO enabled
     transport = new StdioClientTransport({
@@ -528,7 +575,7 @@ describe.skip("TypeScript Native Preview (TSGO) Support - DEPRECATED", { timeout
       args: [TYPESCRIPT_MCP_PATH],
       env: {
         ...process.env,
-          TSGO: "1", // Enable TSGO mode
+        TSGO: "1", // Enable TSGO mode
       } as Record<string, string>,
     });
 
@@ -561,14 +608,14 @@ describe.skip("TypeScript Native Preview (TSGO) Support - DEPRECATED", { timeout
     if (!client) return;
 
     const response = await client.listTools();
-    const toolNames = response.tools.map(t => t.name);
+    const toolNames = response.tools.map((t) => t.name);
 
     // When TSGO is enabled, LSP tools should be available
     expect(toolNames).toContain("lsmcp_get_hover");
     expect(toolNames).toContain("lsmcp_find_references");
     expect(toolNames).toContain("lsmcp_get_definitions");
     expect(toolNames).toContain("lsmcp_get_diagnostics");
-    
+
     // But also should have TypeScript compiler API tools
     expect(toolNames).toContain("lsmcp_rename_symbol");
     expect(toolNames).toContain("lsmcp_move_file");

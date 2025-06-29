@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { toolOk, toolErr, tryCatch, formatError } from "./errorHandling.ts";
+import { describe, expect, it } from "vitest";
+import { formatError, toolErr, toolOk, tryCatch } from "./errorHandling.ts";
 
 describe("errorHandling", () => {
   describe("toolOk", () => {

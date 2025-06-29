@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Project } from "ts-morph";
 import { deleteSymbol } from "./deleteSymbol.ts";
 
@@ -20,7 +20,7 @@ describe("deleteSymbol", () => {
         "test.ts",
         `const x = 1;
 const y = 2;
-console.log(x, y);`
+console.log(x, y);`,
       );
 
       const result = await deleteSymbol(project, {
@@ -33,7 +33,8 @@ console.log(x, y);`
       expect(result.isOk()).toBe(true);
       if (result.isOk()) {
         expect(result.value.message).toContain("Successfully removed");
-        expect(result.value.removedFromFiles.some(f => f.includes("test.ts"))).toBe(true);
+        expect(result.value.removedFromFiles.some((f) => f.includes("test.ts")))
+          .toBe(true);
       }
 
       const content = sourceFile.getFullText();
@@ -46,7 +47,7 @@ console.log(x, y);`
       const sourceFile = project.createSourceFile(
         "test.ts",
         `const x = 1, y = 2, z = 3;
-console.log(x, y, z);`
+console.log(x, y, z);`,
       );
 
       const result = await deleteSymbol(project, {
@@ -77,7 +78,7 @@ function bar() {
   return foo();
 }
 
-console.log(bar());`
+console.log(bar());`,
       );
 
       const result = await deleteSymbol(project, {
@@ -101,7 +102,7 @@ console.log(bar());`
         "test.ts",
         `const add = (a: number, b: number) => a + b;
 const multiply = (a: number, b: number) => a * b;
-console.log(add(1, 2));`
+console.log(add(1, 2));`,
       );
 
       const result = await deleteSymbol(project, {
@@ -138,7 +139,7 @@ class Dog extends Animal {
   }
 }
 
-const myDog = new Dog("Rex", "Golden");`
+const myDog = new Dog("Rex", "Golden");`,
       );
 
       const result = await deleteSymbol(project, {
@@ -171,7 +172,7 @@ const myDog = new Dog("Rex", "Golden");`
   calculate(): number {
     return this.add(2, 3) * this.multiply(4, 5);
   }
-}`
+}`,
       );
 
       const result = await deleteSymbol(project, {
@@ -204,7 +205,7 @@ interface Admin extends User {
   permissions: string[];
 }
 
-const user: User = { id: 1, name: "John" };`
+const user: User = { id: 1, name: "John" };`,
       );
 
       const result = await deleteSymbol(project, {
@@ -226,7 +227,7 @@ const user: User = { id: 1, name: "John" };`
         "test.ts",
         `type ID = string | number;
 type UserID = ID;
-const id: UserID = "123";`
+const id: UserID = "123";`,
       );
 
       const result = await deleteSymbol(project, {
@@ -252,7 +253,7 @@ const id: UserID = "123";`
 export function getVersion() {
   return VERSION;
 }
-export { getVersion as getCurrentVersion };`
+export { getVersion as getCurrentVersion };`,
       );
 
       const result = await deleteSymbol(project, {
@@ -325,7 +326,7 @@ export { getVersion as getCurrentVersion };`
         "test.ts",
         `const PI = 3.14159;
 const area = (r: number) => PI * r * r;
-console.log(PI, area(5));`
+console.log(PI, area(5));`,
       );
 
       const result = await deleteSymbol(project, {
@@ -351,12 +352,12 @@ console.log(PI, area(5));`
         "utils.ts",
         `export function helper() {
   return "helping";
-}`
+}`,
       );
       project.createSourceFile(
         "main.ts",
         `import { helper } from "./utils";
-console.log(helper());`
+console.log(helper());`,
       );
 
       const result = await deleteSymbol(project, {
@@ -370,8 +371,11 @@ console.log(helper());`
       if (result.isOk()) {
         expect(result.value.removedFromFiles).toHaveLength(2);
         // File paths may include leading slash
-        expect(result.value.removedFromFiles.some(f => f.includes("utils.ts"))).toBe(true);
-        expect(result.value.removedFromFiles.some(f => f.includes("main.ts"))).toBe(true);
+        expect(
+          result.value.removedFromFiles.some((f) => f.includes("utils.ts")),
+        ).toBe(true);
+        expect(result.value.removedFromFiles.some((f) => f.includes("main.ts")))
+          .toBe(true);
       }
 
       // const mainContent = project.getSourceFile("main.ts")!.getFullText();

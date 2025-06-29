@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { LanguageMappingConfig } from "./languageMapping.ts";
 
 describe("LanguageMappingConfig", () => {
@@ -31,7 +31,7 @@ describe("LanguageMappingConfig", () => {
 
   it("should parse from string format", () => {
     const mappings = LanguageMappingConfig.parseFromString(
-      "*.rs:rust,**/*.py:python,src/**/*.go:go"
+      "*.rs:rust,**/*.py:python,src/**/*.go:go",
     );
 
     expect(mappings).toEqual([
@@ -69,7 +69,7 @@ describe("LanguageMappingConfig", () => {
 
   it("should create with TypeScript defaults", () => {
     const config = LanguageMappingConfig.createWithDefaults();
-    
+
     expect(config.getLanguageId("app.ts")).toBe("typescript");
     expect(config.getLanguageId("component.tsx")).toBe("typescriptreact");
     expect(config.getLanguageId("script.js")).toBe("javascript");
@@ -84,8 +84,12 @@ describe("LanguageMappingConfig", () => {
       { pattern: "{src,lib}/**/*.py", languageId: "python-source" },
     ]);
 
-    expect(config.getLanguageId("packages/app/src/index.ts")).toBe("typescript-monorepo");
-    expect(config.getLanguageId("modules/__tests__/util.test.js")).toBe("javascript-test");
+    expect(config.getLanguageId("packages/app/src/index.ts")).toBe(
+      "typescript-monorepo",
+    );
+    expect(config.getLanguageId("modules/__tests__/util.test.js")).toBe(
+      "javascript-test",
+    );
     expect(config.getLanguageId("src/models/user.py")).toBe("python-source");
     expect(config.getLanguageId("lib/helpers/format.py")).toBe("python-source");
   });

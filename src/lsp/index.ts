@@ -1,14 +1,14 @@
 // Main LSP client exports
 export {
   createLSPClient,
-  initialize,
+  type DefinitionResult,
   getActiveClient,
   getLSPClient,
-  shutdown,
-  type LSPClientConfig,
-  type HoverResult,
-  type DefinitionResult,
-  type ReferencesResult,
   type HoverContents,
+  type HoverResult,
+  initialize,
   type LSPClient,
+  type LSPClientConfig,
+  type ReferencesResult,
+  shutdown,
 } from "./lspClient.ts";

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { spawn } from "child_process";
@@ -20,7 +20,7 @@ describe("MCP Server Integration", () => {
         cwd: path.join(__dirname, ".."),
         shell: true,
       });
-      
+
       buildProcess.on("close", (code) => {
         if (code === 0) resolve();
         else reject(new Error(`Build failed with code ${code}`));
@@ -35,7 +35,7 @@ describe("MCP Server Integration", () => {
     // Ensure TypeScript-specific tools are enabled
     delete cleanEnv.FORCE_LSP;
     delete cleanEnv.LSP_COMMAND;
-    
+
     transport = new StdioClientTransport({
       command: "node",
       args: [SERVER_PATH],
@@ -64,7 +64,7 @@ describe("MCP Server Integration", () => {
     expect(tools.length).toBeGreaterThan(0);
 
     // Check for some expected tools
-    const toolNames = tools.map(tool => tool.name);
+    const toolNames = tools.map((tool) => tool.name);
     // TypeScript-specific tools (not LSP tools since we disabled LSP mode)
     expect(toolNames).toContain("lsmcp_move_file");
     expect(toolNames).toContain("lsmcp_get_type_in_module");
@@ -78,14 +78,14 @@ describe("MCP Server Integration", () => {
       arguments: {
         root: path.join(__dirname, ".."),
         moduleName: "neverthrow",
-      }
+      },
     });
 
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
     const contents = result.content as Array<{ type: string; text?: string }>;
     expect(Array.isArray(contents)).toBe(true);
-    
+
     if (contents.length > 0) {
       const content = contents[0];
       if (content.type === "text" && content.text) {
@@ -103,14 +103,14 @@ describe("MCP Server Integration", () => {
         root: path.join(__dirname, ".."),
         moduleName: "neverthrow",
         typeName: "Result",
-      }
+      },
     });
 
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
     const contents = result.content as Array<{ type: string; text?: string }>;
     expect(Array.isArray(contents)).toBe(true);
-    
+
     if (contents.length > 0) {
       const content = contents[0];
       if (content.type === "text" && content.text) {
@@ -126,7 +126,7 @@ describe("MCP Server Integration", () => {
       arguments: {
         root: "/non/existent/path",
         moduleName: "non-existent-module",
-      }
+      },
     });
 
     expect(result).toBeDefined();

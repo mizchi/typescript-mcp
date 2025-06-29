@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import path from "path";
 import fs from "fs/promises";
 import { randomBytes } from "crypto";
 import { lspRenameSymbolTool } from "../../src/lsp/tools/lspRenameSymbol.ts";
-import { spawn, ChildProcess } from "child_process";
-import { 
-  initialize as initializeLSPClient, 
-  shutdown as shutdownLSPClient
+import { ChildProcess, spawn } from "child_process";
+import {
+  initialize as initializeLSPClient,
+  shutdown as shutdownLSPClient,
 } from "../../src/lsp/lspClient.ts";
 
 const FIXTURES_DIR = path.join(__dirname, "../fixtures/lsp-rename");
@@ -43,7 +43,7 @@ describe("lspRenameSymbol - multi-file rename", () => {
     if (tmpDir) {
       await fs.rm(tmpDir, { recursive: true, force: true });
     }
-    
+
     if (lspProcess) {
       await shutdownLSPClient();
       lspProcess.kill();
@@ -69,7 +69,7 @@ describe("lspRenameSymbol - multi-file rename", () => {
 export function subtract(a: number, b: number): number {
   return a - b;
 }
-`
+`,
     );
 
     await fs.writeFile(
@@ -84,7 +84,7 @@ console.log('Subtraction:', result2);
 
 // Use add in a callback
 [1, 2, 3].reduce((acc, val) => add(acc, val), 0);
-`
+`,
     );
 
     await fs.writeFile(
@@ -98,11 +98,11 @@ export function doubleAdd(a: number, b: number): number {
 export function testAdd() {
   return add(1, 2) === 3;
 }
-`
+`,
     );
 
     // Wait for LSP to index the files
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Rename 'add' to 'sum' in math.ts
     const result = await lspRenameSymbolTool.execute({
@@ -169,7 +169,7 @@ export type UserData = {
   name: string;
   email: string;
 };
-`
+`,
     );
 
     await fs.writeFile(
@@ -189,7 +189,7 @@ export class UserService {
     return this.users.find(user => user.id === id);
   }
 }
-`
+`,
     );
 
     await fs.writeFile(
@@ -213,11 +213,11 @@ describe('User tests', () => {
     expect(user).toBeInstanceOf(User);
   });
 });
-`
+`,
     );
 
     // Wait for LSP to index the files
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Rename 'User' to 'Person' in user.ts
     const result = await lspRenameSymbolTool.execute({
@@ -244,7 +244,9 @@ describe('User tests', () => {
     expect(serviceContent).toContain("import { Person, UserData }");
     expect(serviceContent).toContain("private users: Person[]");
     expect(serviceContent).toContain("new Person(");
-    expect(serviceContent).toContain("findUser(id: number): Person | undefined");
+    expect(serviceContent).toContain(
+      "findUser(id: number): Person | undefined",
+    );
 
     // Check test.ts
     expect(testContent).toContain("import { Person }");
@@ -276,7 +278,7 @@ export interface ApiResponse<T> {
   status: number;
   config: Config;
 }
-`
+`,
     );
 
     await fs.writeFile(
@@ -307,7 +309,7 @@ export function createDefaultConfig(): Config {
     retries: 3
   };
 }
-`
+`,
     );
 
     await fs.writeFile(
@@ -328,11 +330,11 @@ export class Component {
     return this.config;
   }
 }
-`
+`,
     );
 
     // Wait for LSP to index the files
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Rename 'Config' to 'Configuration' in types.ts
     const result = await lspRenameSymbolTool.execute({
@@ -359,13 +361,19 @@ export class Component {
     // Check api.ts
     expect(apiContent).toContain("import { Configuration, ApiResponse }");
     expect(apiContent).toContain("constructor(private config: Configuration)");
-    expect(apiContent).toContain("updateConfig(newConfig: Partial<Configuration>)");
-    expect(apiContent).toContain("function createDefaultConfig(): Configuration");
+    expect(apiContent).toContain(
+      "updateConfig(newConfig: Partial<Configuration>)",
+    );
+    expect(apiContent).toContain(
+      "function createDefaultConfig(): Configuration",
+    );
 
     // Check component.ts
     expect(componentContent).toContain("import { Configuration }");
     expect(componentContent).toContain("private config: Configuration;");
-    expect(componentContent).toContain("constructor(config?: Partial<Configuration>)");
+    expect(componentContent).toContain(
+      "constructor(config?: Partial<Configuration>)",
+    );
     expect(componentContent).toContain("getConfig(): Configuration");
   });
 
@@ -387,7 +395,7 @@ export class Component {
 export function validateData(input: string): boolean {
   return input.length > 0;
 }
-`
+`,
     );
 
     await fs.writeFile(
@@ -404,11 +412,11 @@ function main() {
 }
 
 main();
-`
+`,
     );
 
     // Wait for LSP to index the files
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Rename 'processData' without specifying line
     const result = await lspRenameSymbolTool.execute({
@@ -444,7 +452,7 @@ main();
     await fs.writeFile(dummyFile, "const x = 42;");
 
     // Wait for LSP to index the file
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Try to rename a non-existent symbol
     await expect(
@@ -454,7 +462,7 @@ main();
         line: 1,
         target: "nonExistentSymbol",
         newName: "newName",
-      })
+      }),
     ).rejects.toThrow(/Symbol "nonExistentSymbol" not found/);
 
     // Try to rename in a non-existent file
@@ -464,7 +472,7 @@ main();
         filePath: "nonexistent.ts",
         target: "x",
         newName: "y",
-      })
+      }),
     ).rejects.toThrow();
   });
 });

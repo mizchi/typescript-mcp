@@ -1,7 +1,7 @@
 import { z } from "zod";
 import path from "path";
 import fs from "fs/promises";
-import { type Result, ok, err } from "neverthrow";
+import { err, ok, type Result } from "neverthrow";
 import { moveFile } from "../commands/moveFile.ts";
 import {
   findProjectForFile,
@@ -52,15 +52,22 @@ async function handleMoveFile({
   if (sourceFileResult.isErr()) {
     return err(sourceFileResult.error);
   }
-  
+
   // Load all TypeScript/JavaScript files in the project directory to ensure imports are resolved
   const rootDir = root;
-  
+
   // Try to add source files from the root directory
   try {
-    const files = await fs.readdir(rootDir, { recursive: true, withFileTypes: true });
+    const files = await fs.readdir(rootDir, {
+      recursive: true,
+      withFileTypes: true,
+    });
     for (const file of files) {
-      if (file.isFile() && (file.name.endsWith('.ts') || file.name.endsWith('.tsx') || file.name.endsWith('.js') || file.name.endsWith('.jsx'))) {
+      if (
+        file.isFile() &&
+        (file.name.endsWith(".ts") || file.name.endsWith(".tsx") ||
+          file.name.endsWith(".js") || file.name.endsWith(".jsx"))
+      ) {
         const filePath = path.join(file.path, file.name);
         if (!project.getSourceFile(filePath)) {
           try {
@@ -76,7 +83,10 @@ async function handleMoveFile({
     try {
       const files = await fs.readdir(rootDir);
       for (const file of files) {
-        if (file.endsWith('.ts') || file.endsWith('.tsx') || file.endsWith('.js') || file.endsWith('.jsx')) {
+        if (
+          file.endsWith(".ts") || file.endsWith(".tsx") ||
+          file.endsWith(".js") || file.endsWith(".jsx")
+        ) {
           const filePath = path.join(rootDir, file);
           if (!project.getSourceFile(filePath)) {
             try {
@@ -112,7 +122,7 @@ async function handleMoveFile({
 async function analyzeImportChanges(
   file: string,
   oldPath: string,
-  newPath: string
+  newPath: string,
 ): Promise<Result<string[], string>> {
   const contentResult = await fs
     .readFile(file, "utf-8")
@@ -152,14 +162,14 @@ async function analyzeImportChanges(
           importPath,
           relativeOldPath.startsWith(".")
             ? relativeOldPath
-            : "./" + relativeOldPath
+            : "./" + relativeOldPath,
         );
 
         if (oldLine !== line) {
           matches.push(
             `    @@ -${String(lineNum)},1 +${String(lineNum)},1 @@`,
             `    - ${oldLine}`,
-            `    + ${line}`
+            `    + ${line}`,
           );
         }
       }
@@ -168,7 +178,9 @@ async function analyzeImportChanges(
   });
 
   return ok(
-    importChanges.length > 0 ? importChanges : [`    Import statements updated`]
+    importChanges.length > 0
+      ? importChanges
+      : [`    Import statements updated`],
   );
 }
 
@@ -176,7 +188,7 @@ async function formatMoveFileResult(
   result: MoveFileResult,
   oldPath: string,
   newPath: string,
-  root: string
+  root: string,
 ): Promise<Result<string, string>> {
   const { message, changedFiles } = result;
 
@@ -206,7 +218,7 @@ async function formatMoveFileResult(
       }
 
       return ok([`  ${relativePath}:`, ...importAnalysis.value]);
-    })
+    }),
   );
 
   // Check if any file processing failed
@@ -237,7 +249,7 @@ export const moveFileTool: ToolDef<typeof schema> = {
       result.value,
       absoluteOldPath,
       absoluteNewPath,
-      args.root
+      args.root,
     );
 
     if (formattedResult.isErr()) {
@@ -263,15 +275,17 @@ if (import.meta.vitest) {
           result,
           "/project/src/old.ts",
           "/project/src/new.ts",
-          "/project"
+          "/project",
         );
 
         expect(formatted.isOk()).toBe(true);
         if (formatted.isOk()) {
           expect(formatted.value).toMatch(
-            "Moved file from 'src/old.ts' to 'src/new.ts'. Updated imports in 1 file(s)."
+            "Moved file from 'src/old.ts' to 'src/new.ts'. Updated imports in 1 file(s).",
           );
-          expect(formatted.value).toMatch("File moved: src/old.ts → src/new.ts");
+          expect(formatted.value).toMatch(
+            "File moved: src/old.ts → src/new.ts",
+          );
         }
       });
 
@@ -285,16 +299,16 @@ if (import.meta.vitest) {
           result,
           "/project/utils/helper.ts",
           "/project/lib/helper.ts",
-          "/project"
+          "/project",
         );
 
         expect(formatted.isOk()).toBe(true);
         if (formatted.isOk()) {
           expect(formatted.value).toMatch(
-            "Moved file from 'utils/helper.ts' to 'lib/helper.ts'. Updated imports in 2 file(s)."
+            "Moved file from 'utils/helper.ts' to 'lib/helper.ts'. Updated imports in 2 file(s).",
           );
           expect(formatted.value).toMatch(
-            "File moved: utils/helper.ts → lib/helper.ts"
+            "File moved: utils/helper.ts → lib/helper.ts",
           );
           expect(formatted.value).toMatch("src/index.ts:");
         }
@@ -316,16 +330,16 @@ if (import.meta.vitest) {
           result,
           "/project/components/Button.tsx",
           "/project/ui/Button.tsx",
-          "/project"
+          "/project",
         );
 
         expect(formatted.isOk()).toBe(true);
         if (formatted.isOk()) {
           expect(formatted.value).toMatch(
-            "Moved file from 'components/Button.tsx' to 'ui/Button.tsx'. Updated imports in 5 file(s)."
+            "Moved file from 'components/Button.tsx' to 'ui/Button.tsx'. Updated imports in 5 file(s).",
           );
           expect(formatted.value).toMatch(
-            "File moved: components/Button.tsx → ui/Button.tsx"
+            "File moved: components/Button.tsx → ui/Button.tsx",
           );
           expect(formatted.value).toMatch("src/App.tsx:");
           expect(formatted.value).toMatch("src/pages/Home.tsx:");
@@ -348,16 +362,16 @@ if (import.meta.vitest) {
           result,
           "/project/src/utils/math.ts",
           "/project/lib/math/index.ts",
-          "/project"
+          "/project",
         );
 
         expect(formatted.isOk()).toBe(true);
         if (formatted.isOk()) {
           expect(formatted.value).toMatch(
-            "Moved file from 'src/utils/math.ts' to 'lib/math/index.ts'. Updated imports in 3 file(s)."
+            "Moved file from 'src/utils/math.ts' to 'lib/math/index.ts'. Updated imports in 3 file(s).",
           );
           expect(formatted.value).toMatch(
-            "File moved: src/utils/math.ts → lib/math/index.ts"
+            "File moved: src/utils/math.ts → lib/math/index.ts",
           );
           expect(formatted.value).toMatch("src/calculator.ts:");
           expect(formatted.value).toMatch("src/statistics.ts:");
@@ -379,16 +393,16 @@ if (import.meta.vitest) {
           result,
           "/project/types/user.ts",
           "/project/types/User.ts",
-          "/project"
+          "/project",
         );
 
         expect(formatted.isOk()).toBe(true);
         if (formatted.isOk()) {
           expect(formatted.value).toMatch(
-            "Moved file from 'types/user.ts' to 'types/User.ts'. Updated imports in 4 file(s)."
+            "Moved file from 'types/user.ts' to 'types/User.ts'. Updated imports in 4 file(s).",
           );
           expect(formatted.value).toMatch(
-            "File moved: types/user.ts → types/User.ts"
+            "File moved: types/user.ts → types/User.ts",
           );
           expect(formatted.value).toMatch("src/models/user.model.ts:");
           expect(formatted.value).toMatch("src/services/auth.service.ts:");

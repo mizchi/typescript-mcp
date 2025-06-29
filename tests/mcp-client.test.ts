@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { fileURLToPath } from "url";
@@ -21,28 +21,35 @@ describe("MCP TypeScript Tools", () => {
     await fs.mkdir(tmpDir, { recursive: true });
 
     // Create a minimal tsconfig.json to make it a TypeScript project
-    await fs.writeFile(path.join(tmpDir, "tsconfig.json"), JSON.stringify({
-      compilerOptions: {
-        target: "es2020",
-        module: "commonjs",
-        strict: true,
-        esModuleInterop: true,
-        skipLibCheck: true,
-        forceConsistentCasingInFileNames: true
-      }
-    }, null, 2));
+    await fs.writeFile(
+      path.join(tmpDir, "tsconfig.json"),
+      JSON.stringify(
+        {
+          compilerOptions: {
+            target: "es2020",
+            module: "commonjs",
+            strict: true,
+            esModuleInterop: true,
+            skipLibCheck: true,
+            forceConsistentCasingInFileNames: true,
+          },
+        },
+        null,
+        2,
+      ),
+    );
 
     // Create transport with server parameters
     const cleanEnv = { ...process.env } as Record<string, string>;
     // Ensure TypeScript-specific tools are enabled
     delete cleanEnv.FORCE_LSP;
     delete cleanEnv.LSP_COMMAND;
-    
+
     transport = new StdioClientTransport({
       command: "node",
       args: [SERVER_PATH],
       env: cleanEnv,
-      cwd: tmpDir,  // Use cwd instead of --project-root
+      cwd: tmpDir, // Use cwd instead of --project-root
     });
 
     // Create and connect client
@@ -63,7 +70,7 @@ describe("MCP TypeScript Tools", () => {
     } catch (error) {
       console.error("Error during client cleanup:", error);
     }
-    
+
     // Clean up temp directory
     try {
       await fs.rm(tmpDir, { recursive: true, force: true });
@@ -76,12 +83,15 @@ describe("MCP TypeScript Tools", () => {
     it.skip("should rename a symbol in a file (TypeScript-specific tool removed)", async () => {
       // Create test file
       const testFile = path.join(tmpDir, "test.ts");
-      await fs.writeFile(testFile, `
+      await fs.writeFile(
+        testFile,
+        `
 export const oldName = "value";
 export function useOldName() {
   return oldName;
 }
-`);
+`,
+      );
 
       const result = await client.callTool({
         name: "lsmcp_rename_symbol",
@@ -91,12 +101,12 @@ export function useOldName() {
           line: 2,
           oldName: "oldName",
           newName: "newName",
-        }
+        },
       });
 
       expect(result).toBeDefined();
       expect(result.content).toBeDefined();
-      
+
       // Verify the file was updated
       const content = await fs.readFile(testFile, "utf-8");
       expect(content).toContain("export const newName");
@@ -110,10 +120,13 @@ export function useOldName() {
       // Create test files
       const srcFile = path.join(tmpDir, "src.ts");
       const importerFile = path.join(tmpDir, "importer.ts");
-      
+
       await fs.writeFile(srcFile, `export const value = 42;`);
-      await fs.writeFile(importerFile, `import { value } from "./src";\nconsole.log(value);`);
-      
+      await fs.writeFile(
+        importerFile,
+        `import { value } from "./src";\nconsole.log(value);`,
+      );
+
       // Verify files exist before calling tool
       await expect(fs.access(srcFile)).resolves.toBeUndefined();
       await expect(fs.access(importerFile)).resolves.toBeUndefined();
@@ -124,24 +137,25 @@ export function useOldName() {
           root: tmpDir,
           oldPath: "src.ts",
           newPath: "moved/src.ts",
-        }
+        },
       });
 
       expect(result).toBeDefined();
       expect(result.content).toBeDefined();
-      
+
       // Check for errors in the result
       if (result.content && Array.isArray(result.content)) {
         const content = result.content[0];
-        if (content && 'text' in content && content.text.startsWith("Error:")) {
+        if (content && "text" in content && content.text.startsWith("Error:")) {
           throw new Error(`Tool error: ${content.text}`);
         }
       }
-      
+
       // Verify file was moved
       await expect(fs.access(srcFile)).rejects.toThrow();
-      await expect(fs.access(path.join(tmpDir, "moved/src.ts"))).resolves.toBeUndefined();
-      
+      await expect(fs.access(path.join(tmpDir, "moved/src.ts"))).resolves
+        .toBeUndefined();
+
       // Verify import was updated
       const importerContent = await fs.readFile(importerFile, "utf-8");
       expect(importerContent).toContain(`import { value } from "./moved/src"`);
@@ -151,11 +165,14 @@ export function useOldName() {
   describe("get_type_at_symbol", () => {
     it("should get type information for a symbol", async () => {
       const testFile = path.join(tmpDir, "test.ts");
-      await fs.writeFile(testFile, `
+      await fs.writeFile(
+        testFile,
+        `
 const num = 42;
 const str = "hello";
 const arr = [1, 2, 3];
-`);
+`,
+      );
 
       const result = await client.callTool({
         name: "lsmcp_get_type_at_symbol",
@@ -164,7 +181,7 @@ const arr = [1, 2, 3];
           filePath: "test.ts",
           line: 2,
           symbolName: "num",
-        }
+        },
       });
 
       expect(result).toBeDefined();
@@ -182,7 +199,9 @@ const arr = [1, 2, 3];
   describe("get_symbols_in_scope", () => {
     it("should list all symbols in scope", async () => {
       const testFile = path.join(tmpDir, "test.ts");
-      await fs.writeFile(testFile, `
+      await fs.writeFile(
+        testFile,
+        `
 import { Result } from "neverthrow";
 
 const localVar = 10;
@@ -192,7 +211,8 @@ function testFunction() {
   const innerVar = 20;
   // Get symbols here
 }
-`);
+`,
+      );
 
       const result = await client.callTool({
         name: "lsmcp_get_symbols_in_scope",
@@ -200,7 +220,7 @@ function testFunction() {
           root: tmpDir,
           filePath: "test.ts",
           line: 8,
-        }
+        },
       });
 
       expect(result).toBeDefined();
@@ -220,13 +240,16 @@ function testFunction() {
   describe("delete_symbol", () => {
     it.skip("should delete a symbol and its references (TypeScript-specific tool removed)", async () => {
       const testFile = path.join(tmpDir, "test.ts");
-      await fs.writeFile(testFile, `
+      await fs.writeFile(
+        testFile,
+        `
 export const toDelete = "value";
 export function useIt() {
   return toDelete;
 }
 export const keepThis = "keep";
-`);
+`,
+      );
 
       const result = await client.callTool({
         name: "lsmcp_delete_symbol",
@@ -236,20 +259,20 @@ export const keepThis = "keep";
           line: 2,
           symbolName: "toDelete",
           removeReferences: true,
-        }
+        },
       });
 
       expect(result).toBeDefined();
       expect(result.content).toBeDefined();
-      
+
       // Check for errors in the result
       if (result.content && Array.isArray(result.content)) {
         const content = result.content[0];
-        if (content && 'text' in content && content.text.includes("Error")) {
+        if (content && "text" in content && content.text.includes("Error")) {
           throw new Error(`Tool error: ${content.text}`);
         }
       }
-      
+
       const content = await fs.readFile(testFile, "utf-8");
       expect(content).not.toContain("toDelete");
       expect(content).toContain("keepThis");

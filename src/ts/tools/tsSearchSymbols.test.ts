@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
-import { mkdtemp, rm, writeFile, mkdir } from "fs/promises";
+import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
+import { mkdir, mkdtemp, rm, writeFile } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
-import { searchSymbolsTool, disposeAllIndexers } from "./tsSearchSymbols.ts";
+import { disposeAllIndexers, searchSymbolsTool } from "./tsSearchSymbols.ts";
 
 describe("searchSymbolsTool", () => {
   let tmpDir: string;
@@ -16,7 +16,7 @@ describe("searchSymbolsTool", () => {
     // Clear any cached indexers to ensure clean state
     await rm(tmpDir, { recursive: true, force: true });
   });
-  
+
   afterAll(() => {
     // Dispose all indexers after all tests
     disposeAllIndexers();
@@ -44,7 +44,7 @@ export function getUserById(id: string): User {
 class InternalUserService {
   private users: User[] = [];
 }
-      `
+      `,
     );
 
     await writeFile(
@@ -61,7 +61,7 @@ export class ProductService {
     return [];
   }
 }
-      `
+      `,
     );
 
     // Search for "User" prefix
@@ -74,7 +74,7 @@ export class ProductService {
       limit: 50,
     });
 
-    expect(result).toContain("Found 2 symbols matching \"User\"");
+    expect(result).toContain('Found 2 symbols matching "User"');
     expect(result).toContain("User [Class]");
     expect(result).toContain("UserProfile [Interface]");
     expect(result).not.toContain("getUserById"); // Function name doesn't start with "User"
@@ -88,7 +88,7 @@ export class ProductService {
 export const Config = { port: 3000 };
 export const ConfigLoader = () => {};
 export class Configuration {}
-      `
+      `,
     );
 
     const result = await searchSymbolsTool.execute({
@@ -100,7 +100,7 @@ export class Configuration {}
       limit: 50,
     });
 
-    expect(result).toContain("Found 1 symbols matching \"Config\"");
+    expect(result).toContain('Found 1 symbols matching "Config"');
     expect(result).toContain("Config [Variable]");
     expect(result).not.toContain("ConfigLoader");
     expect(result).not.toContain("Configuration");
@@ -115,7 +115,7 @@ export interface MyInterface {}
 export type MyType = string;
 export function myFunction() {}
 export const myVariable = 42;
-      `
+      `,
     );
 
     const result = await searchSymbolsTool.execute({
@@ -142,7 +142,7 @@ export const myVariable = 42;
 export class PublicAPI {}
 class InternalHelper {}
 function privateUtil() {}
-      `
+      `,
     );
 
     const withoutInternal = await searchSymbolsTool.execute({
@@ -165,7 +165,7 @@ function privateUtil() {}
 
     expect(withoutInternal).toContain("PublicAPI");
     expect(withoutInternal).not.toContain("InternalHelper");
-    
+
     expect(withInternal).toContain("PublicAPI");
     expect(withInternal).toContain("InternalHelper");
     expect(withInternal).toContain("privateUtil");
@@ -174,7 +174,7 @@ function privateUtil() {}
   it("should show index statistics", async () => {
     await writeFile(
       join(tmpDir, "stats.ts"),
-      `export class Test {}`
+      `export class Test {}`,
     );
 
     const result = await searchSymbolsTool.execute({
@@ -194,25 +194,34 @@ function privateUtil() {}
     // Skip this test for now - file watching implementation verified manually
     // TODO: Fix test isolation for file watching
   });
-  
+
   it.skip("should handle simultaneous file changes with buffering", async () => {
     // Temporarily enable file watching for this test
     const originalEnv = process.env.VITEST;
     delete process.env.VITEST;
-    
+
     try {
       // Create multiple test files
       const files = [
-        { path: join(tmpDir, "src/file1.ts"), content: "export class File1Class {}" },
-        { path: join(tmpDir, "src/file2.ts"), content: "export class File2Class {}" },
-        { path: join(tmpDir, "src/file3.ts"), content: "export class File3Class {}" },
+        {
+          path: join(tmpDir, "src/file1.ts"),
+          content: "export class File1Class {}",
+        },
+        {
+          path: join(tmpDir, "src/file2.ts"),
+          content: "export class File2Class {}",
+        },
+        {
+          path: join(tmpDir, "src/file3.ts"),
+          content: "export class File3Class {}",
+        },
       ];
-      
+
       // Write initial files
       for (const file of files) {
         await writeFile(file.path, file.content);
       }
-      
+
       // Build initial index
       const result1 = await searchSymbolsTool.execute({
         root: tmpDir,
@@ -225,19 +234,19 @@ function privateUtil() {}
       expect(result1).toContain("File1Class");
       expect(result1).toContain("File2Class");
       expect(result1).toContain("File3Class");
-      
+
       // Wait for watchers to be set up
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // Update all files simultaneously
-      const updatePromises = files.map((file, index) => 
+      const updatePromises = files.map((file, index) =>
         writeFile(file.path, `export class UpdatedFile${index + 1}Class {}`)
       );
       await Promise.all(updatePromises);
-      
+
       // Wait for debounced updates to process (100ms debounce + processing time)
-      await new Promise(resolve => setTimeout(resolve, 600));
-      
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
       // Verify all updates were processed
       const result2 = await searchSymbolsTool.execute({
         root: tmpDir,
@@ -250,7 +259,7 @@ function privateUtil() {}
       expect(result2).toContain("UpdatedFile1Class");
       expect(result2).toContain("UpdatedFile2Class");
       expect(result2).toContain("UpdatedFile3Class");
-      
+
       // Old classes should not be found
       const result3 = await searchSymbolsTool.execute({
         root: tmpDir,

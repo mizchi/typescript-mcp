@@ -5,8 +5,11 @@ import { getLSPClient } from "../lspClient.ts";
 import { fileURLToPath } from "url";
 
 const schemaShape = {
-  query: z.string().describe("Search query for symbols (e.g., class name, function name)"),
-  root: z.string().describe("Root directory for resolving relative paths").optional(),
+  query: z.string().describe(
+    "Search query for symbols (e.g., class name, function name)",
+  ),
+  root: z.string().describe("Root directory for resolving relative paths")
+    .optional(),
 };
 
 const schema = z.object(schemaShape);
@@ -43,18 +46,21 @@ function getSymbolKindName(kind: SymbolKind): string {
   return symbolKindNames[kind] || "Unknown";
 }
 
-function formatSymbolInformation(symbol: SymbolInformation, root?: string): string {
+function formatSymbolInformation(
+  symbol: SymbolInformation,
+  root?: string,
+): string {
   const kind = getSymbolKindName(symbol.kind);
   const deprecated = symbol.deprecated ? " (deprecated)" : "";
   const container = symbol.containerName ? ` in ${symbol.containerName}` : "";
-  
+
   // Convert file URI to relative path if possible
   let filePath = symbol.location.uri;
   try {
     const absolutePath = fileURLToPath(symbol.location.uri);
     if (root) {
       // Make path relative to root
-      filePath = absolutePath.startsWith(root + "/") 
+      filePath = absolutePath.startsWith(root + "/")
         ? absolutePath.substring(root.length + 1)
         : absolutePath;
     } else {
@@ -63,10 +69,14 @@ function formatSymbolInformation(symbol: SymbolInformation, root?: string): stri
   } catch {
     // Keep original URI if conversion fails
   }
-  
+
   return `${symbol.name} [${kind}]${deprecated}${container}
   File: ${filePath}
-  Range: ${symbol.location.range.start.line + 1}:${symbol.location.range.start.character + 1} - ${symbol.location.range.end.line + 1}:${symbol.location.range.end.character + 1}`;
+  Range: ${symbol.location.range.start.line + 1}:${
+    symbol.location.range.start.character + 1
+  } - ${symbol.location.range.end.line + 1}:${
+    symbol.location.range.end.character + 1
+  }`;
 }
 
 async function handleGetWorkspaceSymbols({
@@ -89,16 +99,17 @@ async function handleGetWorkspaceSymbols({
   const sortedSymbols = symbols.sort((a, b) => {
     const fileCompare = a.location.uri.localeCompare(b.location.uri);
     if (fileCompare !== 0) return fileCompare;
-    
-    const lineCompare = a.location.range.start.line - b.location.range.start.line;
+
+    const lineCompare = a.location.range.start.line -
+      b.location.range.start.line;
     if (lineCompare !== 0) return lineCompare;
-    
+
     return a.location.range.start.character - b.location.range.start.character;
   });
 
   // Format the symbols
   let result = `Found ${symbols.length} symbol(s) matching "${query}":\n\n`;
-  
+
   let currentFile = "";
   for (const symbol of sortedSymbols) {
     // Add file header when switching files
@@ -115,7 +126,7 @@ async function handleGetWorkspaceSymbols({
       }
       result += `\n=== ${displayPath} ===\n\n`;
     }
-    
+
     result += formatSymbolInformation(symbol, root) + "\n\n";
   }
 

@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
+  formatCodeSnippet,
+  formatFilePath,
   formatLocation,
   formatRange,
-  formatFilePath,
   truncateText,
-  formatCodeSnippet,
 } from "./formatting.ts";
 import { Location, Range } from "vscode-languageserver-types";
 
@@ -117,7 +117,7 @@ describe("formatting", () => {
       const lines = ["const x = 1;", "const y = 2;", "console.log(x + y);"];
       const result = formatCodeSnippet(lines, 10);
       expect(result).toBe(
-        "  10: const x = 1;\n  11: const y = 2;\n  12: console.log(x + y);"
+        "  10: const x = 1;\n  11: const y = 2;\n  12: console.log(x + y);",
       );
     });
 

@@ -1,5 +1,5 @@
 import { type Project } from "ts-morph";
-import { type Result, ok, err } from "neverthrow";
+import { err, ok, type Result } from "neverthrow";
 import { isAbsolute, relative, resolve } from "path";
 import { resolveModulePath } from "../utils/moduleResolution.ts";
 
@@ -43,7 +43,7 @@ export interface GetModuleGraphSuccess {
 
 export function getModuleGraph(
   project: Project,
-  request: GetModuleGraphRequest
+  request: GetModuleGraphRequest,
 ): Result<GetModuleGraphSuccess, string> {
   try {
     const graph: ModuleGraph = {
@@ -68,7 +68,7 @@ export function getModuleGraph(
           return err(
             `Failed to add entry point ${entryPoint}: ${
               error instanceof Error ? error.message : String(error)
-            }`
+            }`,
           );
         }
       }
@@ -104,7 +104,7 @@ export function getModuleGraph(
         const resolvedModule = resolveModulePath(
           filePath,
           moduleSpecifier,
-          project
+          project,
         );
         if (resolvedModule) {
           node.imports.push(resolvedModule);
@@ -123,7 +123,7 @@ export function getModuleGraph(
           const resolvedModule = resolveModulePath(
             filePath,
             moduleSpecifier,
-            project
+            project,
           );
           if (resolvedModule) {
             node.exports.push(resolvedModule);
@@ -199,11 +199,10 @@ export function getModuleGraph(
     return err(
       `Failed to analyze module graph: ${
         error instanceof Error ? error.message : String(error)
-      }`
+      }`,
     );
   }
 }
-
 
 function detectCircularDependencies(graph: ModuleGraph): string[][] {
   const visited = new Set<string>();
@@ -296,7 +295,7 @@ import { config } from "./config.ts";
 export function main() {
   return helper() + config.value;
 }
-      `
+      `,
       );
 
       project.createSourceFile(
@@ -305,7 +304,7 @@ export function main() {
 export function helper() {
   return "helper";
 }
-      `
+      `,
       );
 
       project.createSourceFile(
@@ -314,7 +313,7 @@ export function helper() {
 export const config = {
   value: 42
 };
-      `
+      `,
       );
 
       const result = getModuleGraph(project, {
@@ -326,19 +325,21 @@ export const config = {
       if (result.isErr()) return;
 
       const { graph } = result.value;
-      
+
       expect(graph.stats.totalFiles).toBe(3);
       expect(graph.stats.totalImports).toBe(2);
       expect(graph.stats.totalExports).toBe(3); // main, helper, config
       expect(graph.stats.circularDependencies).toHaveLength(0);
 
       // Check specific file relationships
-      const indexFile = graph.files.find(f => f.path === "src/index.ts");
+      const indexFile = graph.files.find((f) => f.path === "src/index.ts");
       expect(indexFile).toBeDefined();
       expect(indexFile?.imports).toHaveLength(2);
       expect(indexFile?.importedBy).toHaveLength(0); // It's an entry point
 
-      const helperFile = graph.files.find(f => f.path === "src/utils/helper.ts");
+      const helperFile = graph.files.find((f) =>
+        f.path === "src/utils/helper.ts"
+      );
       expect(helperFile).toBeDefined();
       expect(helperFile?.importedBy).toContain("src/index.ts");
     });
@@ -358,7 +359,7 @@ export const config = {
         `
 import { b } from "./b.ts";
 export const a = "a" + b;
-      `
+      `,
       );
 
       project.createSourceFile(
@@ -366,7 +367,7 @@ export const a = "a" + b;
         `
 import { c } from "./c.ts";
 export const b = "b" + c;
-      `
+      `,
       );
 
       project.createSourceFile(
@@ -374,7 +375,7 @@ export const b = "b" + c;
         `
 import { a } from "./a.ts";
 export const c = "c" + a;
-      `
+      `,
       );
 
       const result = getModuleGraph(project, {
@@ -386,7 +387,7 @@ export const c = "c" + a;
       if (result.isErr()) return;
 
       const { graph } = result.value;
-      
+
       expect(graph.stats.circularDependencies).toHaveLength(1);
       const cycle = graph.stats.circularDependencies[0];
       expect(cycle).toHaveLength(4); // a -> b -> c -> a
@@ -402,12 +403,21 @@ export const c = "c" + a;
         },
       });
 
-      project.createSourceFile("/project/src/entry.ts", `
+      project.createSourceFile(
+        "/project/src/entry.ts",
+        `
 import { helper } from "./helper.ts";
 export const entry = helper();
-    `);
-      project.createSourceFile("/project/src/helper.ts", `export const helper = () => "helper";`);
-      project.createSourceFile("/project/src/unreachable.ts", `export const unreachable = "not imported";`);
+    `,
+      );
+      project.createSourceFile(
+        "/project/src/helper.ts",
+        `export const helper = () => "helper";`,
+      );
+      project.createSourceFile(
+        "/project/src/unreachable.ts",
+        `export const unreachable = "not imported";`,
+      );
 
       const result = getModuleGraph(project, {
         rootDir: "/project",
@@ -418,9 +428,12 @@ export const entry = helper();
       if (result.isErr()) return;
 
       const { graph } = result.value;
-      
+
       expect(graph.stats.totalFiles).toBe(2); // Only entry.ts and helper.ts
-      expect(graph.files.map(f => f.path).sort()).toEqual(["src/entry.ts", "src/helper.ts"]);
+      expect(graph.files.map((f) => f.path).sort()).toEqual([
+        "src/entry.ts",
+        "src/helper.ts",
+      ]);
     });
 
     it("should handle re-exports correctly", () => {
@@ -434,12 +447,12 @@ export const entry = helper();
 
       project.createSourceFile(
         "/project/src/core.ts",
-        `export const core = "core";`
+        `export const core = "core";`,
       );
 
       project.createSourceFile(
         "/project/src/index.ts",
-        `export { core } from "./core.ts";`
+        `export { core } from "./core.ts";`,
       );
 
       const result = getModuleGraph(project, {
@@ -451,8 +464,8 @@ export const entry = helper();
       if (result.isErr()) return;
 
       const { graph } = result.value;
-      
-      const indexFile = graph.files.find(f => f.path === "src/index.ts");
+
+      const indexFile = graph.files.find((f) => f.path === "src/index.ts");
       expect(indexFile?.exports).toContain("src/core.ts");
     });
   });

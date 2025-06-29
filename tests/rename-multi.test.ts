@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   createProject,
   renameSymbol,
@@ -9,7 +9,10 @@ import { randomBytes } from "crypto";
 import { parseRenameComments } from "./helpers/extract-ops.ts";
 import { globSync } from "fs";
 
-const MULTI_FILE_FIXTURES_DIR = path.join(__dirname, "fixtures/02-rename-multi");
+const MULTI_FILE_FIXTURES_DIR = path.join(
+  __dirname,
+  "fixtures/02-rename-multi",
+);
 
 describe("rename multi-file", () => {
   let tmpDir: string;
@@ -30,12 +33,15 @@ describe("rename multi-file", () => {
 
   // Find all directories in the multi-file fixtures directory
   const testDirs = globSync("*.input", { cwd: MULTI_FILE_FIXTURES_DIR });
-  const testCases = testDirs.map(dir => path.basename(dir, ".input"));
+  const testCases = testDirs.map((dir) => path.basename(dir, ".input"));
 
   testCases.forEach((testName) => {
     it(`should rename ${testName}`, async () => {
       const inputDir = path.join(MULTI_FILE_FIXTURES_DIR, `${testName}.input`);
-      const expectedDir = path.join(MULTI_FILE_FIXTURES_DIR, `${testName}.expected`);
+      const expectedDir = path.join(
+        MULTI_FILE_FIXTURES_DIR,
+        `${testName}.expected`,
+      );
 
       // Copy all input files to tmp directory
       const inputFiles = globSync("**/*.{ts,tsx,json}", { cwd: inputDir });
@@ -64,7 +70,6 @@ describe("rename multi-file", () => {
       expect(renameOperation).not.toBeNull();
       expect(renameFilePath).not.toBeNull();
 
-
       // Create project with tsconfig in the tmp directory
       const project = createProject(path.join(tmpDir, "tsconfig.json"));
 
@@ -79,12 +84,12 @@ describe("rename multi-file", () => {
       });
 
       if (result.isErr()) {
-        console.error('Rename failed:', result.error);
-        console.error('Details:', {
+        console.error("Rename failed:", result.error);
+        console.error("Details:", {
           filePath: renameFilePath,
           line: renameOperation!.line,
           symbolName: renameOperation!.symbolName,
-          newName: renameOperation!.newName
+          newName: renameOperation!.newName,
         });
       }
       expect(result.isOk()).toBe(true);
@@ -98,8 +103,8 @@ describe("rename multi-file", () => {
 
         if (actualContent.trim() !== expectedContent.trim()) {
           console.log(`File ${file} mismatch:`);
-          console.log('Actual:', actualContent);
-          console.log('Expected:', expectedContent);
+          console.log("Actual:", actualContent);
+          console.log("Expected:", expectedContent);
         }
 
         expect(actualContent.trim()).toBe(expectedContent.trim());

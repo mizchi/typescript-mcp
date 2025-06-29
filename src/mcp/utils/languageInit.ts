@@ -3,7 +3,10 @@
  */
 
 import { debug } from "../_mcplib.ts";
-import { initializeFSharp, getFSharpLSPCommand } from "../../fsharp/fsharpInit.ts";
+import {
+  getFSharpLSPCommand,
+  initializeFSharp,
+} from "../../fsharp/fsharpInit.ts";
 
 /**
  * Language configuration
@@ -50,7 +53,9 @@ const languageConfigs: Record<string, LanguageConfig> = {
 /**
  * Get language configuration
  */
-export function getLanguageConfig(language: string): LanguageConfig | undefined {
+export function getLanguageConfig(
+  language: string,
+): LanguageConfig | undefined {
   return languageConfigs[language.toLowerCase()];
 }
 
@@ -65,7 +70,10 @@ export function getLSPCommandForLanguage(language: string): string | undefined {
 /**
  * Initialize language-specific settings
  */
-export async function initializeLanguage(language: string, projectRoot: string): Promise<void> {
+export async function initializeLanguage(
+  language: string,
+  projectRoot: string,
+): Promise<void> {
   const config = getLanguageConfig(language);
   if (config?.initialize) {
     debug(`[lsp] Initializing ${config.name} specific settings`);

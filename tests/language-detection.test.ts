@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { spawn } from "child_process";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -25,7 +25,10 @@ describe("Language Detection with lsmcp", () => {
     }
   });
 
-  async function runLsmcp(cwd: string, args: string[] = []): Promise<{ stdout: string; stderr: string; code: number | null }> {
+  async function runLsmcp(
+    cwd: string,
+    args: string[] = [],
+  ): Promise<{ stdout: string; stderr: string; code: number | null }> {
     return new Promise((resolve) => {
       const proc = spawn("node", [LSMCP_PATH, ...args], {
         cwd,
@@ -61,32 +64,50 @@ describe("Language Detection with lsmcp", () => {
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
     // Create tsconfig.json
-    await fs.writeFile(path.join(tmpDir, "tsconfig.json"), JSON.stringify({
-      compilerOptions: {
-        target: "es2020",
-        module: "commonjs",
-      }
-    }, null, 2));
+    await fs.writeFile(
+      path.join(tmpDir, "tsconfig.json"),
+      JSON.stringify(
+        {
+          compilerOptions: {
+            target: "es2020",
+            module: "commonjs",
+          },
+        },
+        null,
+        2,
+      ),
+    );
 
     // Create a TypeScript file
-    await fs.writeFile(path.join(tmpDir, "index.ts"), `
+    await fs.writeFile(
+      path.join(tmpDir, "index.ts"),
+      `
 export function hello() {
   console.log("Hello from TypeScript!");
 }
-`);
+`,
+    );
 
     // Running without --language should fail
     const result = await runLsmcp(tmpDir, []);
     expect(result.code).not.toBe(0);
-    expect(result.stderr).toContain("Error: Either --language or --bin option is required");
+    expect(result.stderr).toContain(
+      "Error: Either --language or --bin option is required",
+    );
 
     // Running with --language should work
-    const result2 = await runLsmcp(tmpDir, ["--language", "typescript", "--help"]);
+    const result2 = await runLsmcp(tmpDir, [
+      "--language",
+      "typescript",
+      "--help",
+    ]);
     expect(result2.code).toBe(0);
     expect(result2.stdout).toContain("LSMCP - Language Service MCP");
   });
@@ -96,28 +117,38 @@ export function hello() {
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
     // Create Cargo.toml
-    await fs.writeFile(path.join(tmpDir, "Cargo.toml"), `[package]
+    await fs.writeFile(
+      path.join(tmpDir, "Cargo.toml"),
+      `[package]
 name = "test-project"
 version = "0.1.0"
 edition = "2021"
-`);
+`,
+    );
 
     // Create a Rust file
     await fs.mkdir(path.join(tmpDir, "src"));
-    await fs.writeFile(path.join(tmpDir, "src/main.rs"), `
+    await fs.writeFile(
+      path.join(tmpDir, "src/main.rs"),
+      `
 fn main() {
     println!("Hello from Rust!");
 }
-`);
+`,
+    );
 
     const result = await runLsmcp(tmpDir, []);
     expect(result.code).not.toBe(0);
-    expect(result.stderr).toContain("Error: Either --language or --bin option is required");
+    expect(result.stderr).toContain(
+      "Error: Either --language or --bin option is required",
+    );
   });
 
   it("should require --language option for Moonbit project", async () => {
@@ -125,26 +156,40 @@ fn main() {
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
     // Create moon.mod.json
-    await fs.writeFile(path.join(tmpDir, "moon.mod.json"), JSON.stringify({
-      name: "test-project",
-      version: "0.1.0",
-    }, null, 2));
+    await fs.writeFile(
+      path.join(tmpDir, "moon.mod.json"),
+      JSON.stringify(
+        {
+          name: "test-project",
+          version: "0.1.0",
+        },
+        null,
+        2,
+      ),
+    );
 
     // Create a Moonbit file
-    await fs.writeFile(path.join(tmpDir, "main.mbt"), `
+    await fs.writeFile(
+      path.join(tmpDir, "main.mbt"),
+      `
 fn main {
   println("Hello from Moonbit!")
 }
-`);
+`,
+    );
 
     const result = await runLsmcp(tmpDir, []);
     expect(result.code).not.toBe(0);
-    expect(result.stderr).toContain("Error: Either --language or --bin option is required");
+    expect(result.stderr).toContain(
+      "Error: Either --language or --bin option is required",
+    );
   });
 
   it("should require --language option for Python project", async () => {
@@ -152,28 +197,38 @@ fn main {
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
     // Create pyproject.toml
-    await fs.writeFile(path.join(tmpDir, "pyproject.toml"), `[project]
+    await fs.writeFile(
+      path.join(tmpDir, "pyproject.toml"),
+      `[project]
 name = "test-project"
 version = "0.1.0"
-`);
+`,
+    );
 
     // Create a Python file
-    await fs.writeFile(path.join(tmpDir, "main.py"), `
+    await fs.writeFile(
+      path.join(tmpDir, "main.py"),
+      `
 def main():
     print("Hello from Python!")
 
 if __name__ == "__main__":
     main()
-`);
+`,
+    );
 
     const result = await runLsmcp(tmpDir, []);
     expect(result.code).not.toBe(0);
-    expect(result.stderr).toContain("Error: Either --language or --bin option is required");
+    expect(result.stderr).toContain(
+      "Error: Either --language or --bin option is required",
+    );
   });
 
   it("should require --language option for JavaScript project", async () => {
@@ -181,27 +236,41 @@ if __name__ == "__main__":
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
     // Create package.json
-    await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({
-      name: "test-project",
-      version: "0.1.0",
-      type: "module",
-    }, null, 2));
+    await fs.writeFile(
+      path.join(tmpDir, "package.json"),
+      JSON.stringify(
+        {
+          name: "test-project",
+          version: "0.1.0",
+          type: "module",
+        },
+        null,
+        2,
+      ),
+    );
 
     // Create a JavaScript file
-    await fs.writeFile(path.join(tmpDir, "index.js"), `
+    await fs.writeFile(
+      path.join(tmpDir, "index.js"),
+      `
 export function hello() {
   console.log("Hello from JavaScript!");
 }
-`);
+`,
+    );
 
     const result = await runLsmcp(tmpDir, []);
     expect(result.code).not.toBe(0);
-    expect(result.stderr).toContain("Error: Either --language or --bin option is required");
+    expect(result.stderr).toContain(
+      "Error: Either --language or --bin option is required",
+    );
   });
 
   it("should require --language option for Go project", async () => {
@@ -209,18 +278,25 @@ export function hello() {
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
     // Create go.mod
-    await fs.writeFile(path.join(tmpDir, "go.mod"), `module test-project
+    await fs.writeFile(
+      path.join(tmpDir, "go.mod"),
+      `module test-project
 
 go 1.21
-`);
+`,
+    );
 
     // Create a Go file
-    await fs.writeFile(path.join(tmpDir, "main.go"), `
+    await fs.writeFile(
+      path.join(tmpDir, "main.go"),
+      `
 package main
 
 import "fmt"
@@ -228,11 +304,14 @@ import "fmt"
 func main() {
     fmt.Println("Hello from Go!")
 }
-`);
+`,
+    );
 
     const result = await runLsmcp(tmpDir, []);
     expect(result.code).not.toBe(0);
-    expect(result.stderr).toContain("Error: Either --language or --bin option is required");
+    expect(result.stderr).toContain(
+      "Error: Either --language or --bin option is required",
+    );
   });
 
   it("should fail when neither --language nor --bin is provided", async () => {
@@ -240,13 +319,17 @@ func main() {
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
     const result = await runLsmcp(tmpDir, []);
     expect(result.code).not.toBe(0);
-    expect(result.stderr).toContain("Error: Either --language or --bin option is required");
+    expect(result.stderr).toContain(
+      "Error: Either --language or --bin option is required",
+    );
   });
 
   it("should work with --language flag", async () => {
@@ -254,11 +337,17 @@ func main() {
     try {
       await fs.access(LSMCP_PATH);
     } catch {
-      console.log("Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.");
+      console.log(
+        "Skipping test: dist/lsmcp.js not found. Run 'pnpm build' first.",
+      );
       return;
     }
 
-    const result = await runLsmcp(tmpDir, ["--language", "typescript", "--help"]);
+    const result = await runLsmcp(tmpDir, [
+      "--language",
+      "typescript",
+      "--help",
+    ]);
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("LSMCP - Language Service MCP");
     expect(result.stdout).toContain("--language");

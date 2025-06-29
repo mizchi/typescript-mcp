@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { MCPToolError, CommonErrors } from "./mcpErrors.ts";
+import { describe, expect, it } from "vitest";
+import { CommonErrors, MCPToolError } from "./mcpErrors.ts";
 
 describe("mcpErrors", () => {
   describe("MCPToolError", () => {
@@ -15,7 +15,12 @@ describe("mcpErrors", () => {
     it("should create error with suggestions and related tools", () => {
       const suggestions = ["Try this", "Or try that"];
       const relatedTools = ["tool1", "tool2"];
-      const error = new MCPToolError("Test error", "TEST_ERROR", suggestions, relatedTools);
+      const error = new MCPToolError(
+        "Test error",
+        "TEST_ERROR",
+        suggestions,
+        relatedTools,
+      );
       expect(error.suggestions).toEqual(suggestions);
       expect(error.relatedTools).toEqual(relatedTools);
     });
@@ -32,7 +37,7 @@ describe("mcpErrors", () => {
         const error = new MCPToolError(
           "Test error",
           "TEST_ERROR",
-          ["Fix issue A", "Check configuration B"]
+          ["Fix issue A", "Check configuration B"],
         );
         const formatted = error.format();
         expect(formatted).toContain("💡 Suggestions:");
@@ -45,7 +50,7 @@ describe("mcpErrors", () => {
           "Test error",
           "TEST_ERROR",
           [],
-          ["alternative_tool", "backup_tool"]
+          ["alternative_tool", "backup_tool"],
         );
         const formatted = error.format();
         expect(formatted).toContain("🔧 Alternative tools you can try:");
@@ -58,7 +63,7 @@ describe("mcpErrors", () => {
           "Complete error",
           "COMPLETE_ERROR",
           ["Suggestion 1", "Suggestion 2"],
-          ["tool_a", "tool_b"]
+          ["tool_a", "tool_b"],
         );
         const formatted = error.format();
         expect(formatted).toContain("❌ Error: Complete error");
@@ -134,16 +139,18 @@ describe("mcpErrors", () => {
         const error = CommonErrors.PARAMETER_REQUIRED("filePath");
         expect(error.code).toBe("PARAMETER_REQUIRED");
         expect(error.message).toContain("filePath");
-        expect(error.suggestions[0]).toContain("filePath parameter is required");
+        expect(error.suggestions[0]).toContain(
+          "filePath parameter is required",
+        );
       });
 
       it("should create parameter required error with description", () => {
         const error = CommonErrors.PARAMETER_REQUIRED(
           "root",
-          "The root directory path is required to resolve relative paths"
+          "The root directory path is required to resolve relative paths",
         );
         expect(error.suggestions[0]).toBe(
-          "The root directory path is required to resolve relative paths"
+          "The root directory path is required to resolve relative paths",
         );
       });
     });

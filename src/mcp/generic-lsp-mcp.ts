@@ -2,7 +2,7 @@
 
 /**
  * Generic LSP MCP Server
- * 
+ *
  * Provides MCP tools for any language with LSP support.
  * This server only includes LSP-based tools, not TypeScript-specific tools.
  */
@@ -10,8 +10,8 @@
 import { parseArgs } from "node:util";
 import {
   BaseMcpServer,
-  StdioServerTransport,
   debug,
+  StdioServerTransport,
   type ToolDef,
 } from "./_mcplib.ts";
 import { lspGetHoverTool } from "../lsp/tools/lspGetHover.ts";
@@ -30,7 +30,7 @@ import { listToolsLSPTool } from "./tools/listToolsLSP.ts";
 import { spawn } from "child_process";
 import { initialize as initializeLSPClient } from "../lsp/lspClient.ts";
 import { getLanguageFromLSPCommand } from "./utils/languageSupport.ts";
-import { formatError, ErrorContext } from "./utils/errorHandler.ts";
+import { ErrorContext, formatError } from "./utils/errorHandler.ts";
 import { initializeLanguage } from "./utils/languageInit.ts";
 
 // Define LSP-only tools
@@ -68,20 +68,22 @@ async function main() {
     const projectRoot = process.cwd();
 
     const lspCommand = values["lsp-command"] || process.env.LSP_COMMAND;
-    
+
     if (!lspCommand) {
       const context: ErrorContext = {
-        operation: "LSP server configuration"
+        operation: "LSP server configuration",
       };
       const error = new Error("LSP command is required");
       console.error(formatError(error, context));
-      console.error("Usage: generic-lsp-mcp --lsp-command=\"<lsp-server-command>\"");
-      console.error("Example: generic-lsp-mcp --lsp-command=\"rust-analyzer\"");
+      console.error(
+        'Usage: generic-lsp-mcp --lsp-command="<lsp-server-command>"',
+      );
+      console.error('Example: generic-lsp-mcp --lsp-command="rust-analyzer"');
       process.exit(1);
     }
 
     const detectedLanguage = getLanguageFromLSPCommand(lspCommand);
-    
+
     // Language-specific initialization
     await initializeLanguage(detectedLanguage.toLowerCase(), projectRoot);
 
@@ -94,7 +96,7 @@ async function main() {
         tools: true,
       },
     });
-    
+
     server.setDefaultRoot(projectRoot);
     server.registerTools(tools);
 
@@ -102,7 +104,7 @@ async function main() {
     const parts = lspCommand.split(" ");
     const command = parts[0];
     const args = parts.slice(1);
-    
+
     let lspProcess;
     try {
       lspProcess = spawn(command, args, {
@@ -113,21 +115,26 @@ async function main() {
       const context: ErrorContext = {
         operation: "LSP server startup",
         language: detectedLanguage,
-        details: { command: lspCommand }
+        details: { command: lspCommand },
       };
       throw new Error(formatError(error, context));
     }
-    
+
     try {
       // Use the detected language, but normalize it for LSP
-      const normalizedLanguage = detectedLanguage.toLowerCase().replace(/#/g, "sharp");
+      const normalizedLanguage = detectedLanguage.toLowerCase().replace(
+        /#/g,
+        "sharp",
+      );
       await initializeLSPClient(projectRoot, lspProcess, normalizedLanguage);
-      debug(`[lsp] Initialized LSP client: ${lspCommand} with language: ${normalizedLanguage}`);
+      debug(
+        `[lsp] Initialized LSP client: ${lspCommand} with language: ${normalizedLanguage}`,
+      );
     } catch (error) {
       const context: ErrorContext = {
         operation: "LSP client initialization",
         language: detectedLanguage,
-        details: { command: lspCommand }
+        details: { command: lspCommand },
       };
       throw new Error(formatError(error, context));
     }
@@ -135,7 +142,7 @@ async function main() {
     // Connect transport and start server
     const transport = new StdioServerTransport();
     await server.getServer().connect(transport);
-    
+
     debug(`Generic LSP MCP Server running on stdio`);
     debug(`Project root: ${projectRoot}`);
     debug(`LSP command: ${lspCommand}`);

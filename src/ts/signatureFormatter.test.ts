@@ -1,5 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { formatTypeSignature, type FormatTypeSignatureInput } from "./signatureFormatter.ts";
+import { describe, expect, it } from "vitest";
+import {
+  formatTypeSignature,
+  type FormatTypeSignatureInput,
+} from "./signatureFormatter.ts";
 import type { Definition } from "./navigations/getTypeSignature.ts";
 
 describe("signatureFormatter", () => {
@@ -39,7 +42,12 @@ describe("signatureFormatter", () => {
               parameters: [
                 { name: "name", type: "string", optional: false },
                 { name: "age", type: "number", optional: true },
-                { name: "active", type: "boolean", optional: false, defaultValue: "true" },
+                {
+                  name: "active",
+                  type: "boolean",
+                  optional: false,
+                  defaultValue: "true",
+                },
               ],
               returnType: "void",
             },
@@ -50,7 +58,9 @@ describe("signatureFormatter", () => {
 
       const result = formatTypeSignature(input);
 
-      expect(result).toContain("(name: string, age?: number, active: boolean = true): void");
+      expect(result).toContain(
+        "(name: string, age?: number, active: boolean = true): void",
+      );
     });
 
     it("should format function with type parameters", () => {
@@ -74,7 +84,9 @@ describe("signatureFormatter", () => {
 
       const result = formatTypeSignature(input);
 
-      expect(result).toContain("<T, U extends string>(value: T, key: U): T & { key: U }");
+      expect(result).toContain(
+        "<T, U extends string>(value: T, key: U): T & { key: U }",
+      );
     });
 
     it("should format function overloads", () => {
@@ -117,7 +129,9 @@ describe("signatureFormatter", () => {
       const result = formatTypeSignature(input);
 
       expect(result).toContain("📋 Type Definition:");
-      expect(result).toContain("Type: { id: number; name: string; active?: boolean }");
+      expect(result).toContain(
+        "Type: { id: number; name: string; active?: boolean }",
+      );
     });
 
     it("should format type with type parameters", () => {
@@ -152,7 +166,11 @@ describe("signatureFormatter", () => {
               name: "greet",
               signatures: [
                 {
-                  parameters: [{ name: "greeting", type: "string", optional: false }],
+                  parameters: [{
+                    name: "greeting",
+                    type: "string",
+                    optional: false,
+                  }],
                   returnType: "void",
                 },
               ],
@@ -179,7 +197,12 @@ describe("signatureFormatter", () => {
         signature: {
           kind: "class",
           properties: [
-            { name: "result", type: "number", optional: false, readonly: false },
+            {
+              name: "result",
+              type: "number",
+              optional: false,
+              readonly: false,
+            },
           ],
           methods: [
             {
@@ -306,7 +329,9 @@ describe("signatureFormatter", () => {
 
       expect(result).toContain("🔗 Related Types:");
       expect(result).toContain("Type: src/models.ts:20:1 (BaseModel)");
-      expect(result).toContain('Interface: node_modules/@types/node/index.d.ts:100:1 (EventEmitter) from "events"');
+      expect(result).toContain(
+        'Interface: node_modules/@types/node/index.d.ts:100:1 (EventEmitter) from "events"',
+      );
     });
 
     it("should include documentation when provided", () => {
@@ -321,7 +346,8 @@ describe("signatureFormatter", () => {
             },
           ],
         },
-        documentation: "This function does something very important.\n\n@example\n  doSomething();",
+        documentation:
+          "This function does something very important.\n\n@example\n  doSomething();",
         root: "/project",
       };
 

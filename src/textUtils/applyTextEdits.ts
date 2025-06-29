@@ -12,7 +12,7 @@ export function applyTextEdits(content: string, edits: TextEdit[]): string {
     return b.range.start.character - a.range.start.character;
   });
 
-  let lines = content.split('\n');
+  let lines = content.split("\n");
 
   for (const edit of sortedEdits) {
     const startLine = edit.range.start.line;
@@ -23,25 +23,27 @@ export function applyTextEdits(content: string, edits: TextEdit[]): string {
     // Handle single line edit
     if (startLine === endLine) {
       const line = lines[startLine] || "";
-      lines[startLine] = 
-        line.substring(0, startChar) + 
-        edit.newText + 
+      lines[startLine] = line.substring(0, startChar) +
+        edit.newText +
         line.substring(endChar);
     } else {
       // Handle multi-line edit
       const startLineText = lines[startLine] || "";
       const endLineText = lines[endLine] || "";
-      
+
       // Create the new content
-      const newContent = 
-        startLineText.substring(0, startChar) + 
-        edit.newText + 
+      const newContent = startLineText.substring(0, startChar) +
+        edit.newText +
         endLineText.substring(endChar);
-      
+
       // Replace the lines
-      lines.splice(startLine, endLine - startLine + 1, ...newContent.split('\n'));
+      lines.splice(
+        startLine,
+        endLine - startLine + 1,
+        ...newContent.split("\n"),
+      );
     }
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }

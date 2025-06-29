@@ -8,10 +8,10 @@ import type { SymbolPositionResult } from "./findSymbolPosition.ts";
  */
 export function findTextInFile(
   fullText: string,
-  target: string
+  target: string,
 ): SymbolPositionResult {
   const lines = fullText.split("\n");
-  
+
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
     const charIndex = lines[lineIndex].indexOf(target);
     if (charIndex !== -1) {
@@ -37,12 +37,12 @@ if (import.meta.vitest) {
       const fullText = `const foo = 1;
 const bar = 2;
 const baz = 3;`;
-      
+
       const result = findTextInFile(fullText, "bar");
-      expect(result).toEqual({ 
-        success: true, 
-        lineIndex: 1, 
-        characterIndex: 6 
+      expect(result).toEqual({
+        success: true,
+        lineIndex: 1,
+        characterIndex: 6,
       });
     });
 
@@ -50,35 +50,35 @@ const baz = 3;`;
       const fullText = `function test() {
   return 42;
 }`;
-      
+
       const result = findTextInFile(fullText, "function");
-      expect(result).toEqual({ 
-        success: true, 
-        lineIndex: 0, 
-        characterIndex: 0 
+      expect(result).toEqual({
+        success: true,
+        lineIndex: 0,
+        characterIndex: 0,
       });
     });
 
     it("should return error if text not found", () => {
       const fullText = `const foo = 1;
 const bar = 2;`;
-      
+
       const result = findTextInFile(fullText, "not found");
-      expect(result).toEqual({ 
-        success: false, 
-        error: 'Target text "not found" not found in file' 
+      expect(result).toEqual({
+        success: false,
+        error: 'Target text "not found" not found in file',
       });
     });
 
     it("should find first occurrence", () => {
       const fullText = `const foo = 1;
 const foo = 2;`;
-      
+
       const result = findTextInFile(fullText, "foo");
-      expect(result).toEqual({ 
-        success: true, 
-        lineIndex: 0, 
-        characterIndex: 6 
+      expect(result).toEqual({
+        success: true,
+        lineIndex: 0,
+        characterIndex: 6,
       });
     });
   });

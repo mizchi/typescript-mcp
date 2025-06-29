@@ -11,14 +11,14 @@ import * as path from "node:path";
 
 /**
  * Debug logging for MCP servers.
- * 
+ *
  * IMPORTANT: MCP servers communicate via stdio, so regular console.log output
  * would interfere with the protocol. All debug/logging output MUST be sent
  * to stderr using console.error instead.
- * 
+ *
  * This function provides a convenient way to output debug messages that won't
  * interfere with MCP communication.
- * 
+ *
  * @example
  * debug("Server started");
  * debug("Processing request:", requestData);
@@ -127,30 +127,29 @@ export class BaseMcpServer {
       const schemaShape = tool.schema.shape;
 
       // Create a wrapper handler that adds default root if not provided
-      const wrappedHandler =
-        this.defaultRoot && "root" in schemaShape
-          ? (args: z.infer<S>) => {
-              // If root is not provided in args, use the default
-              const argsWithRoot = {
-                ...args,
-                root: (args as Record<string, unknown>).root || this.defaultRoot,
-              } as z.infer<S>;
-              return tool.execute(argsWithRoot);
-            }
-          : tool.execute;
+      const wrappedHandler = this.defaultRoot && "root" in schemaShape
+        ? (args: z.infer<S>) => {
+          // If root is not provided in args, use the default
+          const argsWithRoot = {
+            ...args,
+            root: (args as Record<string, unknown>).root || this.defaultRoot,
+          } as z.infer<S>;
+          return tool.execute(argsWithRoot);
+        }
+        : tool.execute;
 
       this.server.tool(
         tool.name,
         tool.description,
         schemaShape,
-        toMcpToolHandler(wrappedHandler)
+        toMcpToolHandler(wrappedHandler),
       );
     } else {
       // For non-ZodObject schemas, register without shape
       this.server.tool(
         tool.name,
         tool.description,
-        toMcpToolHandler(tool.execute)
+        toMcpToolHandler(tool.execute),
       );
     }
   }
@@ -160,7 +159,7 @@ export class BaseMcpServer {
  * Convert a string-returning handler to MCP response format with error handling
  */
 export function toMcpToolHandler<T>(
-  handler: (args: T) => Promise<string> | string
+  handler: (args: T) => Promise<string> | string,
 ): (args: T) => Promise<ToolResult> {
   return async (args: T) => {
     try {
@@ -174,8 +173,11 @@ export function toMcpToolHandler<T>(
         ],
       };
     } catch (error) {
-      debug(`[MCP] Tool execution error in ${handler.name || 'unknown'}:`, error);
-      
+      debug(
+        `[MCP] Tool execution error in ${handler.name || "unknown"}:`,
+        error,
+      );
+
       // Create detailed error message
       let errorMessage = "Error: ";
       if (error instanceof Error) {
@@ -186,7 +188,7 @@ export function toMcpToolHandler<T>(
       } else {
         errorMessage += String(error);
       }
-      
+
       return {
         content: [
           {
@@ -258,11 +260,14 @@ export function writeJsonFile(filePath: string, data: unknown): void {
 /**
  * Merge arrays without duplicates
  */
-export function mergeArrays<T>(existing: T[] | undefined, additions: T[] | undefined): T[] {
+export function mergeArrays<T>(
+  existing: T[] | undefined,
+  additions: T[] | undefined,
+): T[] {
   const existingArray = existing || [];
   const additionsArray = additions || [];
   return [...existingArray, ...additionsArray].filter(
-    (v, i, arr) => arr.indexOf(v) === i
+    (v, i, arr) => arr.indexOf(v) === i,
   );
 }
 
@@ -274,12 +279,10 @@ export function mergeArrays<T>(existing: T[] | undefined, additions: T[] | undef
  */
 export function generatePermissions(
   serverName: string,
-  tools: ToolDef<any>[]
+  tools: ToolDef<any>[],
 ): string[] {
-  return tools.map(tool => `mcp__${serverName}__${tool.name}`);
+  return tools.map((tool) => `mcp__${serverName}__${tool.name}`);
 }
-
-
 
 // Tests
 if (import.meta.vitest) {
@@ -447,9 +450,9 @@ if (import.meta.vitest) {
       const tool: ToolDef<any> = {
         name: "root_tool",
         description: "Tool with root parameter",
-        schema: z.object({ 
+        schema: z.object({
           root: z.string().optional(),
-          file: z.string() 
+          file: z.string(),
         }),
         execute: (args) => {
           // Test that args are passed correctly
@@ -459,7 +462,7 @@ if (import.meta.vitest) {
       };
 
       server.registerTool(tool);
-      
+
       // Since we can't directly test the wrapped handler without starting the server,
       // we'll rely on the fact that the tool is registered
     });

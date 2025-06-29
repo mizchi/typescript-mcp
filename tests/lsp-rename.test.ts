@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { spawn, ChildProcess } from "child_process";
-import { 
-  initialize as initializeLSPClient, 
-  shutdown as shutdownLSPClient
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { ChildProcess, spawn } from "child_process";
+import {
+  initialize as initializeLSPClient,
+  shutdown as shutdownLSPClient,
 } from "../src/lsp/lspClient.ts";
 import { lspRenameSymbolTool } from "../src/lsp/tools/lspRenameSymbol.ts";
 import fs from "fs/promises";
@@ -45,7 +45,7 @@ describe("lsp rename symbol", () => {
     if (tmpDir) {
       await fs.rm(tmpDir, { recursive: true, force: true });
     }
-    
+
     if (lspProcess) {
       await shutdownLSPClient();
       lspProcess.kill();
@@ -80,7 +80,7 @@ describe("lsp rename symbol", () => {
     const actualContent = await fs.readFile(testFile, "utf-8");
     const expectedFile = path.join(FIXTURES_DIR, "simple-variable.expected.ts");
     const expectedContent = await fs.readFile(expectedFile, "utf-8");
-    
+
     expect(actualContent.trim()).toBe(expectedContent.trim());
   });
 
@@ -112,7 +112,7 @@ describe("lsp rename symbol", () => {
     const actualContent = await fs.readFile(testFile, "utf-8");
     const expectedFile = path.join(FIXTURES_DIR, "function.expected.ts");
     const expectedContent = await fs.readFile(expectedFile, "utf-8");
-    
+
     expect(actualContent.trim()).toBe(expectedContent.trim());
   });
 
@@ -144,7 +144,7 @@ describe("lsp rename symbol", () => {
     const actualContent = await fs.readFile(testFile, "utf-8");
     const expectedFile = path.join(FIXTURES_DIR, "class.expected.ts");
     const expectedContent = await fs.readFile(expectedFile, "utf-8");
-    
+
     expect(actualContent.trim()).toBe(expectedContent.trim());
   });
 
@@ -175,7 +175,7 @@ describe("lsp rename symbol", () => {
     const actualContent = await fs.readFile(testFile, "utf-8");
     const expectedFile = path.join(FIXTURES_DIR, "simple-variable.expected.ts");
     const expectedContent = await fs.readFile(expectedFile, "utf-8");
-    
+
     expect(actualContent.trim()).toBe(expectedContent.trim());
   });
 
@@ -192,7 +192,7 @@ describe("lsp rename symbol", () => {
         line: 1,
         target: "foo",
         newName: "bar",
-      })
+      }),
     ).rejects.toThrow();
   });
 
@@ -206,7 +206,7 @@ describe("lsp rename symbol", () => {
     const importInput = path.join(FIXTURES_DIR, "cross-file-import.input.ts");
     const exportFile = path.join(tmpDir, "cross-file-export.input.ts");
     const importFile = path.join(tmpDir, "cross-file-import.input.ts");
-    
+
     await fs.copyFile(exportInput, exportFile);
     await fs.copyFile(importInput, importFile);
 
@@ -222,14 +222,20 @@ describe("lsp rename symbol", () => {
     // Verify result
     expect(result).toContain("Successfully renamed symbol");
     expect(result).toContain('"processData" → "transformData"');
-    
+
     // Check that export file was updated
     expect(result).toContain("cross-file-export.input.ts");
 
     // Verify export file content
     const actualExportContent = await fs.readFile(exportFile, "utf-8");
-    const expectedExportFile = path.join(FIXTURES_DIR, "cross-file-export.expected.ts");
-    const expectedExportContent = await fs.readFile(expectedExportFile, "utf-8");
+    const expectedExportFile = path.join(
+      FIXTURES_DIR,
+      "cross-file-export.expected.ts",
+    );
+    const expectedExportContent = await fs.readFile(
+      expectedExportFile,
+      "utf-8",
+    );
     expect(actualExportContent.trim()).toBe(expectedExportContent.trim());
 
     // Note: Cross-file rename depends on LSP server implementation and project configuration
@@ -264,7 +270,7 @@ describe("lsp rename symbol", () => {
     const actualContent = await fs.readFile(testFile, "utf-8");
     const expectedFile = path.join(FIXTURES_DIR, "type-alias.expected.ts");
     const expectedContent = await fs.readFile(expectedFile, "utf-8");
-    
+
     expect(actualContent.trim()).toBe(expectedContent.trim());
   });
 
@@ -286,7 +292,7 @@ describe("lsp rename symbol", () => {
         line: 1,
         target: "nonExistentSymbol",
         newName: "newName",
-      })
+      }),
     ).rejects.toThrow();
   });
 });

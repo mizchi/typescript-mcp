@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
-  getOrCreateProject,
-  findProjectForFile,
   clearProjectCache,
+  findProjectForFile,
+  getOrCreateProject,
   getProjectCacheSize,
 } from "./projectCache.ts";
 import { join } from "path";
@@ -15,13 +15,13 @@ describe("project_cache", () => {
   it("should cache projects by tsconfig", async () => {
     // First call should create a new project
     const project1 = await getOrCreateProject(
-      join(process.cwd(), "tests/fixtures/00-rename")
+      join(process.cwd(), "tests/fixtures/00-rename"),
     );
     expect(getProjectCacheSize()).toBe(1);
 
     // Second call with same directory should return cached project
     const project2 = await getOrCreateProject(
-      join(process.cwd(), "tests/fixtures/00-rename")
+      join(process.cwd(), "tests/fixtures/00-rename"),
     );
     expect(project1).toBe(project2);
     expect(getProjectCacheSize()).toBe(1);
@@ -30,10 +30,10 @@ describe("project_cache", () => {
   it("should create different projects for different tsconfigs", async () => {
     // Different directories with different tsconfigs
     const project1 = await getOrCreateProject(
-      join(process.cwd(), "tests/fixtures/00-rename")
+      join(process.cwd(), "tests/fixtures/00-rename"),
     );
     const project2 = await getOrCreateProject(
-      join(process.cwd(), "tests/fixtures/01-move")
+      join(process.cwd(), "tests/fixtures/01-move"),
     );
 
     expect(project1).not.toBe(project2);
@@ -55,7 +55,7 @@ describe("project_cache", () => {
     // When starting from a subdirectory, it should find parent tsconfig
     const project1 = await getOrCreateProject(process.cwd());
     const project2 = await getOrCreateProject(
-      join(process.cwd(), "src/utils")
+      join(process.cwd(), "src/utils"),
     );
 
     // Both should use the same root tsconfig

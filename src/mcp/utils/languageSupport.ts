@@ -10,7 +10,7 @@ export interface ToolAvailability {
 export const TOOL_AVAILABILITY: ToolAvailability = {
   typescriptOnly: [
     "lsmcp_move_file",
-    "lsmcp_move_directory", 
+    "lsmcp_move_directory",
     "lsmcp_delete_symbol",
     "lsmcp_get_module_symbols",
     "lsmcp_get_type_in_module",
@@ -37,29 +37,29 @@ export const TOOL_AVAILABILITY: ToolAvailability = {
 export function getUnavailableToolError(
   toolName: string,
   currentLanguage: string,
-  availableTools: string[]
+  availableTools: string[],
 ): string {
   const isTypescriptOnly = TOOL_AVAILABILITY.typescriptOnly.includes(toolName);
-  
+
   if (isTypescriptOnly) {
     return `Error: Tool '${toolName}' is only available for TypeScript/JavaScript.
 
 This tool uses the TypeScript Compiler API and cannot be used with other languages.
 
 Available tools for ${currentLanguage} (via LSP):
-${availableTools.map(t => `  - ${t}`).join('\n')}
+${availableTools.map((t) => `  - ${t}`).join("\n")}
 
 For TypeScript-specific features with other languages, consider:
 - Using language-specific refactoring tools
 - Using your IDE's built-in refactoring features`;
   }
-  
+
   return `Error: Tool '${toolName}' is not available for ${currentLanguage}.
 
 Your LSP server may not support this feature.
 
 Available tools for ${currentLanguage}:
-${availableTools.map(t => `  - ${t}`).join('\n')}`;
+${availableTools.map((t) => `  - ${t}`).join("\n")}`;
 }
 
 export function getLanguageFromLSPCommand(lspCommand: string): string {
@@ -84,15 +84,15 @@ export function getLanguageFromLSPCommand(lspCommand: string): string {
     "fsautocomplete": "F#",
     "fsharp-language-server": "F#",
   };
-  
+
   const command = lspCommand.split(" ")[0];
   const baseName = command.split("/").pop() || command;
-  
+
   for (const [key, value] of Object.entries(lspMap)) {
     if (baseName.includes(key)) {
       return value;
     }
   }
-  
+
   return "your language";
 }

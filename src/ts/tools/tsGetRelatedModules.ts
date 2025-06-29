@@ -42,23 +42,22 @@ export const getRelatedModulesTool: ToolDef<typeof paramsSchema> = {
     // Group by relationship type
     const imports = relatedModules.filter((m) => m.relationship === "imports");
     const importedBy = relatedModules.filter(
-      (m) => m.relationship === "imported-by"
+      (m) => m.relationship === "imported-by",
     );
     const reExports = relatedModules.filter(
-      (m) => m.relationship === "re-exports"
+      (m) => m.relationship === "re-exports",
     );
     const reExportedBy = relatedModules.filter(
-      (m) => m.relationship === "re-exported-by"
+      (m) => m.relationship === "re-exported-by",
     );
 
     // Show imports
     if (imports.length > 0) {
       lines.push(`📥 Imports (${imports.length}):`);
       imports.forEach((module) => {
-        const symbolInfo =
-          module.symbols && module.symbols.length > 0
-            ? ` { ${module.symbols.join(", ")} }`
-            : "";
+        const symbolInfo = module.symbols && module.symbols.length > 0
+          ? ` { ${module.symbols.join(", ")} }`
+          : "";
         lines.push(`  - ${module.path}${symbolInfo}`);
       });
       lines.push("");
@@ -68,10 +67,9 @@ export const getRelatedModulesTool: ToolDef<typeof paramsSchema> = {
     if (importedBy.length > 0) {
       lines.push(`📤 Imported By (${importedBy.length}):`);
       importedBy.forEach((module) => {
-        const symbolInfo =
-          module.symbols && module.symbols.length > 0
-            ? ` { ${module.symbols.join(", ")} }`
-            : "";
+        const symbolInfo = module.symbols && module.symbols.length > 0
+          ? ` { ${module.symbols.join(", ")} }`
+          : "";
         lines.push(`  - ${module.path}${symbolInfo}`);
       });
       lines.push("");
@@ -81,10 +79,9 @@ export const getRelatedModulesTool: ToolDef<typeof paramsSchema> = {
     if (reExports.length > 0) {
       lines.push(`🔄 Re-exports From (${reExports.length}):`);
       reExports.forEach((module) => {
-        const symbolInfo =
-          module.symbols && module.symbols.length > 0
-            ? ` { ${module.symbols.join(", ")} }`
-            : "";
+        const symbolInfo = module.symbols && module.symbols.length > 0
+          ? ` { ${module.symbols.join(", ")} }`
+          : "";
         lines.push(`  - ${module.path}${symbolInfo}`);
       });
       lines.push("");
@@ -94,10 +91,9 @@ export const getRelatedModulesTool: ToolDef<typeof paramsSchema> = {
     if (reExportedBy.length > 0) {
       lines.push(`🔄 Re-exported By (${reExportedBy.length}):`);
       reExportedBy.forEach((module) => {
-        const symbolInfo =
-          module.symbols && module.symbols.length > 0
-            ? ` { ${module.symbols.join(", ")} }`
-            : "";
+        const symbolInfo = module.symbols && module.symbols.length > 0
+          ? ` { ${module.symbols.join(", ")} }`
+          : "";
         lines.push(`  - ${module.path}${symbolInfo}`);
       });
       lines.push("");

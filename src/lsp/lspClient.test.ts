@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createLSPClient } from "./lspClient.ts";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -186,9 +186,9 @@ describe("LSP Client Error Handling", () => {
         {
           cwd: projectRoot,
           stdio: ["pipe", "pipe", "pipe"],
-        }
+        },
       );
-      
+
       const crashClient = createLSPClient({ rootPath: projectRoot, process });
 
       try {
@@ -207,7 +207,7 @@ describe("LSP Client Error Handling", () => {
           {
             line: 0,
             character: 0,
-          }
+          },
         );
 
         // Should throw error after crash

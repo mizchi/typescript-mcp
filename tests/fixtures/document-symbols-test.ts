@@ -18,7 +18,7 @@ class UserService {
   }
 
   getUser(id: number): User | undefined {
-    return this.users.find(u => u.id === id);
+    return this.users.find((u) => u.id === id);
   }
 
   get userCount(): number {
@@ -33,8 +33,8 @@ function processUser(user: User): string {
 const defaultUser: User = {
   id: 0,
   name: "Default",
-  email: "default@example.com"
+  email: "default@example.com",
 };
 
-export { UserService, processUser, defaultUser };
+export { defaultUser, processUser, UserService };
 export type { User };

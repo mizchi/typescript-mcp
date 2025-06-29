@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { DocumentSymbol, SymbolInformation, SymbolKind } from "vscode-languageserver-types";
+import {
+  DocumentSymbol,
+  SymbolInformation,
+  SymbolKind,
+} from "vscode-languageserver-types";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
 import { prepareFileContext, withLSPDocument } from "./lspCommon.ts";
 import { fileLocationSchema } from "../../common/schemas.ts";
@@ -42,29 +46,31 @@ function getSymbolKindName(kind: SymbolKind): string {
 
 function formatDocumentSymbol(
   symbol: DocumentSymbol,
-  indent: string = ""
+  indent: string = "",
 ): string {
   try {
-    const kind = symbol.kind !== undefined ? getSymbolKindName(symbol.kind) : "Unknown";
+    const kind = symbol.kind !== undefined
+      ? getSymbolKindName(symbol.kind)
+      : "Unknown";
     const deprecated = symbol.deprecated ? " (deprecated)" : "";
     const name = symbol.name || "Unnamed";
     let result = `${indent}${name} [${kind}]${deprecated}`;
-    
+
     if (symbol.detail) {
       result += ` - ${symbol.detail}`;
     }
-    
+
     if (symbol.range) {
       result += `\n${indent}  Range: ${formatRange(symbol.range)}`;
     }
-    
+
     if (symbol.children && symbol.children.length > 0) {
       result += "\n";
       for (const child of symbol.children) {
         result += "\n" + formatDocumentSymbol(child, indent + "  ");
       }
     }
-    
+
     return result;
   } catch (err) {
     return `${indent}Error formatting symbol: ${err}`;
@@ -73,11 +79,13 @@ function formatDocumentSymbol(
 
 function formatSymbolInformation(symbol: SymbolInformation): string {
   try {
-    const kind = symbol.kind !== undefined ? getSymbolKindName(symbol.kind) : "Unknown";
+    const kind = symbol.kind !== undefined
+      ? getSymbolKindName(symbol.kind)
+      : "Unknown";
     const deprecated = symbol.deprecated ? " (deprecated)" : "";
     const container = symbol.containerName ? ` in ${symbol.containerName}` : "";
     const name = symbol.name || "Unnamed";
-    
+
     let result = `${name} [${kind}]${deprecated}${container}`;
     if (symbol.location && symbol.location.range) {
       result += `\n  ${formatLocation(symbol.location)}`;
@@ -109,7 +117,7 @@ async function handleGetDocumentSymbols({
 
     // Format the symbols
     let result = `Document symbols in ${filePath}:\n\n`;
-    
+
     // Check if we have DocumentSymbol[] or SymbolInformation[]
     // FSAutoComplete may return DocumentSymbol without some optional properties
     try {
@@ -117,8 +125,12 @@ async function handleGetDocumentSymbols({
         // Check each symbol individually to determine its type
         if ("location" in symbol && symbol.location) {
           // This is a SymbolInformation
-          result += formatSymbolInformation(symbol as SymbolInformation) + "\n\n";
-        } else if ("range" in symbol || "children" in symbol || "selectionRange" in symbol) {
+          result += formatSymbolInformation(symbol as SymbolInformation) +
+            "\n\n";
+        } else if (
+          "range" in symbol || "children" in symbol ||
+          "selectionRange" in symbol
+        ) {
           // This is a DocumentSymbol
           result += formatDocumentSymbol(symbol as DocumentSymbol) + "\n\n";
         } else {
@@ -132,7 +144,7 @@ async function handleGetDocumentSymbols({
       // Fallback: just list symbol names
       result += "Error formatting symbols. Raw symbol names:\n";
       for (const symbol of symbols) {
-        if (symbol && typeof symbol === 'object' && 'name' in symbol) {
+        if (symbol && typeof symbol === "object" && "name" in symbol) {
           result += `- ${symbol.name}\n`;
         }
       }

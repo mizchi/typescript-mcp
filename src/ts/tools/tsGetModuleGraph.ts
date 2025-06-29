@@ -15,7 +15,7 @@ const paramsSchema = z.object({
   entryPoints: z
     .array(z.string())
     .describe(
-      "Entry point files to start analysis from (relative or absolute paths)"
+      "Entry point files to start analysis from (relative or absolute paths)",
     ),
   useMermaid: z
     .boolean()
@@ -39,14 +39,14 @@ function createProject() {
 }
 
 function formatCircularDependencies(
-  circularDependencies: string[][]
+  circularDependencies: string[][],
 ): string[] {
   if (circularDependencies.length === 0) return [];
 
   return [
     `⚠️  Circular Dependencies Detected:`,
     ...circularDependencies.map(
-      (cycle, i) => `  ${i + 1}. ${cycle.join(" → ")}`
+      (cycle, i) => `  ${i + 1}. ${cycle.join(" → ")}`,
     ),
     "",
   ];
@@ -88,7 +88,7 @@ function topologicalSort(files: FileNode[]) {
 function getImporterLevels(
   file: FileNode,
   processed: Set<string>,
-  levels: Map<string, number>
+  levels: Map<string, number>,
 ): number[] {
   return file.importedBy
     .filter((importer) => processed.has(importer))
@@ -99,7 +99,7 @@ function calculateSingleFileLevel(
   filePath: string,
   fileMap: Map<string, FileNode>,
   levels: Map<string, number>,
-  processed: Set<string>
+  processed: Set<string>,
 ): number {
   const cachedLevel = levels.get(filePath);
   if (cachedLevel !== undefined) return cachedLevel;
@@ -131,7 +131,7 @@ function calculateFileLevels(sorted: string[], fileMap: Map<string, FileNode>) {
 
 function formatDependencyTree(
   sorted: string[],
-  fileMap: Map<string, FileNode>
+  fileMap: Map<string, FileNode>,
 ): string[] {
   const lines: string[] = [`🌳 Module Dependency Tree (Topological Order):`];
   const levels = calculateFileLevels(sorted, fileMap);
@@ -170,7 +170,8 @@ function formatMostImportedFiles(files: FileNode[]): string[] {
   return [
     `📥 Most Imported Files:`,
     ...mostImported.map(
-      (file) => `  - ${file.path} (imported by ${file.importedBy.length} files)`
+      (file) =>
+        `  - ${file.path} (imported by ${file.importedBy.length} files)`,
     ),
   ];
 }
@@ -212,7 +213,7 @@ function generateMermaidDiagram(graph: Graph): string[] {
 
     graph.stats.circularDependencies.forEach((cycle, idx) => {
       lines.push(
-        `    classDef circular${idx} fill:#f96,stroke:#333,stroke-width:4px;`
+        `    classDef circular${idx} fill:#f96,stroke:#333,stroke-width:4px;`,
       );
       cycle.slice(0, -1).forEach((filePath) => {
         const nodeId = createNodeId(filePath);
@@ -259,7 +260,7 @@ function buildGraphAnalysis(graph: Graph, useMermaid: boolean): string[] {
 }
 
 function handleGetModuleGraph(
-  args: z.infer<typeof paramsSchema>
+  args: z.infer<typeof paramsSchema>,
 ): Promise<string> {
   const project = createProject();
   const result = getModuleGraph(project, {

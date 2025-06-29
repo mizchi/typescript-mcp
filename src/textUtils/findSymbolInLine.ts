@@ -10,7 +10,7 @@ import { findSymbolOccurrences } from "./findSymbolOccurrences.ts";
 export function findSymbolInLine(
   lineText: string,
   symbolName: string,
-  symbolIndex = 0
+  symbolIndex = 0,
 ): { characterIndex: number } | { error: string } {
   const occurrences = findSymbolOccurrences(lineText, symbolName);
 
@@ -20,7 +20,8 @@ export function findSymbolInLine(
 
   if (symbolIndex < 0 || symbolIndex >= occurrences.length) {
     return {
-      error: `Symbol "${symbolName}" occurrence ${symbolIndex} not found (only ${occurrences.length} occurrences)`,
+      error:
+        `Symbol "${symbolName}" occurrence ${symbolIndex} not found (only ${occurrences.length} occurrences)`,
     };
   }
 
@@ -48,8 +49,8 @@ if (import.meta.vitest) {
 
     it("should return error for invalid index", () => {
       const result = findSymbolInLine("const foo = 1;", "foo", 1);
-      expect(result).toEqual({ 
-        error: 'Symbol "foo" occurrence 1 not found (only 1 occurrences)' 
+      expect(result).toEqual({
+        error: 'Symbol "foo" occurrence 1 not found (only 1 occurrences)',
       });
     });
   });

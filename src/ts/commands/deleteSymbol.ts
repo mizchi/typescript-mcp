@@ -1,5 +1,5 @@
-import { type Project, type SourceFile, Node, SyntaxKind } from "ts-morph";
-import { type Result, ok, err } from "neverthrow";
+import { Node, type Project, type SourceFile, SyntaxKind } from "ts-morph";
+import { err, ok, type Result } from "neverthrow";
 
 type RemovableNode = Node & { remove(): void };
 
@@ -17,7 +17,7 @@ export interface DeleteSymbolSuccess {
 
 function validateSourceFile(
   project: Project,
-  filePath: string
+  filePath: string,
 ): Result<SourceFile, string> {
   const sourceFile = project.getSourceFile(filePath);
   if (!sourceFile) {
@@ -28,13 +28,13 @@ function validateSourceFile(
 
 function removeVariableDeclaration(declaration: Node): void {
   const variableStatement = declaration.getFirstAncestorByKind(
-    SyntaxKind.VariableStatement
+    SyntaxKind.VariableStatement,
   );
-  
+
   if (!variableStatement || !Node.isVariableStatement(variableStatement)) {
     return;
   }
-  
+
   const declarations = variableStatement.getDeclarations();
   if (declarations.length === 1) {
     // If this is the only declaration, remove the entire statement
@@ -74,12 +74,12 @@ function removeDeclaration(declaration: Node): Result<void, string> {
     removeVariableDeclaration(declaration);
     return ok(undefined);
   }
-  
+
   if (isRemovableNode(declaration)) {
     declaration.remove();
     return ok(undefined);
   }
-  
+
   return err(`Cannot remove node of type ${declaration.getKindName()}`);
 }
 
@@ -88,7 +88,7 @@ function removeDeclaration(declaration: Node): Result<void, string> {
  */
 export async function deleteSymbol(
   project: Project,
-  request: DeleteSymbolRequest
+  request: DeleteSymbolRequest,
 ): Promise<Result<DeleteSymbolSuccess, string>> {
   try {
     // Validate source file
@@ -102,7 +102,9 @@ export async function deleteSymbol(
     const node = findSymbolAtLine(sourceFile, request.line, request.symbolName);
     if (!node) {
       return err(
-        `Symbol "${request.symbolName}" not found at line ${String(request.line)}`
+        `Symbol "${request.symbolName}" not found at line ${
+          String(request.line)
+        }`,
       );
     }
 
@@ -127,10 +129,11 @@ export async function deleteSymbol(
           for (const reference of referencedSymbol.getReferences()) {
             const refSourceFile = reference.getSourceFile();
             const refNode = reference.getNode();
-            
+
             // Check if this is the declaration
-            const isDecl = refNode === node || refNode.getParent() === declaration;
-            
+            const isDecl = refNode === node ||
+              refNode.getParent() === declaration;
+
             nodesToRemove.push({ node: refNode, isDeclaration: isDecl });
 
             if (!removedFromFiles.includes(refSourceFile.getFilePath())) {
@@ -159,7 +162,7 @@ export async function deleteSymbol(
       } else {
         // Remove the reference
         const parent = nodeToRemove.getParent();
-        
+
         // Special case: if this is the only thing in a return statement, remove the return
         if (Node.isReturnStatement(parent)) {
           parent.remove();
@@ -189,7 +192,7 @@ export async function deleteSymbol(
 function isNodeInLineRange(
   node: Node,
   sourceFile: SourceFile,
-  line: number
+  line: number,
 ): boolean {
   const startLine = sourceFile.getLineAndColumnAtPos(node.getStart()).line;
   const endLine = sourceFile.getLineAndColumnAtPos(node.getEnd()).line;
@@ -207,7 +210,7 @@ function checkNamedNode(node: Node, symbolName: string): Node | undefined {
   if (!hasGetNameMethod(node)) {
     return undefined;
   }
-  
+
   try {
     if (node.getName() === symbolName) {
       return node;
@@ -218,11 +221,14 @@ function checkNamedNode(node: Node, symbolName: string): Node | undefined {
   return undefined;
 }
 
-function checkVariableDeclaration(node: Node, symbolName: string): Node | undefined {
+function checkVariableDeclaration(
+  node: Node,
+  symbolName: string,
+): Node | undefined {
   if (!Node.isVariableDeclaration(node)) {
     return undefined;
   }
-  
+
   const nameNode = node.getNameNode();
   if (Node.isIdentifier(nameNode) && nameNode.getText() === symbolName) {
     return nameNode;
@@ -234,7 +240,7 @@ function checkNodeAtLine(
   node: Node,
   sourceFile: SourceFile,
   line: number,
-  symbolName: string
+  symbolName: string,
 ): Node | undefined {
   if (!isNodeInLineRange(node, sourceFile, line)) {
     return undefined;
@@ -253,13 +259,13 @@ function checkNodeAtLine(
 function findSymbolAtLine(
   sourceFile: SourceFile,
   line: number,
-  symbolName: string
+  symbolName: string,
 ): Node | undefined {
   let foundNode: Node | undefined;
 
   sourceFile.forEachDescendant((node) => {
     if (foundNode) return;
-    
+
     const matchedNode = checkNodeAtLine(node, sourceFile, line, symbolName);
     if (matchedNode) {
       foundNode = matchedNode;

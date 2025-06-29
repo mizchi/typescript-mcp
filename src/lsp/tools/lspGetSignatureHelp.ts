@@ -30,7 +30,7 @@ function formatSignatureHelp(help: SignatureHelp): string {
 
   const activeSignature = help.activeSignature ?? 0;
   const signature = help.signatures[activeSignature];
-  
+
   if (!signature) {
     return "No active signature found";
   }
@@ -54,12 +54,12 @@ function formatSignatureHelp(help: SignatureHelp): string {
   if (signature.parameters && signature.parameters.length > 0) {
     result += "\nParameters:\n";
     const activeParameter = help.activeParameter ?? 0;
-    
+
     for (let i = 0; i < signature.parameters.length; i++) {
       const param = signature.parameters[i];
       const isActive = i === activeParameter;
       const prefix = isActive ? "→ " : "  ";
-      
+
       // Extract parameter name from label
       let paramName = "";
       if (typeof param.label === "string") {
@@ -68,9 +68,9 @@ function formatSignatureHelp(help: SignatureHelp): string {
         // Label is [start, end] offsets into signature.label
         paramName = signature.label.substring(param.label[0], param.label[1]);
       }
-      
+
       result += `${prefix}${paramName}`;
-      
+
       // Add parameter documentation if available
       if (param.documentation) {
         const paramDoc = typeof param.documentation === "string"
@@ -80,7 +80,7 @@ function formatSignatureHelp(help: SignatureHelp): string {
           result += ` - ${paramDoc}`;
         }
       }
-      
+
       result += "\n";
     }
   }
@@ -120,18 +120,18 @@ async function handleGetSignatureHelp({
 
   // Resolve line parameter
   const resolveResult = resolveLineParameter(content, line);
-  
+
   if (!resolveResult.success) {
     throw new Error(resolveResult.error);
   }
-  
+
   const lineIndex = resolveResult.lineIndex;
-  
+
   // Determine character position
   const lines = content.split("\n");
   const lineText = lines[lineIndex];
   let character = 0;
-  
+
   if (target) {
     // Find the position within or after the target text
     const targetIndex = lineText.indexOf(target);
@@ -158,7 +158,7 @@ async function handleGetSignatureHelp({
 
   try {
     // Wait a bit for LSP to process the document
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Get signature help
     const help = await client.getSignatureHelp(fileUri, {
@@ -167,12 +167,16 @@ async function handleGetSignatureHelp({
     });
 
     if (!help) {
-      return `No signature help available at ${filePath}:${lineIndex + 1}:${character + 1}`;
+      return `No signature help available at ${filePath}:${lineIndex + 1}:${
+        character + 1
+      }`;
     }
 
     // Format the signature help
     const formatted = formatSignatureHelp(help);
-    return `Signature help at ${filePath}:${lineIndex + 1}:${character + 1}:\n\n${formatted}`;
+    return `Signature help at ${filePath}:${lineIndex + 1}:${
+      character + 1
+    }:\n\n${formatted}`;
   } finally {
     // Close the document
     client.closeDocument(fileUri);

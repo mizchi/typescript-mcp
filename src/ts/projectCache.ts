@@ -1,10 +1,10 @@
 import {
-  Project,
-  ScriptTarget,
   ModuleKind,
   ModuleResolutionKind,
+  Project,
+  ScriptTarget,
 } from "ts-morph";
-import { resolve, join, dirname } from "path";
+import { dirname, join, resolve } from "path";
 import { access } from "fs/promises";
 
 // Cache for projects by tsconfig path
@@ -62,7 +62,7 @@ async function findTsConfig(startPath: string): Promise<string | null> {
  * Get or create a TypeScript project, using cache for the same tsconfig
  */
 export async function getOrCreateProject(
-  workingDir?: string
+  workingDir?: string,
 ): Promise<Project> {
   const searchPath = workingDir || process.cwd();
 
@@ -178,7 +178,7 @@ export function getProjectCacheSize(): number {
  * This ensures the source file is fresh and its descendants are forgotten
  */
 export function getOrCreateSourceFileWithRefresh(
-  filePath: string
+  filePath: string,
 ): import("ts-morph").SourceFile {
   const project = findProjectForFile(filePath);
 

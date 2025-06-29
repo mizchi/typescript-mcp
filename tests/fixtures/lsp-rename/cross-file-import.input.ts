@@ -1,4 +1,8 @@
-import { processData, DataProcessor, DEFAULT_VALUE } from "./cross-file-export.input.ts";
+import {
+  DataProcessor,
+  DEFAULT_VALUE,
+  processData,
+} from "./cross-file-export.input.ts";
 
 const result = processData("hello");
 console.log(result);

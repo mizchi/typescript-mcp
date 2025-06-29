@@ -2,20 +2,32 @@
  * Language-specific initialization options and handlers for LSP servers
  */
 
-import { getFSharpInitializationOptions, postInitializeFSharp } from "../fsharp/fsharpInit.ts";
+import {
+  getFSharpInitializationOptions,
+  postInitializeFSharp,
+} from "../fsharp/fsharpInit.ts";
 
-type SendRequestFunction = <T = unknown>(method: string, params?: unknown) => Promise<T>;
+type SendRequestFunction = <T = unknown>(
+  method: string,
+  params?: unknown,
+) => Promise<T>;
 type SendNotificationFunction = (method: string, params?: unknown) => void;
 
 export interface LanguageInitializationOptions {
   initializationOptions?: unknown;
-  postInitialize?: (sendRequest: SendRequestFunction, sendNotification: SendNotificationFunction, rootPath: string) => Promise<void>;
+  postInitialize?: (
+    sendRequest: SendRequestFunction,
+    sendNotification: SendNotificationFunction,
+    rootPath: string,
+  ) => Promise<void>;
 }
 
 /**
  * Get language-specific initialization options
  */
-export function getLanguageInitialization(languageId: string): LanguageInitializationOptions {
+export function getLanguageInitialization(
+  languageId: string,
+): LanguageInitializationOptions {
   switch (languageId) {
     case "typescript":
     case "typescriptreact":
@@ -25,7 +37,7 @@ export function getLanguageInitialization(languageId: string): LanguageInitializ
         initializationOptions: {
           preferences: {
             includePackageJsonAutoImports: "auto",
-            includeCompletionsForModuleExports: true
+            includeCompletionsForModuleExports: true,
           },
           // Ensure TypeScript server processes the entire project
           hostInfo: "lsmcp",
@@ -33,27 +45,27 @@ export function getLanguageInitialization(languageId: string): LanguageInitializ
           tsserver: {
             // Enable project-wide features
             useSingleInferredProject: false,
-            useInferredProjectPerProjectRoot: true
-          }
-        }
+            useInferredProjectPerProjectRoot: true,
+          },
+        },
       };
-      
+
     case "deno":
       return {
         initializationOptions: {
           enable: true,
           lint: true,
           unstable: true,
-        }
+        },
       };
-      
+
     case "fsharp":
     case "f#":
       return {
         initializationOptions: getFSharpInitializationOptions(),
         postInitialize: postInitializeFSharp,
       };
-      
+
     default:
       return {};
   }

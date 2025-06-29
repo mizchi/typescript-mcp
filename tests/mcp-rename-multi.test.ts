@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { fileURLToPath } from "url";
@@ -10,7 +10,10 @@ import { globSync } from "fs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SERVER_PATH = path.join(__dirname, "../dist/typescript-mcp.js");
-const MULTI_FILE_FIXTURES_DIR = path.join(__dirname, "fixtures/02-rename-multi");
+const MULTI_FILE_FIXTURES_DIR = path.join(
+  __dirname,
+  "fixtures/02-rename-multi",
+);
 
 describe.skip("MCP rename multi-file - requires LSP support", () => {
   let client: Client;
@@ -28,14 +31,17 @@ describe.skip("MCP rename multi-file - requires LSP support", () => {
     // Enable LSP mode to get rename functionality
     cleanEnv.FORCE_LSP = "true";
     // Use typescript-language-server from node_modules
-    const tsLangServerPath = path.join(__dirname, "../node_modules/.bin/typescript-language-server");
+    const tsLangServerPath = path.join(
+      __dirname,
+      "../node_modules/.bin/typescript-language-server",
+    );
     cleanEnv.LSP_COMMAND = `${tsLangServerPath} --stdio`;
-    
+
     transport = new StdioClientTransport({
       command: "node",
       args: [SERVER_PATH],
       env: cleanEnv,
-      cwd: tmpDir,  // Use cwd instead of --project-root
+      cwd: tmpDir, // Use cwd instead of --project-root
     });
 
     // Create and connect client
@@ -59,12 +65,15 @@ describe.skip("MCP rename multi-file - requires LSP support", () => {
 
   // Find all directories in the multi-file fixtures directory
   const testDirs = globSync("*.input", { cwd: MULTI_FILE_FIXTURES_DIR });
-  const testCases = testDirs.map(dir => path.basename(dir, ".input"));
+  const testCases = testDirs.map((dir) => path.basename(dir, ".input"));
 
   testCases.forEach((testName) => {
     it(`should rename ${testName} via MCP`, async () => {
       const inputDir = path.join(MULTI_FILE_FIXTURES_DIR, `${testName}.input`);
-      const expectedDir = path.join(MULTI_FILE_FIXTURES_DIR, `${testName}.expected`);
+      const expectedDir = path.join(
+        MULTI_FILE_FIXTURES_DIR,
+        `${testName}.expected`,
+      );
 
       // Copy all input files to tmp directory
       const inputFiles = globSync("**/*.{ts,tsx,json}", { cwd: inputDir });
@@ -101,13 +110,13 @@ describe.skip("MCP rename multi-file - requires LSP support", () => {
           filePath: renameFilePath!,
           line: renameOperation!.line,
           target: renameOperation!.symbolName,
-          newName: renameOperation!.newName
-        }
+          newName: renameOperation!.newName,
+        },
       });
 
       expect(result).toBeDefined();
       expect(result.content).toBeDefined();
-      
+
       const contents = result.content as Array<{ type: string; text?: string }>;
       expect(contents.length).toBeGreaterThan(0);
       const content = contents[0];
@@ -118,8 +127,8 @@ describe.skip("MCP rename multi-file - requires LSP support", () => {
       }
 
       // Wait a bit for file changes to be written
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // Compare all files with expected output
       for (const file of inputFiles) {
         const actualFile = path.join(tmpDir, file);
@@ -128,22 +137,24 @@ describe.skip("MCP rename multi-file - requires LSP support", () => {
         const expectedContent = await fs.readFile(expectedFile, "utf-8");
 
         // Debug output
-        if (file === 'math.ts') {
+        if (file === "math.ts") {
           console.log(`File ${file} content after rename:`);
           console.log(actualContent);
         }
 
         // Special handling for index.ts which might have aliases after rename
-        if (file === 'index.ts' && testName === 'simple-export') {
+        if (file === "index.ts" && testName === "simple-export") {
           // Check that the renamed symbol appears correctly (either with or without alias)
-          expect(actualContent).toMatch(/export \{ add(?: as \w+)?, calculateDiff \} from '\.\/math'/);
+          expect(actualContent).toMatch(
+            /export \{ add(?: as \w+)?, calculateDiff \} from '\.\/math'/,
+          );
           continue;
         }
 
         if (actualContent.trim() !== expectedContent.trim()) {
           console.log(`File ${file} mismatch:`);
-          console.log('Actual:', actualContent);
-          console.log('Expected:', expectedContent);
+          console.log("Actual:", actualContent);
+          console.log("Expected:", expectedContent);
         }
 
         expect(actualContent.trim()).toBe(expectedContent.trim());

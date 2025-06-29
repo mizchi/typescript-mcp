@@ -5,7 +5,9 @@ export interface MoveOperation {
   newPath: string;
 }
 
-export async function parseMoveComments(filePath: string): Promise<MoveOperation[]> {
+export async function parseMoveComments(
+  filePath: string,
+): Promise<MoveOperation[]> {
   const content = await fs.readFile(filePath, "utf-8");
   const lines = content.split("\n");
   const operations: MoveOperation[] = [];

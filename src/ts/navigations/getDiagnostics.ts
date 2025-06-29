@@ -1,5 +1,5 @@
-import { type Project, DiagnosticCategory } from "ts-morph";
-import { type Result, ok, err } from "neverthrow";
+import { DiagnosticCategory, type Project } from "ts-morph";
+import { err, ok, type Result } from "neverthrow";
 
 export interface GetDiagnosticsRequest {
   filePaths: string[];
@@ -38,7 +38,7 @@ function categoryToString(category: DiagnosticCategory): string {
 
 export function getDiagnostics(
   project: Project,
-  request: GetDiagnosticsRequest
+  request: GetDiagnosticsRequest,
 ): Result<GetDiagnosticsSuccess, string> {
   if (request.filePaths.length === 0) {
     return err("No file paths provided");
@@ -55,7 +55,7 @@ export function getDiagnostics(
         // Skip files that are not found
         continue;
       }
-      
+
       processedFiles++;
 
       // Get pre-emit diagnostics for this specific file
@@ -64,7 +64,7 @@ export function getDiagnostics(
 
       for (const diagnostic of diagnostics) {
         const diagSourceFile = diagnostic.getSourceFile();
-        
+
         // Skip diagnostics from other files (e.g., imported modules)
         if (diagSourceFile && diagSourceFile.getFilePath() !== filePath) {
           continue;
@@ -90,7 +90,7 @@ export function getDiagnostics(
           column,
           message: (() => {
             const messageText = diagnostic.getMessageText();
-            return typeof messageText === 'string' 
+            return typeof messageText === "string"
               ? messageText
               : messageText.getMessageText();
           })(),
@@ -105,11 +105,12 @@ export function getDiagnostics(
       return err("No valid source files found");
     }
 
-
     // Use ts-morph's built-in formatting for the message
     const message = allDiagnostics.length > 0
       ? project.formatDiagnosticsWithColorAndContext(allDiagnostics)
-      : `No diagnostics found in ${String(processedFiles)} file${processedFiles === 1 ? '' : 's'}.`;
+      : `No diagnostics found in ${String(processedFiles)} file${
+        processedFiles === 1 ? "" : "s"
+      }.`;
 
     return ok({
       message,
@@ -141,7 +142,7 @@ if (import.meta.vitest) {
 function greet(name: string) {
   return "Hello, " + name;
 }
-greet(456); // Type error`
+greet(456); // Type error`,
       );
 
       const result = getDiagnostics(project, {
@@ -152,20 +153,26 @@ greet(456); // Type error`
       if (result.isOk()) {
         const { diagnostics, message } = result.value;
         expect(diagnostics).toHaveLength(2);
-        
+
         // Check that message contains formatted diagnostics
         expect(message).toContain("main.ts");
-        expect(message).toContain("Type 'number' is not assignable to type 'string'");
-        
+        expect(message).toContain(
+          "Type 'number' is not assignable to type 'string'",
+        );
+
         // First error: string = 123
         expect(diagnostics[0].line).toBe(1);
         expect(diagnostics[0].category).toBe("error");
-        expect(diagnostics[0].message).toContain("Type 'number' is not assignable to type 'string'");
-        
+        expect(diagnostics[0].message).toContain(
+          "Type 'number' is not assignable to type 'string'",
+        );
+
         // Second error: greet(456)
         expect(diagnostics[1].line).toBe(5);
         expect(diagnostics[1].category).toBe("error");
-        expect(diagnostics[1].message).toContain("Argument of type 'number' is not assignable to parameter of type 'string'");
+        expect(diagnostics[1].message).toContain(
+          "Argument of type 'number' is not assignable to parameter of type 'string'",
+        );
       }
     });
 
@@ -183,7 +190,7 @@ greet(456); // Type error`
         `const unusedVar = 42;
 export function useThis() {
   return "used";
-}`
+}`,
       );
 
       const result = getDiagnostics(project, {
@@ -194,7 +201,9 @@ export function useThis() {
       if (result.isOk()) {
         const { diagnostics } = result.value;
         expect(diagnostics).toHaveLength(1);
-        expect(diagnostics[0].message).toContain("'unusedVar' is declared but its value is never read");
+        expect(diagnostics[0].message).toContain(
+          "'unusedVar' is declared but its value is never read",
+        );
       }
     });
 
@@ -212,7 +221,7 @@ export function useThis() {
   return a + b;
 }
 
-console.log(add(1, 2));`
+console.log(add(1, 2));`,
       );
 
       const result = getDiagnostics(project, {
@@ -240,7 +249,7 @@ console.log(add(1, 2));`
         "/src/missing-import.ts",
         `import { nonExistent } from "./does-not-exist.ts";
 
-console.log(nonExistent);`
+console.log(nonExistent);`,
       );
 
       const result = getDiagnostics(project, {
@@ -282,7 +291,7 @@ console.log(nonExistent);`
         "/src/syntax-error.ts",
         `function broken( {
   return "missing closing paren";
-}`
+}`,
       );
 
       const result = getDiagnostics(project, {
@@ -295,7 +304,9 @@ console.log(nonExistent);`
         expect(diagnostics.length).toBeGreaterThan(0);
         expect(diagnostics[0].category).toBe("error");
         // TypeScript reports this as a missing implementation error
-        expect(diagnostics[0].message.toLowerCase()).toContain("function implementation");
+        expect(diagnostics[0].message.toLowerCase()).toContain(
+          "function implementation",
+        );
       }
     });
   });

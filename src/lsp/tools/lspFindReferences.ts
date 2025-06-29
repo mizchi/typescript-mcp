@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { type Result, ok, err } from "neverthrow";
+import { err, ok, type Result } from "neverthrow";
 import { readFileSync } from "fs";
 import path from "path";
 import { getActiveClient } from "../lspClient.ts";
 import { parseLineNumber } from "../../textUtils/parseLineNumber.ts";
 import { findSymbolInLine } from "../../textUtils/findSymbolInLine.ts";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
-import { formatError, ErrorContext } from "../../mcp/utils/errorHandler.ts";
+import { ErrorContext, formatError } from "../../mcp/utils/errorHandler.ts";
 
 const schema = z.object({
   root: z.string().describe("Root directory for resolving relative paths"),
@@ -38,11 +38,11 @@ interface FindReferencesSuccess {
  * Finds all references to a symbol using LSP
  */
 async function findReferencesWithLSP(
-  request: FindReferencesRequest
+  request: FindReferencesRequest,
 ): Promise<Result<FindReferencesSuccess, string>> {
   try {
     const client = getActiveClient();
-    
+
     // Read file content
     const absolutePath = path.resolve(request.root, request.filePath);
     let fileContent: string;
@@ -52,12 +52,12 @@ async function findReferencesWithLSP(
       const context: ErrorContext = {
         operation: "find references",
         filePath: request.filePath,
-        language: "lsp"
+        language: "lsp",
       };
       return err(formatError(error, context));
     }
     const fileUri = `file://${absolutePath}`;
-    
+
     // Parse line number
     const lines = fileContent.split("\n");
     const lineResult = parseLineNumber(fileContent, request.line);
@@ -65,13 +65,13 @@ async function findReferencesWithLSP(
       const context: ErrorContext = {
         operation: "line resolution",
         filePath: request.filePath,
-        details: { line: request.line }
+        details: { line: request.line },
       };
       return err(formatError(new Error(lineResult.error), context));
     }
-    
+
     const targetLine = lineResult.lineIndex;
-    
+
     // Find symbol position in line
     const lineText = lines[targetLine];
     const symbolResult = findSymbolInLine(lineText, request.symbolName);
@@ -80,16 +80,16 @@ async function findReferencesWithLSP(
         operation: "symbol location",
         filePath: request.filePath,
         symbolName: request.symbolName,
-        details: { line: targetLine + 1 }
+        details: { line: targetLine + 1 },
       };
       return err(formatError(new Error(symbolResult.error), context));
     }
-    
+
     const symbolPosition = symbolResult.characterIndex;
-    
+
     // Open document in LSP
     client.openDocument(fileUri, fileContent);
-    
+
     // Give LSP server time to process the document
     await new Promise<void>((resolve) => setTimeout(resolve, 1000));
     // Find references
@@ -121,8 +121,9 @@ async function findReferencesWithLSP(
 
       // Create preview with context
       const prevLine = startLine > 0 ? refLines[startLine - 1] : "";
-      const nextLine =
-        startLine < refLines.length - 1 ? refLines[startLine + 1] : "";
+      const nextLine = startLine < refLines.length - 1
+        ? refLines[startLine + 1]
+        : "";
       const preview = [
         prevLine && `${startLine}: ${prevLine}`,
         `${startLine + 1}: ${refLineText}`,
@@ -151,7 +152,7 @@ async function findReferencesWithLSP(
       operation: "find references",
       filePath: request.filePath,
       symbolName: request.symbolName,
-      language: "lsp"
+      language: "lsp",
     };
     return err(formatError(error, context));
   }
@@ -171,9 +172,9 @@ export const lspFindReferencesTool: ToolDef<typeof schema> = {
           result.value.references
             .map(
               (ref) =>
-                `\n${ref.filePath}:${ref.line}:${ref.column}\n${ref.preview}`
+                `\n${ref.filePath}:${ref.line}:${ref.column}\n${ref.preview}`,
             )
-            .join("\n")
+            .join("\n"),
         );
       }
 
@@ -187,7 +188,9 @@ export const lspFindReferencesTool: ToolDef<typeof schema> = {
 if (import.meta.vitest) {
   const { describe, it, expect, beforeAll, afterAll } = import.meta.vitest;
   const { default: path } = await import("path");
-  const { setupLSPForTest, teardownLSPForTest } = await import("../testHelpers.ts");
+  const { setupLSPForTest, teardownLSPForTest } = await import(
+    "../testHelpers.ts"
+  );
 
   describe("lspFindReferencesTool", () => {
     const root = path.resolve(__dirname, "../../..");
@@ -252,8 +255,8 @@ if (import.meta.vitest) {
           filePath: "examples/typescript/types.ts",
           line: 1,
           symbolName: "nonexistent",
-        })
-      ).rejects.toThrow("Symbol \"nonexistent\" not found");
+        }),
+      ).rejects.toThrow('Symbol "nonexistent" not found');
     });
 
     it("should handle line not found", async () => {
@@ -263,7 +266,7 @@ if (import.meta.vitest) {
           filePath: "examples/typescript/types.ts",
           line: "nonexistent line",
           symbolName: "Value",
-        })
+        }),
       ).rejects.toThrow("Line containing");
     });
 
@@ -274,7 +277,7 @@ if (import.meta.vitest) {
           filePath: "nonexistent.ts",
           line: 1,
           symbolName: "test",
-        })
+        }),
       ).rejects.toThrow();
     });
 

@@ -1,1 +1,1 @@
-export { add, calculateDiff } from './math';
+export { add, calculateDiff } from "./math";

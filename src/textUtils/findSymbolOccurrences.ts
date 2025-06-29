@@ -6,7 +6,7 @@
  */
 export function findSymbolOccurrences(
   lineText: string,
-  symbolName: string
+  symbolName: string,
 ): number[] {
   const occurrences: number[] = [];
   let searchIndex = 0;
