@@ -84,12 +84,15 @@ async function getDiagnosticsWithLSP(
       // Force LSP to re-read the file by sending an update
       client.updateDocument(fileUri, fileContent, 2);
     }
+    
+    // Initial wait for LSP to process the document (important for CI)
+    await new Promise<void>((resolve) => setTimeout(resolve, 100));
 
     // Poll for diagnostics instead of fixed wait
     let lspDiagnostics: LSPDiagnostic[] = [];
     const maxPolls = 30; // Max 1.5 seconds (30 * 50ms)
     const pollInterval = 50; // Poll every 50ms
-    const minPollsForNoError = 15; // Increased from 10 to 15 for better reliability
+    const minPollsForNoError = 20; // Increased to 20 for CI reliability
     
     for (let poll = 0; poll < maxPolls; poll++) {
       await new Promise<void>((resolve) => setTimeout(resolve, pollInterval));
