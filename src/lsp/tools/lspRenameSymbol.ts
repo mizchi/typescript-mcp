@@ -5,7 +5,7 @@ import { parseLineNumber } from "../../textUtils/parseLineNumber.ts";
 import { findSymbolInLine } from "../../textUtils/findSymbolInLine.ts";
 import { findTargetInFile } from "../../textUtils/findTargetInFile.ts";
 import type { ToolDef } from "../../mcp/_mcplib.ts";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
 import path from "path";
 import { 
   WorkspaceEdit,
@@ -139,7 +139,20 @@ async function performRenameAtPosition(
   try {
     const client = getActiveClient();
 
-    // Open document in LSP
+    // Open all TypeScript/JavaScript files in the project to ensure LSP knows about them
+    const projectFiles = await findProjectFiles(request.root);
+    for (const file of projectFiles) {
+      if (file !== path.resolve(request.root, request.filePath)) {
+        try {
+          const content = readFileSync(file, "utf-8");
+          client.openDocument(`file://${file}`, content);
+        } catch (e) {
+          debug(`[lspRenameSymbol] Failed to open file: ${file}`, e);
+        }
+      }
+    }
+
+    // Open the target document
     client.openDocument(fileUri, fileContent);
     await new Promise<void>((resolve) => setTimeout(resolve, 1000));
 
@@ -189,11 +202,23 @@ async function performRenameAtPosition(
       return err("No changes from LSP rename operation");
     }
 
+    // Debug: Log the workspace edit
+    debug("[lspRenameSymbol] WorkspaceEdit from LSP:", JSON.stringify(workspaceEdit, null, 2));
+
     // Apply changes and format result
     const result = await applyWorkspaceEdit(request.root, workspaceEdit);
     
-    // Close document
+    // Close all opened documents
     client.closeDocument(fileUri);
+    for (const file of projectFiles) {
+      if (file !== path.resolve(request.root, request.filePath)) {
+        try {
+          client.closeDocument(`file://${file}`);
+        } catch (e) {
+          // Ignore close errors
+        }
+      }
+    }
 
     return ok(result);
   } catch (error) {
@@ -396,6 +421,41 @@ async function handleRenameSymbol(
   } catch (error) {
     return err(error instanceof Error ? error.message : String(error));
   }
+}
+
+/**
+ * Find all TypeScript/JavaScript files in the project
+ */
+async function findProjectFiles(rootPath: string): Promise<string[]> {
+  const files: string[] = [];
+  const extensions = [".ts", ".tsx", ".js", ".jsx", ".mts", ".mjs"];
+  
+  function walkDir(dir: string) {
+    try {
+      const entries = readdirSync(dir);
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry);
+        const stat = statSync(fullPath);
+        
+        if (stat.isDirectory()) {
+          // Skip node_modules and hidden directories
+          if (entry !== "node_modules" && !entry.startsWith(".")) {
+            walkDir(fullPath);
+          }
+        } else if (stat.isFile()) {
+          const ext = path.extname(fullPath);
+          if (extensions.includes(ext)) {
+            files.push(fullPath);
+          }
+        }
+      }
+    } catch (e) {
+      debug(`[lspRenameSymbol] Error walking directory ${dir}:`, e);
+    }
+  }
+  
+  walkDir(rootPath);
+  return files;
 }
 
 export const lspRenameSymbolTool: ToolDef<typeof schema> = {

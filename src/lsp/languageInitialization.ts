@@ -17,6 +17,27 @@ export interface LanguageInitializationOptions {
  */
 export function getLanguageInitialization(languageId: string): LanguageInitializationOptions {
   switch (languageId) {
+    case "typescript":
+    case "typescriptreact":
+    case "javascript":
+    case "javascriptreact":
+      return {
+        initializationOptions: {
+          preferences: {
+            includePackageJsonAutoImports: "auto",
+            includeCompletionsForModuleExports: true
+          },
+          // Ensure TypeScript server processes the entire project
+          hostInfo: "lsmcp",
+          maxTsServerMemory: 4096,
+          tsserver: {
+            // Enable project-wide features
+            useSingleInferredProject: false,
+            useInferredProjectPerProjectRoot: true
+          }
+        }
+      };
+      
     case "deno":
       return {
         initializationOptions: {

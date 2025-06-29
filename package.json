@@ -16,7 +16,7 @@
     "lint": "oxlint --quiet",
     "lint:refactor": "oxlint",
     "test": "vitest --run",
-    "test:lsp": "vitest --run tests/lsmcp-include.test.ts",
+    "test:lsp": "LSP_COMMAND=\"typescript-language-server --stdio\" vitest --run tests/lsp*.test.ts tests/lsmcp-*.test.ts",
     "test:ts": "vitest --run src/ts",
     "test:mcp": "vitest --run tests/mcp-*.test.ts",
     "test:all": "pnpm test:ts && pnpm test:lsp && pnpm test:mcp",
