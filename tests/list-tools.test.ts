@@ -117,5 +117,16 @@ describe("list_tools functionality", () => {
       expect(result.content[0].text).not.toContain("get_module_symbols");
       expect(result.content[0].text).not.toContain("search_symbols");
     });
+    
+    it("should ignore category parameter for LSP-only server", async () => {
+      // Even with category "all", should only show LSP tools
+      const result = await client.callTool({
+        name: "list_tools",
+        arguments: { category: "all" }
+      });
+      
+      expect(result.content[0].text).toContain("LSP Tools");
+      expect(result.content[0].text).not.toContain("TypeScript Tools");
+    });
   });
 });
