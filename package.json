@@ -11,7 +11,7 @@
     "prepublishOnly": "pnpm build",
     "build": "tsdown",
     "watch": "tsdown --watch",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsgo check",
     "typecheck:tsc": "tsc --noEmit -p tsconfig.json",
     "lint": "oxlint --quiet",
     "lint:refactor": "oxlint",
