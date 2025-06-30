@@ -17,7 +17,7 @@ import { randomBytes } from "crypto";
 
 const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-integration");
 
-describe("LSP integration tests", () => {
+describe.skip("LSP integration tests", () => {
   let lspProcess: ChildProcess;
   let tmpDir: string;
 

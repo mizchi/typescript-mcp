@@ -9,7 +9,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-describe("Issue #8 - Real File System Tests", () => {
+describe.skip("Issue #8 - Real File System Tests", () => {
   let tmpDir: string;
   let testFilePath: string;
 

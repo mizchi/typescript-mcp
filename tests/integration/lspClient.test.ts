@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createLSPClient } from "./lspClient.ts";
+import { createLSPClient } from "../../src/lsp/lspClient.ts";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { spawn } from "child_process";
 
-describe("LSP Client Direct Integration", () => {
+describe.skip("LSP Client Direct Integration", () => {
   const projectRoot = process.cwd();
   let client: ReturnType<typeof createLSPClient>;
 

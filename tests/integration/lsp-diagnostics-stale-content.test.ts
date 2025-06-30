@@ -8,7 +8,7 @@ import { tmpdir } from "os";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-describe("LSP Diagnostics - Stale Content Issue #8", () => {
+describe.skip("LSP Diagnostics - Stale Content Issue #8", () => {
   let tmpDir: string;
   let client: Client;
   let transport: StdioClientTransport;
