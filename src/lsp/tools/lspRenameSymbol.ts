@@ -244,6 +244,7 @@ async function applyWorkspaceEdit(
   // Collect all file contents before applying changes
   if (workspaceEdit.changes) {
     for (const [uri, _edits] of Object.entries(workspaceEdit.changes)) {
+      if (!uri) continue;
       const filePath = uri.replace("file://", "");
       const content = readFileSync(filePath, "utf-8");
       allFileContents.set(filePath, content.split("\n"));
@@ -252,7 +253,7 @@ async function applyWorkspaceEdit(
 
   if (workspaceEdit.documentChanges) {
     for (const change of workspaceEdit.documentChanges) {
-      if (TextDocumentEdit.is(change)) {
+      if (TextDocumentEdit.is(change) && change.textDocument?.uri) {
         const filePath = change.textDocument.uri.replace("file://", "");
         if (!allFileContents.has(filePath)) {
           const content = readFileSync(filePath, "utf-8");
@@ -265,8 +266,10 @@ async function applyWorkspaceEdit(
   // Process changes from WorkspaceEdit.changes
   if (workspaceEdit.changes) {
     for (const [uri, edits] of Object.entries(workspaceEdit.changes)) {
+      if (!uri) continue;
       const filePath = uri.replace("file://", "");
-      const lines = allFileContents.get(filePath)!;
+      const lines = allFileContents.get(filePath);
+      if (!lines) continue;
       const fileChanges = processTextEdits(filePath, lines, edits);
 
       if (fileChanges.changes.length > 0) {
@@ -282,9 +285,10 @@ async function applyWorkspaceEdit(
   // Process changes from WorkspaceEdit.documentChanges
   if (workspaceEdit.documentChanges) {
     for (const change of workspaceEdit.documentChanges) {
-      if (TextDocumentEdit.is(change)) {
+      if (TextDocumentEdit.is(change) && change.textDocument?.uri) {
         const filePath = change.textDocument.uri.replace("file://", "");
-        const lines = allFileContents.get(filePath)!;
+        const lines = allFileContents.get(filePath);
+        if (!lines) continue;
         const fileChanges = processTextEdits(filePath, lines, change.edits);
 
         if (fileChanges.changes.length > 0) {

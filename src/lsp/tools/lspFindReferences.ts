@@ -102,7 +102,7 @@ async function findReferencesWithLSP(
     const references: Reference[] = [];
 
     for (const location of locations) {
-      const refPath = location.uri.replace("file://", "");
+      const refPath = location.uri?.replace("file://", "") || "";
       let refContent: string;
       try {
         refContent = readFileSync(refPath, "utf-8");

@@ -104,7 +104,7 @@ async function getDefinitionsWithLSP(
     const contextAfter = request.after || 2;
 
     for (const location of locations) {
-      const defPath = location.uri.replace("file://", "");
+      const defPath = location.uri?.replace("file://", "") || "";
       const defContent = readFileSync(defPath, "utf-8");
       const defLines = defContent.split("\n");
 
