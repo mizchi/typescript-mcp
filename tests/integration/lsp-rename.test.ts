@@ -11,7 +11,7 @@ import { randomBytes } from "crypto";
 
 const FIXTURES_DIR = path.join(__dirname, "fixtures/lsp-rename");
 
-describe.skip("lsp rename symbol", () => {
+describe("lsp rename symbol", () => {
   let lspProcess: ChildProcess;
   let tmpDir: string;
 

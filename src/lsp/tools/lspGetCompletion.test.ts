@@ -9,7 +9,7 @@ import {
 import { lspGetCompletionTool } from "./lspGetCompletion.ts";
 import { randomBytes } from "crypto";
 
-describe.skip("lspGetCompletionTool", () => {
+describe("lspGetCompletionTool", () => {
   let lspProcess: ChildProcess;
   let tmpDir: string;
 

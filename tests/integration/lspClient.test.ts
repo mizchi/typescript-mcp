@@ -4,7 +4,7 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 import { spawn } from "child_process";
 
-describe.skip("LSP Client Direct Integration", () => {
+describe("LSP Client Direct Integration", () => {
   const projectRoot = process.cwd();
   let client: ReturnType<typeof createLSPClient>;
 

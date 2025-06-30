@@ -202,7 +202,7 @@ if (import.meta.vitest) {
   );
   const { default: path } = await import("path");
 
-  describe.skip("lspGetDiagnosticsTool", { timeout: 10000 }, () => {
+  describe("lspGetDiagnosticsTool", { timeout: 10000 }, () => {
     const root = path.resolve(import.meta.dirname, "../../..");
 
     beforeAll(async () => {
